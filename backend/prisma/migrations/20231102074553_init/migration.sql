@@ -8,6 +8,9 @@ CREATE TABLE "Medicine" (
     "location" TEXT NOT NULL,
     "dci" TEXT NOT NULL,
     "isTaxed" BOOLEAN NOT NULL,
+    "min" INTEGER NOT NULL,
+    "max" INTEGER NOT NULL,
+    "expirationDate" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Medicine_pkey" PRIMARY KEY ("id")
 );
@@ -23,6 +26,7 @@ CREATE TABLE "MedicineFromProvider" (
     "dci" TEXT NOT NULL,
     "isTaxed" BOOLEAN NOT NULL,
     "providerId" TEXT,
+    "expirationDate" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "MedicineFromProvider_pkey" PRIMARY KEY ("id")
 );
@@ -31,6 +35,7 @@ CREATE TABLE "MedicineFromProvider" (
 CREATE TABLE "Provider" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "min" INTEGER NOT NULL,
 
     CONSTRAINT "Provider_pkey" PRIMARY KEY ("id")
 );
