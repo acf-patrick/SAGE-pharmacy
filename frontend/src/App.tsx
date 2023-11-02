@@ -1,9 +1,8 @@
+import { Outlet } from "react-router-dom";
 import styled, { ThemeProvider } from "styled-components";
+import SideBar from "./components/SideBar.tsx";
 import { GlobalStyles } from "./styles/globalStyles.ts";
 import { theme } from "./styles/theme";
-import { Outlet, RouterProvider } from "react-router-dom";
-import { router } from "./routes.tsx";
-import SideBar from "./components/SideBar.tsx";
 
 const StyledContainer = styled.div`
   width: 100vw;

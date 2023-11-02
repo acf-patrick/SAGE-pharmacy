@@ -10,4 +10,8 @@ body {
 * {
   color: ${({ theme }) => theme.colors.text};
 }
+
+a {
+  text-decoration: none;
+}
 `;
