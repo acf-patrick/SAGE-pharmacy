@@ -13,6 +13,9 @@ async function main() {
         dci: 'Antidouleur',
         isTaxed: true,
         location: 'Tirroir-6',
+        min: 1,
+        max: 10,
+        expirationDate: Date.now().toString(),
       },
       {
         name: 'Vitamine C',
@@ -22,6 +25,9 @@ async function main() {
         dci: 'Effervescent',
         isTaxed: true,
         location: 'Tirroir-1',
+        min: 10,
+        max: 30,
+        expirationDate: Date.now().toString(),
       },
       {
         name: 'Meth',
@@ -31,6 +37,9 @@ async function main() {
         dci: 'Weed',
         isTaxed: true,
         location: 'Tirroir-9',
+        min: 5,
+        max: 15,
+        expirationDate: Date.now().toString(),
       },
       {
         name: 'Nivaquine',
@@ -40,6 +49,9 @@ async function main() {
         dci: 'Antidouleur',
         isTaxed: true,
         location: 'Tirroir-2',
+        min: 15,
+        max: 30,
+        expirationDate: Date.now().toString(),
       },
     ],
   });
