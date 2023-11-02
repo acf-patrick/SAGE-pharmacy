@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  prisma.medicine.createMany({
+  const items = await prisma.medicine.createMany({
     data: [
       {
         name: 'Paracetamol',
@@ -15,7 +15,7 @@ async function main() {
         location: 'Tirroir-6',
         min: 1,
         max: 10,
-        expirationDate: Date.now().toString(),
+        expirationDate: new Date(),
       },
       {
         name: 'Vitamine C',
@@ -27,7 +27,7 @@ async function main() {
         location: 'Tirroir-1',
         min: 10,
         max: 30,
-        expirationDate: Date.now().toString(),
+        expirationDate: new Date(),
       },
       {
         name: 'Meth',
@@ -39,7 +39,7 @@ async function main() {
         location: 'Tirroir-9',
         min: 5,
         max: 15,
-        expirationDate: Date.now().toString(),
+        expirationDate: new Date(),
       },
       {
         name: 'Nivaquine',
@@ -51,10 +51,12 @@ async function main() {
         location: 'Tirroir-2',
         min: 15,
         max: 30,
-        expirationDate: Date.now().toString(),
+        expirationDate: new Date(),
       },
     ],
   });
+
+  console.log(items);
 }
 
 main()
