@@ -11,7 +11,7 @@ datasource db {
 }
 
 model Medicine {
-  id              String  @id @default(uuid())
+  id              String   @id @default(uuid())
   name            String
   priceWithTax    Int
   priceWithoutTax Int
@@ -19,6 +19,9 @@ model Medicine {
   location        String
   dci             String
   isTaxed         Boolean
+  min             Int
+  max             Int
+  expirationDate  DateTime
 }
 
 model MedicineFromProvider {
@@ -32,10 +35,12 @@ model MedicineFromProvider {
   isTaxed         Boolean
   Provider        Provider? @relation(fields: [providerId], references: [id])
   providerId      String?
+  expirationDate  DateTime
 }
 
 model Provider {
   id        String                 @id @default(uuid())
   name      String
   medicines MedicineFromProvider[]
+  min       Int // Minimal value of purchase
 }
