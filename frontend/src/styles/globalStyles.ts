@@ -1,4 +1,4 @@
-import { createGlobalStyle } from "styled-components"
+import { createGlobalStyle } from "styled-components";
 
 export const GlobalStyles = createGlobalStyle`
 body {
@@ -6,4 +6,8 @@ body {
   padding: unset;
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
-`
+
+* {
+  color: ${({ theme }) => theme.colors.text};
+}
+`;

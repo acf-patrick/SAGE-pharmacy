@@ -1,8 +1,16 @@
 import { createBrowserRouter } from "react-router-dom";
+import Stock from "./stock/Stock";
+import App from "./App";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <p>Hello World</p>,
+    element: <App />,
+    children: [
+      {
+        path: "stock",
+        element: <Stock />,
+      },
+    ],
   },
 ]);
