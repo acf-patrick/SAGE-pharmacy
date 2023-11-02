@@ -11,17 +11,17 @@ datasource db {
 }
 
 model Medicine {
-  id              String   @id @default(uuid())
-  name            String
-  priceWithTax    Int
-  priceWithoutTax Int
-  quantity        Int
-  location        String
-  dci             String
-  isTaxed         Boolean
-  min             Int
-  max             Int
-  expirationDate  DateTime
+  id             String   @id @default(uuid())
+  name           String
+  sellingPrice   Int
+  costPrice      Int
+  quantity       Int
+  location       String
+  dci            String
+  isTaxed        Boolean  @default(true)
+  min            Int
+  max            Int
+  expirationDate DateTime
 }
 
 model MedicineFromProvider {
@@ -32,7 +32,6 @@ model MedicineFromProvider {
   quantity        Int
   location        String
   dci             String
-  isTaxed         Boolean
   Provider        Provider? @relation(fields: [providerId], references: [id])
   providerId      String?
   expirationDate  DateTime
