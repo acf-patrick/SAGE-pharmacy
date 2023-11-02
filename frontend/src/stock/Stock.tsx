@@ -151,9 +151,18 @@ const Stock = () => {
               </thead>
               {medicines.map((medicine, i) => (
                 <tr key={medicine.name + i}>
-                  {Object.values(medicine).map((value, i) => (
-                    <td key={i}>{`${value}`}</td>
-                  ))}
+                  <td>{medicine.name}</td>
+                  <td>{medicine.costPrice}</td>
+                  <td>{medicine.sellingPrice}</td>
+                  <td>{medicine.quantity}</td>
+                  <td>{medicine.location}</td>
+                  <td>{medicine.dci}</td>
+                  <td>{medicine.isTaxed ? "Oui" : "Non"}</td>
+                  <td>{medicine.min}</td>
+                  <td>{medicine.max}</td>
+                  <td>
+                    {new Date(medicine.expirationDate).toLocaleDateString()}
+                  </td>
                 </tr>
               ))}
             </table>

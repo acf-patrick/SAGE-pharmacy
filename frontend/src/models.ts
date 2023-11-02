@@ -8,5 +8,5 @@ export type Medicine = {
   isTaxed: boolean;
   min: number;
   max: number;
-  expirationDate: Date;
+  expirationDate: string;
 };
