@@ -1,218 +1,175 @@
 import { lighten } from "polished";
-import React from "react";
 import { styled } from "styled-components";
+import Pagination from "../components/Pagination";
+import { useEffect, useState } from "react";
+import { api } from "../api";
+import { Medicine } from "../models";
+import { TbBasketCancel } from "react-icons/tb";
+
+type PageQueryResponse = {
+  data: Medicine[];
+  pageCount: number;
+  page: number;
+};
 
 const StyledStock = styled.div`
   padding: 0 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
 
-  .table-container {
-    max-height: 80vh;
-    overflow-y: scroll;
+  h2 {
+    font-size: 4rem;
+    font-weight: normal;
+    margin-top: 15rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 3rem;
+
+    svg {
+      font-size: 6rem;
+    }
   }
 
   .table {
     overflow-x: auto;
-    display: grid;
-    grid-template-columns: repeat(10, minmax(150px, 1fr));
-    align-items: center;
-    border: solid 1px black;
+    border-left: solid 1px ${({ theme }) => theme.colors.quaternary};
     border-radius: 5px 5px 0 0;
+    height: 80vh;
 
-    div {
-      padding: 1rem 0;
-      text-align: center;
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
     }
 
-    .header {
-      color: white;
-      font-weight: bold;
+    &::-webkit-scrollbar-track {
+      background: #80808017;
+    }
 
-      &:nth-of-type(odd) {
-        background-color: ${({ theme }) => theme.colors.tertiary};
+    &::-webkit-scrollbar-thumb {
+      background: ${({ theme }) => theme.colors.tertiary};
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: ${({ theme }) => lighten(0.2, theme.colors.tertiary)};
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+
+      tr {
+        &:nth-of-type(odd) {
+          background-color: ${({ theme }) =>
+            lighten(0.2, theme.colors.primary)};
+        }
+
+        &:nth-of-type(even) {
+          background-color: ${({ theme }) =>
+            lighten(0.6, theme.colors.secondary)};
+        }
       }
 
-      &:nth-of-type(even) {
-        background-color: ${({ theme }) => lighten(0.1, theme.colors.tertiary)};
+      td,
+      th {
+        text-align: center;
+        height: 3rem;
+        color: white;
+      }
+
+      td {
+        min-width: 10rem;
+        color: black;
+        border-right: solid 1px black;
+      }
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+
+      tr {
+        th {
+          padding: 5px 10px;
+
+          &:first-of-type {
+            border-radius: 5px 0 0 0;
+          }
+
+          &:last-of-type {
+            border-radius: 0 5px 0 0;
+          }
+
+          &:nth-of-type(odd) {
+            background-color: ${({ theme }) => theme.colors.tertiary};
+          }
+
+          &:nth-of-type(even) {
+            background-color: ${({ theme }) =>
+              lighten(0.1, theme.colors.tertiary)};
+          }
+        }
       }
     }
   }
 `;
 
-const data = [
-  {
-    name: "Paracetamol",
-    quantity: 2,
-    priceWidivoutTax: 450,
-    priceWidivTax: 500,
-    dci: "Antidouleur",
-    isTaxed: true,
-    location: "Tirroir-6",
-    min: 1,
-    max: 10,
-    expirationDate: new Date().toLocaleDateString(),
-  },
-  {
-    name: "Vitamine C",
-    quantity: 20,
-    priceWidivoutTax: 1000,
-    priceWidivTax: 1500,
-    dci: "Effervescent",
-    isTaxed: true,
-    location: "Tirroir-1",
-    min: 10,
-    max: 30,
-    expirationDate: new Date().toLocaleDateString(),
-  },
-  {
-    name: "Mediv",
-    quantity: 10,
-    priceWidivoutTax: 10000,
-    priceWidivTax: 12000,
-    dci: "Weed",
-    isTaxed: true,
-    location: "Tirroir-9",
-    min: 5,
-    max: 15,
-    expirationDate: new Date().toLocaleDateString(),
-  },
-  {
-    name: "Nivaquine",
-    quantity: 25,
-    priceWidivoutTax: 250,
-    priceWidivTax: 300,
-    dci: "Antidouleur",
-    isTaxed: true,
-    location: "Tirroir-2",
-    min: 15,
-    max: 30,
-    expirationDate: new Date().toLocaleDateString(),
-  },
-  {
-    name: "Paracetamol",
-    quantity: 2,
-    priceWidivoutTax: 450,
-    priceWidivTax: 500,
-    dci: "Antidouleur",
-    isTaxed: true,
-    location: "Tirroir-6",
-    min: 1,
-    max: 10,
-    expirationDate: new Date().toLocaleDateString(),
-  },
-  {
-    name: "Vitamine C",
-    quantity: 20,
-    priceWidivoutTax: 1000,
-    priceWidivTax: 1500,
-    dci: "Effervescent",
-    isTaxed: true,
-    location: "Tirroir-1",
-    min: 10,
-    max: 30,
-    expirationDate: new Date().toLocaleDateString(),
-  },
-  {
-    name: "Mediv",
-    quantity: 10,
-    priceWidivoutTax: 10000,
-    priceWidivTax: 12000,
-    dci: "Weed",
-    isTaxed: true,
-    location: "Tirroir-9",
-    min: 5,
-    max: 15,
-    expirationDate: new Date().toLocaleDateString(),
-  },
-  {
-    name: "Nivaquine",
-    quantity: 25,
-    priceWidivoutTax: 250,
-    priceWidivTax: 300,
-    dci: "Antidouleur",
-    isTaxed: true,
-    location: "Tirroir-2",
-    min: 15,
-    max: 30,
-    expirationDate: new Date().toLocaleDateString(),
-  },
-  {
-    name: "Paracetamol",
-    quantity: 2,
-    priceWidivoutTax: 450,
-    priceWidivTax: 500,
-    dci: "Antidouleur",
-    isTaxed: true,
-    location: "Tirroir-6",
-    min: 1,
-    max: 10,
-    expirationDate: new Date().toLocaleDateString(),
-  },
-  {
-    name: "Vitamine C",
-    quantity: 20,
-    priceWidivoutTax: 1000,
-    priceWidivTax: 1500,
-    dci: "Effervescent",
-    isTaxed: true,
-    location: "Tirroir-1",
-    min: 10,
-    max: 30,
-    expirationDate: new Date().toLocaleDateString(),
-  },
-  {
-    name: "Mediv",
-    quantity: 10,
-    priceWidivoutTax: 10000,
-    priceWidivTax: 12000,
-    dci: "Weed",
-    isTaxed: true,
-    location: "Tirroir-9",
-    min: 5,
-    max: 15,
-    expirationDate: new Date().toLocaleDateString(),
-  },
-  {
-    name: "Nivaquine",
-    quantity: 25,
-    priceWidivoutTax: 250,
-    priceWidivTax: 300,
-    dci: "Antidouleur",
-    isTaxed: true,
-    location: "Tirroir-2",
-    min: 15,
-    max: 30,
-    expirationDate: new Date().toLocaleDateString(),
-  },
-];
-
-const keyMap = {};
-
 const Stock = () => {
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pagesCount, setPagesCount] = useState(1);
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
+
+  useEffect(() => {
+    api.get(`/stock?page=${currentPage}`).then((response) => {
+      const res: PageQueryResponse = response.data;
+      setMedicines(res.data);
+      setPagesCount(res.pageCount);
+    });
+  }, [currentPage]);
+
   return (
     <StyledStock>
       <h1>Stock</h1>
-      <div className="table-container">
-        <div className="table">
-          <div className="header">Nom</div>
-          <div className="header">Prix d'achat</div>
-          <div className="header">Prix de vente</div>
-          <div className="header">Quantité</div>
-          <div className="header">Emplacement</div>
-          <div className="header">DCI</div>
-          <div className="header">Taxé</div>
-          <div className="header">Stock Min</div>
-          <div className="header">Stock Max</div>
-          <div className="header">Date d'éxpiration</div>
-
-          {data.map((medicine, i) => (
-            <React.Fragment key={i}>
-              {Object.values(medicine).map((value, i) => (
-                <div key={i}>{`${value}`}</div>
+      {medicines.length > 0 ? (
+        <>
+          <div className="table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Prix d'achat</th>
+                  <th>Prix de vente</th>
+                  <th>Quantité</th>
+                  <th>Emplacement</th>
+                  <th>DCI</th>
+                  <th>Taxé</th>
+                  <th>Stock Min</th>
+                  <th>Stock Max</th>
+                  <th>Date d'éxpiration</th>
+                </tr>
+              </thead>
+              {medicines.map((medicine, i) => (
+                <tr key={medicine.name + i}>
+                  {Object.values(medicine).map((value, i) => (
+                    <td key={i}>{`${value}`}</td>
+                  ))}
+                </tr>
               ))}
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
+            </table>
+          </div>
+          <Pagination
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            pagesCount={pagesCount}
+          />
+        </>
+      ) : (
+        <h2>
+          <span>Stock vide</span>
+          <TbBasketCancel />
+        </h2>
+      )}
     </StyledStock>
   );
 };

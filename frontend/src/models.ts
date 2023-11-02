@@ -1,7 +1,7 @@
 export type Medicine = {
   name: string;
-  priceWithTax: number;
-  priceWithoutTax: number;
+  sellingPrice: number;
+  costPrice: number;
   quantity: number;
   location: string;
   dci: string;
