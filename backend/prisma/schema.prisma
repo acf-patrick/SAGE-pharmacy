@@ -9,3 +9,33 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Medicine {
+  id              String  @id @default(uuid())
+  name            String
+  priceWithTax    Int
+  priceWithoutTax Int
+  quantity        Int
+  location        String
+  dci             String
+  isTaxed         Boolean
+}
+
+model MedicineFromProvider {
+  id              String    @id @default(uuid())
+  name            String
+  priceWithTax    Int
+  priceWithoutTax Int
+  quantity        Int
+  location        String
+  dci             String
+  isTaxed         Boolean
+  Provider        Provider? @relation(fields: [providerId], references: [id])
+  providerId      String?
+}
+
+model Provider {
+  id        String                 @id @default(uuid())
+  name      String
+  medicines MedicineFromProvider[]
+}
