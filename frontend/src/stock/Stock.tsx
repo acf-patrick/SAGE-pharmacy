@@ -1,10 +1,11 @@
 import { lighten } from "polished";
-import { styled } from "styled-components";
-import Pagination from "../components/Pagination";
 import { useEffect, useState } from "react";
-import { api } from "../api";
-import { Medicine } from "../models";
 import { TbBasketCancel } from "react-icons/tb";
+import { styled } from "styled-components";
+import { api } from "../api";
+import Pagination from "../components/Pagination";
+import { Medicine } from "../models";
+import { BiSolidDownArrow, BiSolidUpArrow } from "react-icons/bi";
 
 type PageQueryResponse = {
   data: Medicine[];
@@ -17,6 +18,7 @@ const StyledStock = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-around;
+  height: 100%;
 
   h2 {
     font-size: 4rem;
@@ -32,18 +34,24 @@ const StyledStock = styled.div`
     }
   }
 
+  .table-container {
+    height: 85%;
+  }
+
   .table {
     overflow-x: auto;
-    border-left: solid 1px ${({ theme }) => theme.colors.quaternary};
+    border: solid 1px ${({ theme }) => theme.colors.quaternary};
     border-radius: 5px 5px 0 0;
-    height: 80vh;
+
+    scrollbar-width: thin;
+    scrollbar-color: #80808017;
 
     &::-webkit-scrollbar {
       width: 8px;
       height: 8px;
     }
 
-    &::-webkit-scrollbar-track {
+    -ms-scr &::-webkit-scrollbar-track {
       background: #80808017;
     }
 
@@ -59,15 +67,37 @@ const StyledStock = styled.div`
       border-collapse: collapse;
       width: 100%;
 
+      input {
+        cursor: pointer;
+      }
+
       tr {
+        td {
+          min-width: 10rem;
+          color: black;
+          border-right: solid 1px black;
+          font-weight: 600;
+
+          &:first-of-type {
+            min-width: 1rem;
+          }
+
+          &:nth-of-type(2),
+          &:nth-of-type(3),
+          &:nth-of-type(4),
+          &:nth-of-type(8),
+          &:nth-of-type(9) {
+            padding-right: 15px;
+            text-align: end;
+          }
+        }
+
         &:nth-of-type(odd) {
-          background-color: ${({ theme }) =>
-            lighten(0.2, theme.colors.primary)};
+          background-color: #d7d4d494;
         }
 
         &:nth-of-type(even) {
-          background-color: ${({ theme }) =>
-            lighten(0.6, theme.colors.secondary)};
+          background-color: #c6c1c19c;
         }
       }
 
@@ -76,12 +106,6 @@ const StyledStock = styled.div`
         text-align: center;
         height: 3rem;
         color: white;
-      }
-
-      td {
-        min-width: 10rem;
-        color: black;
-        border-right: solid 1px black;
       }
     }
 
@@ -92,6 +116,29 @@ const StyledStock = styled.div`
       tr {
         th {
           padding: 5px 10px;
+          color: white;
+
+          .inner-th {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+
+            p {
+              color: white;
+            }
+
+            .arrows {
+              display: flex;
+              flex-direction: column-reverse;
+              gap: 0.25rem;
+
+              * {
+                color: white;
+                font-size: 0.6rem;
+                cursor: pointer;
+              }
+            }
+          }
 
           &:first-of-type {
             border-radius: 5px 0 0 0;
@@ -128,44 +175,139 @@ const Stock = () => {
     });
   }, [currentPage]);
 
+  const dateToLocaleFormat = (date: string) => {
+    let s = new Date(date).toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    let pos = s.indexOf(" ") + 1;
+    s = s.slice(0, pos) + s[pos].toUpperCase() + s.slice(pos + 1);
+    return s;
+  };
+
   return (
     <StyledStock>
       <h1>Stock</h1>
       {medicines.length > 0 ? (
         <>
-          <div className="table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Nom</th>
-                  <th>Prix d'achat</th>
-                  <th>Prix de vente</th>
-                  <th>Quantité</th>
-                  <th>Emplacement</th>
-                  <th>DCI</th>
-                  <th>Taxé</th>
-                  <th>Stock Min</th>
-                  <th>Stock Max</th>
-                  <th>Date d'éxpiration</th>
-                </tr>
-              </thead>
-              {medicines.map((medicine, i) => (
-                <tr key={medicine.name + i}>
-                  <td>{medicine.name}</td>
-                  <td>{medicine.costPrice}</td>
-                  <td>{medicine.sellingPrice}</td>
-                  <td>{medicine.quantity}</td>
-                  <td>{medicine.location}</td>
-                  <td>{medicine.dci}</td>
-                  <td>{medicine.isTaxed ? "Oui" : "Non"}</td>
-                  <td>{medicine.min}</td>
-                  <td>{medicine.max}</td>
-                  <td>
-                    {new Date(medicine.expirationDate).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </table>
+          <div className="table-container">
+            <div className="table">
+              <table>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>
+                      <div className="inner-th">
+                        <p>Nom</p>
+                        <div className="arrows">
+                          <BiSolidDownArrow />
+                          <BiSolidUpArrow />
+                        </div>
+                      </div>
+                    </th>
+                    <th>
+                      <div className="inner-th">
+                        <p>Prix d'achat</p>
+                        <div className="arrows">
+                          <BiSolidDownArrow />
+                          <BiSolidUpArrow />
+                        </div>
+                      </div>
+                    </th>
+                    <th>
+                      <div className="inner-th">
+                        <p>Prix d'achat</p>
+                        <div className="arrows">
+                          <BiSolidDownArrow />
+                          <BiSolidUpArrow />
+                        </div>
+                      </div>
+                    </th>
+                    <th>
+                      <div className="inner-th">
+                        <p>Quantitét</p>
+                        <div className="arrows">
+                          <BiSolidDownArrow />
+                          <BiSolidUpArrow />
+                        </div>
+                      </div>
+                    </th>
+                    <th>
+                      <div className="inner-th">
+                        <p>Emplacement</p>
+                        <div className="arrows">
+                          <BiSolidDownArrow />
+                          <BiSolidUpArrow />
+                        </div>
+                      </div>
+                    </th>
+                    <th>
+                      <div className="inner-th">
+                        <p>DCI</p>
+                        <div className="arrows">
+                          <BiSolidDownArrow />
+                          <BiSolidUpArrow />
+                        </div>
+                      </div>
+                    </th>
+                    <th>
+                      <div className="inner-th">
+                        <p>Taxé</p>
+                        <div className="arrows">
+                          <BiSolidDownArrow />
+                          <BiSolidUpArrow />
+                        </div>
+                      </div>
+                    </th>
+                    <th>
+                      <div className="inner-th">
+                        <p>Stock Min</p>
+                        <div className="arrows">
+                          <BiSolidDownArrow />
+                          <BiSolidUpArrow />
+                        </div>
+                      </div>
+                    </th>
+                    <th>
+                      <div className="inner-th">
+                        <p>Stock Max</p>
+                        <div className="arrows">
+                          <BiSolidDownArrow />
+                          <BiSolidUpArrow />
+                        </div>
+                      </div>
+                    </th>
+                    <th>
+                      <div className="inner-th">
+                        <p>Date d'éxpiration</p>
+                        <div className="arrows">
+                          <BiSolidDownArrow />
+                          <BiSolidUpArrow />
+                        </div>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                {medicines.map((medicine, i) => (
+                  <tr key={medicine.name + i}>
+                    <td>
+                      <input type="checkbox" name="" />
+                    </td>
+                    <td>{medicine.name}</td>
+                    <td>{medicine.costPrice.toFixed(1)}</td>
+                    <td>{medicine.sellingPrice.toFixed(1)}</td>
+                    <td>{medicine.quantity}</td>
+                    <td>{medicine.location}</td>
+                    <td>{medicine.dci}</td>
+                    <td>{medicine.isTaxed ? "Oui" : "Non"}</td>
+                    <td>{medicine.min}</td>
+                    <td>{medicine.max}</td>
+                    <td>{dateToLocaleFormat(medicine.expirationDate)}</td>
+                  </tr>
+                ))}
+              </table>
+            </div>
           </div>
           <Pagination
             currentPage={currentPage}

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { BsFillSkipEndFill, BsFillSkipStartFill } from "react-icons/bs";
 import { styled } from "styled-components";
 
@@ -13,6 +12,8 @@ const StyledPagination = styled.div`
   padding-top: 1rem;
   display: flex;
   gap: 0.5rem;
+  min-height: 80px;
+  max-height: 50px;
 
   button {
     cursor: pointer;
