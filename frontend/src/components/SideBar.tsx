@@ -2,7 +2,6 @@ import { styled } from "styled-components";
 import { paths } from "../paths";
 import { lighten } from "polished";
 import { Link } from "react-router-dom";
-import { AiTwotoneContainer } from "react-icons/ai";
 
 const StyledSideBar = styled.div`
   max-width: 280px;
@@ -28,7 +27,7 @@ const StyledSideBar = styled.div`
       flex-direction: column;
       padding: 0;
 
-      li {
+      a {
         cursor: pointer;
         font-size: 1.25rem;
         padding: 10px 1rem;
@@ -55,8 +54,10 @@ const SideBar = () => {
         <ul>
           {paths.map((path) => (
             <li key={path.name}>
-              {path.icon}
-              <Link to={path.to}>{path.name}</Link>
+              <Link to={path.to}>
+                {path.icon}
+                {path.name}
+              </Link>
             </li>
           ))}
         </ul>
