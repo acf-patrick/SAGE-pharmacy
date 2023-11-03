@@ -1,11 +1,29 @@
-import { useState } from "react";
 import { BsFillSkipEndFill, BsFillSkipStartFill } from "react-icons/bs";
 import { styled } from "styled-components";
 
-const StyledButton = styled.button`
+const StyledButton = styled.button<{ $current?: boolean }>`
   border: none;
   height: 2rem;
   width: 2rem;
+
+  cursor: pointer;
+  transition: background-color 250ms;
+
+  background-color: ${({ theme, $current }) =>
+    $current ? theme.colors.tertiary : "unset"};
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.primary};
+
+    &:first-of-type,
+    &:last-of-type {
+      background-color: ${({ theme }) => theme.colors.secondary};
+    }
+
+    &:disabled {
+      background-color: unset;
+    }
+  }
 `;
 
 const StyledPagination = styled.div`
@@ -13,24 +31,6 @@ const StyledPagination = styled.div`
   padding-top: 1rem;
   display: flex;
   gap: 0.5rem;
-
-  button {
-    cursor: pointer;
-    transition: background-color 250ms;
-
-    &:hover {
-      background-color: ${({ theme }) => theme.colors.primary};
-
-      &:first-of-type,
-      &:last-of-type {
-        background-color: ${({ theme }) => theme.colors.secondary};
-      }
-
-      &:disabled {
-        background-color: unset;
-      }
-    }
-  }
 `;
 
 const Pagination = ({
@@ -51,20 +51,20 @@ const Pagination = ({
 
   return (
     <StyledPagination>
-      <StyledButton>
+      <StyledButton onClick={() => setCurrentPage(0)}>
         <BsFillSkipStartFill />
       </StyledButton>
       <StyledButton disabled={currentPage == 0} onClick={goToPreviousPage}>
         {currentPage == 0 ? "" : currentPage}
       </StyledButton>
-      <StyledButton>{currentPage + 1}</StyledButton>
+      <StyledButton $current>{currentPage + 1}</StyledButton>
       <StyledButton
         disabled={currentPage == pagesCount - 1}
         onClick={goToNextPage}
       >
         {currentPage == pagesCount - 1 ? "" : currentPage + 2}
       </StyledButton>
-      <StyledButton>
+      <StyledButton onClick={() => setCurrentPage(pagesCount - 1)}>
         <BsFillSkipEndFill />
       </StyledButton>
     </StyledPagination>

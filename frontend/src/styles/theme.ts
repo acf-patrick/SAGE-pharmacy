@@ -5,5 +5,6 @@ export const theme = {
     tertiary: "#42855B",
     quaternary: "#483838",
     text: "black",
+    selectedRow: "#808080ad",
   },
 };
