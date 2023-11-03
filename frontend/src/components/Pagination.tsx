@@ -51,7 +51,10 @@ const Pagination = ({
 
   return (
     <StyledPagination>
-      <StyledButton onClick={() => setCurrentPage(0)}>
+      <StyledButton
+        title="Revenir à la première page"
+        onClick={() => setCurrentPage(0)}
+      >
         <BsFillSkipStartFill />
       </StyledButton>
       <StyledButton disabled={currentPage == 0} onClick={goToPreviousPage}>
@@ -64,7 +67,10 @@ const Pagination = ({
       >
         {currentPage == pagesCount - 1 ? "" : currentPage + 2}
       </StyledButton>
-      <StyledButton onClick={() => setCurrentPage(pagesCount - 1)}>
+      <StyledButton
+        title="Aller à la dernière page"
+        onClick={() => setCurrentPage(pagesCount - 1)}
+      >
         <BsFillSkipEndFill />
       </StyledButton>
     </StyledPagination>

@@ -2,7 +2,7 @@ import styled, { keyframes } from "styled-components";
 import { lighten } from "polished";
 import { Medicine } from "../models";
 import { BiSolidDownArrow, BiSolidUpArrow } from "react-icons/bi";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 
 const appear = keyframes`
     from {
@@ -114,13 +114,14 @@ const StyledTable = styled.div`
 
     tr {
       th {
-        padding: 5px 10px;
+        padding: 5px 15px;
         color: white;
+        cursor: pointer;
 
         .inner-th {
           display: flex;
-          justify-content: space-around;
           align-items: center;
+          justify-content: space-between;
 
           p {
             color: white;
@@ -159,38 +160,61 @@ const StyledTable = styled.div`
   }
 `;
 
+type Field =
+  | "name"
+  | "sellingPrice"
+  | "costPrice"
+  | "quantity"
+  | "location"
+  | "dci"
+  | "isTaxed"
+  | "min"
+  | "max"
+  | "expirationDate";
+
 export default function Table({ medicines }: { medicines: Medicine[] }) {
-  const [sortBy, setSortBy] = useState<
-    | "name"
-    | "sellingPrice"
-    | "costPrice"
-    | "quantity"
-    | "location"
-    | "dci"
-    | "isTaxed"
-    | "min"
-    | "max"
-    | "expirationDate"
-  >("name");
+  const [sortBy, setSortBy] = useState<Field>("name");
+  const [ascending, setAscending] = useState(true);
 
-  const [ascending, setAscending] = useState(false);
+  const sortedMedicines = useMemo(
+    () =>
+      medicines.sort((m1: Medicine, m2: Medicine) => {
+        if (ascending) {
+          return m1[sortBy] < m2[sortBy] ? -1 : 1;
+        } else {
+          return m1[sortBy] > m2[sortBy] ? -1 : 1;
+        }
+      }),
+    [medicines, sortBy, ascending]
+  );
 
-  const headers = [
-    "Nom",
-    "Prix d'achat",
-    "Prix de vente",
-    "Quantité",
-    "Emplacement",
-    "DCI",
-    "Taxé",
-    "Stock Min",
-    "Stock Max",
-    "Expiration",
-  ];
+  const headersMap = new Map<string, Field>([
+    ["Nom", "name"],
+    ["Prix d'achat", "sellingPrice"],
+    ["Pric de vente", "costPrice"],
+    ["Quantité", "quantity"],
+    ["Emplacement", "location"],
+    ["DCI", "dci"],
+    ["Taxé", "isTaxed"],
+    ["Stock Min", "min"],
+    ["Stock Max", "max"],
+    ["Expiration", "expirationDate"],
+  ]);
 
   const highlightItem = (e: React.ChangeEvent<HTMLInputElement>) => {
     const row = e.currentTarget.parentElement!.parentElement!;
     row.classList.toggle("selected");
+  };
+
+  const dateToLocaleFormat = (date: string) => {
+    let s = new Date(date).toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    let pos = s.indexOf(" ") + 1;
+    s = s.slice(0, pos) + s[pos].toUpperCase() + s.slice(pos + 1);
+    return s;
   };
 
   return (
@@ -198,23 +222,28 @@ export default function Table({ medicines }: { medicines: Medicine[] }) {
       <table>
         <thead>
           <tr>
-            {headers.map((header) => (
-              <th key={header}>
+            {[...headersMap.keys()].map((header) => (
+              <th
+                key={header}
+                onClick={() => {
+                  setSortBy(headersMap.get(header)!);
+                  setAscending(!ascending);
+                }}
+              >
                 <div className="inner-th">
                   <p>{header}</p>
-                  <div
-                    className="arrows"
-                    onClick={() => setAscending(!ascending)}
-                  >
-                    {ascending ? <BiSolidDownArrow /> : <BiSolidUpArrow />}
-                  </div>
+                  {headersMap.get(header) == sortBy ? (
+                    <div className="arrows">
+                      {ascending ? <BiSolidDownArrow /> : <BiSolidUpArrow />}
+                    </div>
+                  ) : null}
                 </div>
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {medicines.map((medicine, i) => (
+          {sortedMedicines.map((medicine, i) => (
             <tr key={medicine.name + i}>
               <td>
                 <input type="checkbox" name="" onChange={highlightItem} />
@@ -228,7 +257,7 @@ export default function Table({ medicines }: { medicines: Medicine[] }) {
               <td>{medicine.isTaxed ? "Oui" : "Non"}</td>
               <td>{medicine.min}</td>
               <td>{medicine.max}</td>
-              <td>{new Date(medicine.expirationDate).toLocaleDateString()}</td>
+              <td>{dateToLocaleFormat(medicine.expirationDate)}</td>
             </tr>
           ))}
         </tbody>
