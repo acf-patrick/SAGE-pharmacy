@@ -6,5 +6,10 @@ export const theme = {
     quaternary: "#483838",
     text: "black",
     selectedRow: "#808080ad",
+    modalBackground: "#ece7e7",
+  },
+  size: {
+    modalWidth: "400px",
+    modalHeight: "250px",
   },
 };

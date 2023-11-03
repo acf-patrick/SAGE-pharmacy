@@ -1,5 +1,5 @@
 import { lighten } from "polished";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BiSolidDownArrow, BiSolidUpArrow } from "react-icons/bi";
 import styled, { keyframes } from "styled-components";
 import { Medicine } from "../models";
@@ -200,7 +200,13 @@ type Field =
   | "max"
   | "expirationDate";
 
-export default function Table({ medicines }: { medicines: Medicine[] }) {
+export default function Table({
+  medicines,
+  onEdit,
+}: {
+  medicines: Medicine[];
+  onEdit: () => void;
+}) {
   const [sortBy, setSortBy] = useState<Field>("name");
   const [ascending, setAscending] = useState(true);
 
@@ -253,6 +259,20 @@ export default function Table({ medicines }: { medicines: Medicine[] }) {
     return s;
   };
 
+  const setTax = (e: React.ChangeEvent<HTMLTableCellElement>) => {
+    console.error(e.currentTarget.innerText);
+  };
+
+  useEffect(() => {
+    const editableCells = document.querySelectorAll("table .editable");
+    console.log(editableCells);
+    for (let cell of editableCells) {
+      cell.addEventListener("input", (_e) => {
+        onEdit();
+      });
+    }
+  }, []);
+
   return (
     <StyledTable>
       <table>
@@ -290,7 +310,9 @@ export default function Table({ medicines }: { medicines: Medicine[] }) {
               <td className="editable">{medicine.quantity}</td>
               <td className="editable">{medicine.location}</td>
               <td className="editable">{medicine.dci}</td>
-              <td className="editable">{medicine.isTaxed ? "Oui" : "Non"}</td>
+              <td className="editable boolean" onChange={setTax}>
+                <input type="checkbox" disabled checked={medicine.isTaxed} />
+              </td>
               <td className="editable">{medicine.min}</td>
               <td className="editable">{medicine.max}</td>
               <td className="editable">

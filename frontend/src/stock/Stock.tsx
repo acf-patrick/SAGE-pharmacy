@@ -1,9 +1,10 @@
-import { keyframes, styled } from "styled-components";
-import Pagination from "../components/Pagination";
+import { darken } from "polished";
 import { useEffect, useState } from "react";
-import { api } from "../api";
-import { Medicine } from "../models";
 import { TbBasketCancel } from "react-icons/tb";
+import { keyframes, styled } from "styled-components";
+import { api } from "../api";
+import Pagination from "../components/Pagination";
+import { Medicine } from "../models";
 import Table from "./Table";
 
 type PageQueryResponse = {
@@ -28,8 +29,31 @@ const StyledStock = styled.div`
   flex-direction: column;
   justify-content: space-around;
 
-  h1 {
-    animation: 500ms ease-out both ${slide};
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    * {
+      animation: 500ms ease-out both ${slide};
+    }
+
+    button {
+      border: none;
+      height: 3rem;
+      padding: 0.5rem 1rem;
+      background-color: ${({ theme }) => theme.colors.primary};
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 250ms;
+      color: black;
+      font-weight: bold;
+
+      &:hover {
+        background-color: ${({ theme }) => darken(0.25, theme.colors.primary)};
+        color: white;
+      }
+    }
   }
 
   h2 {
@@ -51,6 +75,8 @@ const Stock = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [pagesCount, setPagesCount] = useState(1);
   const [medicines, setMedicines] = useState<Medicine[]>([]);
+  const [medicinesToUpdate, setMedicinesToUpdate] = useState<Medicine[]>([]);
+  const [tableModified, setTableModified] = useState(false);
 
   useEffect(() => {
     api.get(`/stock?page=${currentPage}`).then((response) => {
@@ -62,12 +88,17 @@ const Stock = () => {
 
   return (
     <StyledStock>
-      <h1>Stock</h1>
+      <div className="header">
+        <h1>Stock</h1>
+        <button>Sauvegarder</button>
+      </div>
       {medicines.length > 0 ? (
         <>
-          <Table medicines={medicines} />
+          <Table medicines={medicines} onEdit={() => setTableModified(true)} />
           {pagesCount > 1 && (
             <Pagination
+              onClose={() => setTableModified(false)}
+              tableModified={tableModified}
               currentPage={currentPage}
               setCurrentPage={setCurrentPage}
               pagesCount={pagesCount}
