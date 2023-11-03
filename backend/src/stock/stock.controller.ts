@@ -47,8 +47,7 @@ export class StockController {
     @Param('id') id: string,
     @Body() updateMedicineDto: UpdateMedicineDto,
   ) {
-    const a = await this.stockService.updateMedicine(id, updateMedicineDto);
-    console.log(a)
+    await this.stockService.updateMedicine(id, updateMedicineDto);
     return `Medicine ${id} updated`;
   }
 }

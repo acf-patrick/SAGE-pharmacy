@@ -19,7 +19,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  // app.useGlobalFilters(new PrismaClientExceptionFilter());
+  app.useGlobalFilters(new PrismaClientExceptionFilter());
 
   await app.listen(3000);
 }
