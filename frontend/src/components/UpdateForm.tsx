@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { keyframes, styled } from "styled-components";
 import { api } from "../api";
-import { Medicine } from "../models";
+import { Medicine, MedicineDto } from "../models";
 
 const appear = keyframes`
     from {
@@ -131,7 +131,7 @@ const UpdateForm = ({
 
     const form = e.currentTarget as HTMLFormElement;
     const data = new FormData(form);
-    const medicineToUpdate: Medicine = {
+    const medicineToUpdate: MedicineDto = {
       name: data.get("name")!.toString(),
       costPrice: parseFloat(data.get("cost-price")!.toString()),
       sellingPrice: parseFloat(data.get("selling-price")!.toString()),
@@ -142,12 +142,11 @@ const UpdateForm = ({
       max: parseFloat(data.get("max")!.toString()),
       quantity: parseFloat(data.get("quantity")!.toString()),
       expirationDate: selectedRows[currentIndex].expirationDate,
-      id: selectedRows[currentIndex].id,
     };
 
     console.log(medicineToUpdate);
 
-    api.patch("/stock", {
+    api.patch("/stock/" + selectedRows[currentIndex].id, {
       data: medicineToUpdate,
     });
 

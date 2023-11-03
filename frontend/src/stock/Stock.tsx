@@ -133,6 +133,11 @@ const Stock = () => {
     setMedicines(filteredMedicines);
   };
 
+  const updateRows = () => {
+    if (selectedRows.length > 0) setUpdateSelectedRows(true);
+    else console.error("No row selected!");
+  };
+
   useEffect(() => {
     fetchMedicines();
   }, [currentPage]);
@@ -157,9 +162,7 @@ const Stock = () => {
               />
               <AiOutlineSearch title="Rechercher" onClick={search} />
             </div>
-            <button onClick={() => setUpdateSelectedRows(true)}>
-              Modifier
-            </button>
+            <button onClick={updateRows}>Modifier</button>
             <button>Supprimer</button>
           </div>
         </div>
