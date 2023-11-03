@@ -16,8 +16,8 @@ const appear = keyframes`
 
 const StyledTable = styled.div`
   overflow-x: auto;
-  border-left: solid 1px ${({ theme }) => theme.colors.quaternary};
-  border-radius: 5px 5px 0 0;
+  border: solid 1px ${({ theme }) => theme.colors.quaternary};
+  border-radius: 5px;
   padding-bottom: 0.25rem;
   max-height: 80vh;
   animation: 750ms 500ms both ${appear};
@@ -72,7 +72,10 @@ const StyledTable = styled.div`
 
     td {
       min-width: 10rem;
-      border-right: solid 1px black;
+
+      &:not(:last-of-type) {
+        border-right: solid 1px black;
+      }
 
       input[type="checkbox"] {
         cursor: pointer;

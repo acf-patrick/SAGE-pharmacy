@@ -43,7 +43,8 @@ const StyledModal = styled.div`
           font-weight: bolder;
         }
 
-        input[type="text"] {
+        input[type="text"],
+        input[type="number"] {
           padding: 0.75rem;
         }
       }
@@ -62,7 +63,7 @@ const StyledModal = styled.div`
       user-select: none;
       width: 100%;
       display: flex;
-      justify-content: flex-end;
+      justify-content: center;
       gap: 2rem;
       position: sticky;
       bottom: 0;
@@ -116,44 +117,30 @@ const UpdateForm = ({
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const [formData, setFormData] = useState<Medicine>({
-    name: selectedRows[currentIndex].name,
-    costPrice: selectedRows[currentIndex].costPrice,
-    sellingPrice: selectedRows[currentIndex].sellingPrice,
-    dci: selectedRows[currentIndex].dci,
-    expirationDate: selectedRows[currentIndex].expirationDate,
-    isTaxed: selectedRows[currentIndex].isTaxed,
-    location: selectedRows[currentIndex].location,
-    max: selectedRows[currentIndex].max,
-    min: selectedRows[currentIndex].min,
-    quantity: selectedRows[currentIndex].quantity,
-    id: selectedRows[currentIndex].id,
-  });
-
   const updateMedicine = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // const form = e.currentTarget as HTMLFormElement;
-    // const data = new FormData(form);
-    // const medicineToUpdate: Medicine = {
-    //   name: data.get("name")!.toString(),
-    //   costPrice: parseFloat(data.get("cost-price")!.toString()),
-    //   sellingPrice: parseFloat(data.get("selling-price")!.toString()),
-    //   dci: data.get("dci")!.toString(),
-    //   isTaxed: data.get("tax") ? true : false,
-    //   location: data.get("location")!.toString(),
-    //   min: parseFloat(data.get("min")!.toString()),
-    //   max: parseFloat(data.get("max")!.toString()),
-    //   quantity: parseFloat(data.get("quantity")!.toString()),
-    //   expirationDate: selectedRows[currentIndex].expirationDate,
-    //   id: selectedRows[currentIndex].id,
-    // };
+    const form = e.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
+    const medicineToUpdate: Medicine = {
+      name: data.get("name")!.toString(),
+      costPrice: parseFloat(data.get("cost-price")!.toString()),
+      sellingPrice: parseFloat(data.get("selling-price")!.toString()),
+      dci: data.get("dci")!.toString(),
+      isTaxed: data.get("tax") ? true : false,
+      location: data.get("location")!.toString(),
+      min: parseFloat(data.get("min")!.toString()),
+      max: parseFloat(data.get("max")!.toString()),
+      quantity: parseFloat(data.get("quantity")!.toString()),
+      expirationDate: selectedRows[currentIndex].expirationDate,
+      id: selectedRows[currentIndex].id,
+    };
 
-    console.log(formData);
+    console.log(medicineToUpdate);
 
-    // api.patch("/stock", {
-    //   data: formData,
-    // });
+    api.patch("/stock", {
+      data: medicineToUpdate,
+    });
 
     if (currentIndex < selectedRows.length - 1)
       setCurrentIndex((currentIndex) => currentIndex + 1);
@@ -172,9 +159,8 @@ const UpdateForm = ({
               name="name"
               type="text"
               defaultValue={selectedRows[currentIndex].name}
-              onChange={(e) => {
-                setFormData({ ...formData, name: e.currentTarget.value });
-              }}
+              key={selectedRows[currentIndex].id}
+              onChange={() => {}}
             />
           </div>
           <div>
@@ -182,13 +168,14 @@ const UpdateForm = ({
             <input
               id="cost-price"
               name="cost-price"
-              type="text"
+              type="number"
+              min={0}
               defaultValue={selectedRows[currentIndex].costPrice}
-              onChange={(e) => {
-                setFormData({
-                  ...formData,
-                  costPrice: parseFloat(e.currentTarget.value),
-                });
+              key={selectedRows[currentIndex].id}
+              onChange={() => {}}
+              onMouseLeave={(e) => {
+                if (parseFloat(e.currentTarget.value) < 0)
+                  e.currentTarget.value = "0";
               }}
             />
           </div>
@@ -197,13 +184,14 @@ const UpdateForm = ({
             <input
               id="selling-price"
               name="selling-price"
-              type="text"
+              type="number"
+              min={0}
               defaultValue={selectedRows[currentIndex].sellingPrice}
-              onChange={(e) => {
-                setFormData({
-                  ...formData,
-                  sellingPrice: parseFloat(e.currentTarget.value),
-                });
+              key={selectedRows[currentIndex].id}
+              onChange={() => {}}
+              onMouseLeave={(e) => {
+                if (parseFloat(e.currentTarget.value) < 0)
+                  e.currentTarget.value = "0";
               }}
             />
           </div>
@@ -212,13 +200,14 @@ const UpdateForm = ({
             <input
               id="quantity"
               name="quantity"
-              type="text"
+              type="number"
+              min={0}
               defaultValue={selectedRows[currentIndex].quantity}
-              onChange={(e) => {
-                setFormData({
-                  ...formData,
-                  quantity: parseInt(e.currentTarget.value),
-                });
+              key={selectedRows[currentIndex].id}
+              onChange={() => {}}
+              onMouseLeave={(e) => {
+                if (parseFloat(e.currentTarget.value) < 0)
+                  e.currentTarget.value = "0";
               }}
             />
           </div>
@@ -229,9 +218,8 @@ const UpdateForm = ({
               name="location"
               type="text"
               defaultValue={selectedRows[currentIndex].location}
-              onChange={(e) => {
-                setFormData({ ...formData, location: e.currentTarget.value });
-              }}
+              key={selectedRows[currentIndex].id}
+              onChange={() => {}}
             />
           </div>
           <div>
@@ -241,9 +229,8 @@ const UpdateForm = ({
               name="dci"
               type="text"
               defaultValue={selectedRows[currentIndex].dci}
-              onChange={(e) => {
-                setFormData({ ...formData, dci: e.currentTarget.value });
-              }}
+              key={selectedRows[currentIndex].id}
+              onChange={() => {}}
             />
           </div>
           <div className="tax">
@@ -253,9 +240,8 @@ const UpdateForm = ({
               name="tax"
               type="checkbox"
               defaultChecked={selectedRows[currentIndex].isTaxed}
-              onChange={(e) => {
-                setFormData({ ...formData, isTaxed: e.currentTarget.checked });
-              }}
+              key={selectedRows[currentIndex].id}
+              onChange={() => {}}
             />
             <span>(Taxé si coché)</span>
           </div>
@@ -264,13 +250,14 @@ const UpdateForm = ({
             <input
               id="min"
               name="min"
-              type="text"
+              type="number"
+              min={0}
               defaultValue={selectedRows[currentIndex].min}
-              onChange={(e) => {
-                setFormData({
-                  ...formData,
-                  min: parseInt(e.currentTarget.value),
-                });
+              key={selectedRows[currentIndex].id}
+              onChange={() => {}}
+              onMouseLeave={(e) => {
+                if (parseFloat(e.currentTarget.value) < 0)
+                  e.currentTarget.value = "0";
               }}
             />
           </div>
@@ -279,13 +266,13 @@ const UpdateForm = ({
             <input
               id="max"
               name="max"
-              type="text"
+              type="number"
               defaultValue={selectedRows[currentIndex].max}
-              onChange={(e) => {
-                setFormData({
-                  ...formData,
-                  max: parseInt(e.currentTarget.value),
-                });
+              key={selectedRows[currentIndex].id}
+              onChange={() => {}}
+              onMouseLeave={(e) => {
+                if (parseFloat(e.currentTarget.value) < 0)
+                  e.currentTarget.value = "0";
               }}
             />
           </div>
