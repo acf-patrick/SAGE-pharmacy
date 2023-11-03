@@ -141,14 +141,15 @@ const UpdateForm = ({
       min: parseFloat(data.get("min")!.toString()),
       max: parseFloat(data.get("max")!.toString()),
       quantity: parseFloat(data.get("quantity")!.toString()),
-      expirationDate: selectedRows[currentIndex].expirationDate,
     };
 
     console.log(medicineToUpdate);
 
-    api.patch("/stock/" + selectedRows[currentIndex].id, {
-      data: medicineToUpdate,
-    });
+    api
+      .patch("/stock/" + selectedRows[currentIndex].id, {
+        ...medicineToUpdate,
+      })
+      .then(() => onClose());
 
     if (currentIndex < selectedRows.length - 1)
       setCurrentIndex((currentIndex) => currentIndex + 1);
