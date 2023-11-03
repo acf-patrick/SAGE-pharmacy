@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
-import Stock from "./stock/Stock";
 import App from "./App";
+import Stock from "./stock/Stock";
 
 export const router = createBrowserRouter([
   {

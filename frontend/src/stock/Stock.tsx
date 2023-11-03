@@ -1,9 +1,10 @@
-import { darken } from "polished";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { TbBasketCancel } from "react-icons/tb";
 import { keyframes, styled } from "styled-components";
 import { api } from "../api";
 import Pagination from "../components/Pagination";
+import UpdateForm from "../components/UpdateForm";
 import { Medicine } from "../models";
 import Table from "./Table";
 
@@ -38,20 +39,35 @@ const StyledStock = styled.div`
       animation: 500ms ease-out both ${slide};
     }
 
-    button {
-      border: none;
-      height: 3rem;
-      padding: 0.5rem 1rem;
-      background-color: ${({ theme }) => theme.colors.primary};
-      cursor: pointer;
-      border-radius: 5px;
-      transition: background-color 250ms;
-      color: black;
-      font-weight: bold;
+    .buttons {
+      display: flex;
+      gap: 1rem;
 
-      &:hover {
-        background-color: ${({ theme }) => darken(0.25, theme.colors.primary)};
+      button {
+        border: none;
+        height: 2.5rem;
+        padding: 0.5rem 1rem;
+
+        cursor: pointer;
+        border-radius: 5px;
         color: white;
+        transition: background-color 250ms;
+        font-weight: bold;
+
+        &:first-of-type {
+          background-color: orange;
+
+          &:hover {
+            background-color: #ff7700;
+          }
+        }
+
+        &:last-of-type {
+          background-color: #ff0000;
+          &:hover {
+            background-color: #d32f2f;
+          }
+        }
       }
     }
   }
@@ -75,8 +91,8 @@ const Stock = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [pagesCount, setPagesCount] = useState(1);
   const [medicines, setMedicines] = useState<Medicine[]>([]);
-  const [medicinesToUpdate, setMedicinesToUpdate] = useState<Medicine[]>([]);
-  const [tableModified, setTableModified] = useState(false);
+  const [selectedRows, setSelectedRows] = useState<Medicine[]>([]);
+  const [updateSelectedRows, setUpdateSelectedRows] = useState(false);
 
   useEffect(() => {
     api.get(`/stock?page=${currentPage}`).then((response) => {
@@ -86,32 +102,50 @@ const Stock = () => {
     });
   }, [currentPage]);
 
+  const updateSelectedRowsList = (medicine: Medicine) => {
+    setSelectedRows([...selectedRows, medicine]);
+  };
+
   return (
-    <StyledStock>
-      <div className="header">
-        <h1>Stock</h1>
-        <button>Sauvegarder</button>
-      </div>
-      {medicines.length > 0 ? (
-        <>
-          <Table medicines={medicines} onEdit={() => setTableModified(true)} />
-          {pagesCount > 1 && (
-            <Pagination
-              onClose={() => setTableModified(false)}
-              tableModified={tableModified}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              pagesCount={pagesCount}
-            />
-          )}
-        </>
-      ) : (
-        <h2>
-          <span>Stock vide</span>
-          <TbBasketCancel />
-        </h2>
-      )}
-    </StyledStock>
+    <>
+      <StyledStock>
+        <div className="header">
+          <h1>Stock</h1>
+          <div className="buttons">
+            <button onClick={() => setUpdateSelectedRows(true)}>
+              Modifier
+            </button>
+            <button>Supprimer</button>
+          </div>
+        </div>
+        {medicines.length > 0 ? (
+          <>
+            <Table medicines={medicines} onRowSelect={updateSelectedRowsList} />
+            {pagesCount > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                pagesCount={pagesCount}
+              />
+            )}
+          </>
+        ) : (
+          <h2>
+            <span>Stock vide</span>
+            <TbBasketCancel />
+          </h2>
+        )}
+      </StyledStock>
+      {updateSelectedRows
+        ? createPortal(
+            <UpdateForm
+              selectedRows={selectedRows}
+              onClose={() => setUpdateSelectedRows(false)}
+            />,
+            document.querySelector("#portal") as HTMLElement
+          )
+        : null}
+    </>
   );
 };
 

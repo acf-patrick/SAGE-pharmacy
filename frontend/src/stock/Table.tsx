@@ -1,5 +1,5 @@
 import { lighten } from "polished";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { BiSolidDownArrow, BiSolidUpArrow } from "react-icons/bi";
 import styled, { keyframes } from "styled-components";
 import { Medicine } from "../models";
@@ -34,23 +34,6 @@ const StyledTable = styled.div`
     svg {
       font-size: 6rem;
     }
-  }
-
-  &::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #80808017;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: ${({ theme }) => theme.colors.tertiary};
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: ${({ theme }) => lighten(0.2, theme.colors.tertiary)};
   }
 
   table {
@@ -202,10 +185,10 @@ type Field =
 
 export default function Table({
   medicines,
-  onEdit,
+  onRowSelect,
 }: {
   medicines: Medicine[];
-  onEdit: () => void;
+  onRowSelect: (medicine: Medicine) => void;
 }) {
   const [sortBy, setSortBy] = useState<Field>("name");
   const [ascending, setAscending] = useState(true);
@@ -235,17 +218,13 @@ export default function Table({
     ["Expiration", "expirationDate"],
   ]);
 
-  const highlightItem = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const highlightItem = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    medicine: Medicine
+  ) => {
     const row = e.currentTarget.parentElement!.parentElement!;
-
-    const selected = row.classList.toggle("selected");
-
-    const editables = row.querySelectorAll(".editable");
-
-    for (let editable of editables) {
-      const el = editable as HTMLElement;
-      el.contentEditable = selected ? "true" : "false";
-    }
+    row.classList.toggle("selected");
+    onRowSelect(medicine);
   };
 
   const dateToLocaleFormat = (date: string) => {
@@ -258,20 +237,6 @@ export default function Table({
     s = s.slice(0, pos) + s[pos].toUpperCase() + s.slice(pos + 1);
     return s;
   };
-
-  const setTax = (e: React.ChangeEvent<HTMLTableCellElement>) => {
-    console.error(e.currentTarget.innerText);
-  };
-
-  useEffect(() => {
-    const editableCells = document.querySelectorAll("table .editable");
-    console.log(editableCells);
-    for (let cell of editableCells) {
-      cell.addEventListener("input", (_e) => {
-        onEdit();
-      });
-    }
-  }, []);
 
   return (
     <StyledTable>
@@ -302,22 +267,24 @@ export default function Table({
           {sortedMedicines.map((medicine, i) => (
             <tr key={medicine.name + i}>
               <td>
-                <input type="checkbox" name="" onChange={highlightItem} />
-                <div className="editable">{medicine.name}</div>
+                <input
+                  type="checkbox"
+                  name=""
+                  onChange={(e) => highlightItem(e, medicine)}
+                />
+                <div>{medicine.name}</div>
               </td>
-              <td className="editable">{medicine.costPrice}</td>
-              <td className="editable">{medicine.sellingPrice}</td>
-              <td className="editable">{medicine.quantity}</td>
-              <td className="editable">{medicine.location}</td>
-              <td className="editable">{medicine.dci}</td>
-              <td className="editable boolean" onChange={setTax}>
-                <input type="checkbox" disabled checked={medicine.isTaxed} />
+              <td>{medicine.costPrice}</td>
+              <td>{medicine.sellingPrice}</td>
+              <td>{medicine.quantity}</td>
+              <td>{medicine.location}</td>
+              <td>{medicine.dci}</td>
+              <td className="editable boolean">
+                {medicine.isTaxed ? "Oui" : "Non"}
               </td>
-              <td className="editable">{medicine.min}</td>
-              <td className="editable">{medicine.max}</td>
-              <td className="editable">
-                {dateToLocaleFormat(medicine.expirationDate)}
-              </td>
+              <td>{medicine.min}</td>
+              <td>{medicine.max}</td>
+              <td>{dateToLocaleFormat(medicine.expirationDate)}</td>
             </tr>
           ))}
         </tbody>

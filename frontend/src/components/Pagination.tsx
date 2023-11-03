@@ -1,8 +1,5 @@
-import { useState } from "react";
-import { createPortal } from "react-dom";
 import { BsFillSkipEndFill, BsFillSkipStartFill } from "react-icons/bs";
 import { styled } from "styled-components";
-import ConfirmationDialog from "./ConfirmationDialog";
 
 const StyledButton = styled.button<{ $current?: boolean }>`
   border: none;
@@ -44,45 +41,16 @@ const Pagination = ({
   currentPage,
   setCurrentPage,
   pagesCount,
-  tableModified,
-  onClose,
 }: {
   currentPage: number;
   setCurrentPage: (n: number) => void;
   pagesCount: number;
-  tableModified: boolean;
-  onClose: () => void;
 }) => {
-  const [showModal, setShowModal] = useState(false);
-  const [destination, setDestination] = useState(0);
-
   const goToNextPage = () => {
-    if (!tableModified) setCurrentPage(currentPage + 1);
-    else {
-      setDestination(currentPage + 1);
-      setShowModal(true);
-    }
+    setCurrentPage(currentPage + 1);
   };
   const goToPreviousPage = () => {
-    if (!tableModified) setCurrentPage(currentPage - 1);
-    else {
-      setDestination(currentPage - 1);
-      setShowModal(true);
-    }
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setCurrentPage(destination);
-    setDestination(0);
-    onClose();
-  };
-
-  const saveAndSwitchPage = () => {
-    setShowModal(false);
-    setCurrentPage(destination);
-    setDestination(0);
-    onClose();
+    setCurrentPage(currentPage - 1);
   };
 
   return (
@@ -90,13 +58,7 @@ const Pagination = ({
       <StyledPagination>
         <StyledButton
           title="Revenir à la première page"
-          onClick={() => {
-            if (!tableModified) setCurrentPage(0);
-            else {
-              setDestination(0);
-              setShowModal(true);
-            }
-          }}
+          onClick={() => setCurrentPage(0)}
         >
           <BsFillSkipStartFill />
         </StyledButton>
@@ -112,30 +74,11 @@ const Pagination = ({
         </StyledButton>
         <StyledButton
           title="Aller à la dernière page"
-          onClick={() => {
-            if (!tableModified) setCurrentPage(pagesCount - 1);
-            else {
-              setDestination(pagesCount - 1);
-              setShowModal(true);
-            }
-          }}
+          onClick={() => setCurrentPage(pagesCount - 1)}
         >
           <BsFillSkipEndFill />
         </StyledButton>
       </StyledPagination>
-      {showModal
-        ? createPortal(
-            <ConfirmationDialog
-              header="Annuler les changements?"
-              info="Il y a des changements non sauvegardés. Voulez vous les annuler ou les sauvegarder?"
-              rightContent="Sauvegarder"
-              leftContent="Annuler"
-              action={saveAndSwitchPage}
-              close={closeModal}
-            />,
-            document.getElementById("portal") as HTMLElement
-          )
-        : null}
     </>
   );
 };
