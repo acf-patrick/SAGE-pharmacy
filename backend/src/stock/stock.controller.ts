@@ -1,8 +1,11 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
+  Param,
   ParseIntPipe,
+  Patch,
   Query,
 } from '@nestjs/common';
 import { StockService } from './stock.service';
@@ -11,6 +14,7 @@ import {
   ApiOkResponse,
   ApiQuery,
 } from '@nestjs/swagger';
+import { UpdateMedicineDto } from './dto/UpdateMedicine.dto';
 
 @Controller('api/stock')
 export class StockController {
@@ -36,5 +40,14 @@ export class StockController {
       pageCount,
       page,
     };
+  }
+
+  @Patch(':id')
+  async updateMedicine(
+    @Param('id') id: string,
+    @Body() updateMedicineDto: UpdateMedicineDto,
+  ) {
+    await this.stockService.updateMedicine(id, updateMedicineDto);
+    return `Medicine ${id} updated`;
   }
 }

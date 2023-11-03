@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { UpdateMedicineDto } from './dto/UpdateMedicine.dto';
 
 @Injectable()
 export class StockService {
@@ -21,5 +22,18 @@ export class StockService {
     });
 
     return medicines;
+  }
+
+  async updateMedicine(id: string, updateMedicineDto: UpdateMedicineDto) {
+    try {
+      await this.prisma.medicine.update({
+        where: {
+          id,
+        },
+        data: updateMedicineDto,
+      });
+    } catch {
+      throw new NotFoundException(`No medicine with given ID ${id} found`);
+    }
   }
 }
