@@ -1,6 +1,15 @@
-import { styled } from "styled-components";
-import { Medicine } from "../models";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { keyframes, styled } from "styled-components";
+import { api } from "../api";
+import { Medicine, MedicineDto } from "../models";
+
+const appear = keyframes`
+    from {
+        opacity: 0;
+    } to {
+        opacity: 1;
+    }
+`;
 
 const StyledModal = styled.div`
   .modal-container {
@@ -28,6 +37,7 @@ const StyledModal = styled.div`
     max-height: 500px;
     overflow-y: auto;
     padding-bottom: 0;
+    animation: 500ms both ${appear};
 
     .inputs {
       padding: 1rem;
@@ -42,7 +52,8 @@ const StyledModal = styled.div`
           font-weight: bolder;
         }
 
-        input[type="text"] {
+        input[type="text"],
+        input[type="number"] {
           padding: 0.75rem;
         }
       }
@@ -61,7 +72,7 @@ const StyledModal = styled.div`
       user-select: none;
       width: 100%;
       display: flex;
-      justify-content: flex-end;
+      justify-content: center;
       gap: 2rem;
       position: sticky;
       bottom: 0;
@@ -115,17 +126,48 @@ const UpdateForm = ({
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const updateMedicine = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const form = e.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
+    const medicineToUpdate: MedicineDto = {
+      name: data.get("name")!.toString(),
+      costPrice: parseFloat(data.get("cost-price")!.toString()),
+      sellingPrice: parseFloat(data.get("selling-price")!.toString()),
+      dci: data.get("dci")!.toString(),
+      isTaxed: data.get("tax") ? true : false,
+      location: data.get("location")!.toString(),
+      min: parseFloat(data.get("min")!.toString()),
+      max: parseFloat(data.get("max")!.toString()),
+      quantity: parseFloat(data.get("quantity")!.toString()),
+      expirationDate: selectedRows[currentIndex].expirationDate,
+    };
+
+    console.log(medicineToUpdate);
+
+    api.patch("/stock/" + selectedRows[currentIndex].id, {
+      data: medicineToUpdate,
+    });
+
+    if (currentIndex < selectedRows.length - 1)
+      setCurrentIndex((currentIndex) => currentIndex + 1);
+    else onClose();
+  };
+
   return (
     <StyledModal>
       <div className="modal-container" onClick={onClose}></div>
-      <form>
+      <form onSubmit={updateMedicine}>
         <div className="inputs">
           <div>
             <label htmlFor="name">Nom</label>
             <input
               id="name"
+              name="name"
               type="text"
-              value={selectedRows[currentIndex].name}
+              defaultValue={selectedRows[currentIndex].name}
+              key={selectedRows[currentIndex].id}
               onChange={() => {}}
             />
           </div>
@@ -133,35 +175,58 @@ const UpdateForm = ({
             <label htmlFor="cost-price">Prix d'achat</label>
             <input
               id="cost-price"
-              type="text"
-              value={selectedRows[currentIndex].costPrice}
+              name="cost-price"
+              type="number"
+              min={0}
+              defaultValue={selectedRows[currentIndex].costPrice}
+              key={selectedRows[currentIndex].id}
               onChange={() => {}}
+              onMouseLeave={(e) => {
+                if (parseFloat(e.currentTarget.value) < 0)
+                  e.currentTarget.value = "0";
+              }}
             />
           </div>
           <div>
             <label htmlFor="selling-price">Prix de vente</label>
             <input
               id="selling-price"
-              type="text"
-              value={selectedRows[currentIndex].sellingPrice}
+              name="selling-price"
+              type="number"
+              min={0}
+              defaultValue={selectedRows[currentIndex].sellingPrice}
+              key={selectedRows[currentIndex].id}
               onChange={() => {}}
+              onMouseLeave={(e) => {
+                if (parseFloat(e.currentTarget.value) < 0)
+                  e.currentTarget.value = "0";
+              }}
             />
           </div>
           <div>
             <label htmlFor="quantity">Quantité</label>
             <input
               id="quantity"
-              type="text"
-              value={selectedRows[currentIndex].quantity}
+              name="quantity"
+              type="number"
+              min={0}
+              defaultValue={selectedRows[currentIndex].quantity}
+              key={selectedRows[currentIndex].id}
               onChange={() => {}}
+              onMouseLeave={(e) => {
+                if (parseFloat(e.currentTarget.value) < 0)
+                  e.currentTarget.value = "0";
+              }}
             />
           </div>
           <div>
             <label htmlFor="location">Emplacement</label>
             <input
               id="location"
+              name="location"
               type="text"
-              value={selectedRows[currentIndex].location}
+              defaultValue={selectedRows[currentIndex].location}
+              key={selectedRows[currentIndex].id}
               onChange={() => {}}
             />
           </div>
@@ -169,8 +234,10 @@ const UpdateForm = ({
             <label htmlFor="dci">DCI</label>
             <input
               id="dci"
+              name="dci"
               type="text"
-              value={selectedRows[currentIndex].dci}
+              defaultValue={selectedRows[currentIndex].dci}
+              key={selectedRows[currentIndex].id}
               onChange={() => {}}
             />
           </div>
@@ -178,8 +245,10 @@ const UpdateForm = ({
             <label htmlFor="tax">Taxé</label>
             <input
               id="tax"
+              name="tax"
               type="checkbox"
               defaultChecked={selectedRows[currentIndex].isTaxed}
+              key={selectedRows[currentIndex].id}
               onChange={() => {}}
             />
             <span>(Taxé si coché)</span>
@@ -188,18 +257,31 @@ const UpdateForm = ({
             <label htmlFor="min">Stock Min</label>
             <input
               id="min"
-              type="text"
-              value={selectedRows[currentIndex].min}
+              name="min"
+              type="number"
+              min={0}
+              defaultValue={selectedRows[currentIndex].min}
+              key={selectedRows[currentIndex].id}
               onChange={() => {}}
+              onMouseLeave={(e) => {
+                if (parseFloat(e.currentTarget.value) < 0)
+                  e.currentTarget.value = "0";
+              }}
             />
           </div>
           <div>
             <label htmlFor="max">Stock Max</label>
             <input
               id="max"
-              type="text"
-              value={selectedRows[currentIndex].max}
+              name="max"
+              type="number"
+              defaultValue={selectedRows[currentIndex].max}
+              key={selectedRows[currentIndex].id}
               onChange={() => {}}
+              onMouseLeave={(e) => {
+                if (parseFloat(e.currentTarget.value) < 0)
+                  e.currentTarget.value = "0";
+              }}
             />
           </div>
         </div>
@@ -218,7 +300,7 @@ const UpdateForm = ({
               Suivant
             </button>
           )}
-          <button type="button">Modifier</button>
+          <button>Modifier</button>
         </div>
       </form>
     </StyledModal>
