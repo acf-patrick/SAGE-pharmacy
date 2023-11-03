@@ -1,8 +1,8 @@
-import styled, { keyframes } from "styled-components";
 import { lighten } from "polished";
-import { Medicine } from "../models";
+import { useMemo, useState } from "react";
 import { BiSolidDownArrow, BiSolidUpArrow } from "react-icons/bi";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import styled, { keyframes } from "styled-components";
+import { Medicine } from "../models";
 
 const appear = keyframes`
     from {
@@ -91,7 +91,7 @@ const StyledTable = styled.div`
       min-width: 10rem;
       border-right: solid 1px black;
 
-      input {
+      input[type="checkbox"] {
         cursor: pointer;
         width: 1.15rem;
         height: 1.15rem;
@@ -103,6 +103,34 @@ const StyledTable = styled.div`
         gap: 1rem;
         align-items: center;
         padding-left: 1rem;
+
+        > div {
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
+          flex-grow: 1;
+          height: 100%;
+          max-width: 200px;
+          overflow-x: auto;
+          outline: none;
+
+          &::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+          }
+
+          &::-webkit-scrollbar-track {
+            background: #80808017;
+          }
+
+          &::-webkit-scrollbar-thumb {
+            background: ${({ theme }) => theme.colors.tertiary};
+          }
+
+          &::-webkit-scrollbar-thumb:hover {
+            background: ${({ theme }) => lighten(0.2, theme.colors.tertiary)};
+          }
+        }
       }
     }
   }
@@ -203,7 +231,15 @@ export default function Table({ medicines }: { medicines: Medicine[] }) {
 
   const highlightItem = (e: React.ChangeEvent<HTMLInputElement>) => {
     const row = e.currentTarget.parentElement!.parentElement!;
-    row.classList.toggle("selected");
+
+    const selected = row.classList.toggle("selected");
+
+    const editables = row.querySelectorAll(".editable");
+
+    for (let editable of editables) {
+      const el = editable as HTMLElement;
+      el.contentEditable = selected ? "true" : "false";
+    }
   };
 
   const dateToLocaleFormat = (date: string) => {
@@ -247,17 +283,19 @@ export default function Table({ medicines }: { medicines: Medicine[] }) {
             <tr key={medicine.name + i}>
               <td>
                 <input type="checkbox" name="" onChange={highlightItem} />
-                <span>{medicine.name}</span>
+                <div className="editable">{medicine.name}</div>
               </td>
-              <td>{medicine.costPrice}</td>
-              <td>{medicine.sellingPrice}</td>
-              <td>{medicine.quantity}</td>
-              <td>{medicine.location}</td>
-              <td>{medicine.dci}</td>
-              <td>{medicine.isTaxed ? "Oui" : "Non"}</td>
-              <td>{medicine.min}</td>
-              <td>{medicine.max}</td>
-              <td>{dateToLocaleFormat(medicine.expirationDate)}</td>
+              <td className="editable">{medicine.costPrice}</td>
+              <td className="editable">{medicine.sellingPrice}</td>
+              <td className="editable">{medicine.quantity}</td>
+              <td className="editable">{medicine.location}</td>
+              <td className="editable">{medicine.dci}</td>
+              <td className="editable">{medicine.isTaxed ? "Oui" : "Non"}</td>
+              <td className="editable">{medicine.min}</td>
+              <td className="editable">{medicine.max}</td>
+              <td className="editable">
+                {dateToLocaleFormat(medicine.expirationDate)}
+              </td>
             </tr>
           ))}
         </tbody>

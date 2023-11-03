@@ -1,4 +1,5 @@
 export type Medicine = {
+  id: string;
   name: string;
   sellingPrice: number;
   costPrice: number;
