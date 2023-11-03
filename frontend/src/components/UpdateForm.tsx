@@ -1,7 +1,15 @@
-import { styled } from "styled-components";
-import { Medicine } from "../models";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { keyframes, styled } from "styled-components";
 import { api } from "../api";
+import { Medicine } from "../models";
+
+const appear = keyframes`
+    from {
+        opacity: 0;
+    } to {
+        opacity: 1;
+    }
+`;
 
 const StyledModal = styled.div`
   .modal-container {
@@ -29,6 +37,7 @@ const StyledModal = styled.div`
     max-height: 500px;
     overflow-y: auto;
     padding-bottom: 0;
+    animation: 500ms both ${appear};
 
     .inputs {
       padding: 1rem;

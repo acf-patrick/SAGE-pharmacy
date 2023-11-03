@@ -4,7 +4,7 @@ import { BiSolidDownArrow, BiSolidUpArrow } from "react-icons/bi";
 import styled, { keyframes } from "styled-components";
 import { Medicine } from "../models";
 
-const appear = keyframes`
+export const appear = keyframes`
     from {
         transform: translateY(-1rem);
         opacity: 0;
