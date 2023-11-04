@@ -145,8 +145,6 @@ const UpdateForm = ({
       quantity: parseFloat(data.get("quantity")!.toString()),
     };
 
-    console.log(medicineToUpdate);
-
     api
       .patch("/stock/" + selectedRows[currentIndex].id, {
         ...medicineToUpdate,
