@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
@@ -12,6 +13,7 @@ import { StockService } from './stock.service';
 import {
   ApiBadRequestResponse,
   ApiOkResponse,
+  ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
 import { UpdateMedicineDto } from './dto/UpdateMedicine.dto';
@@ -42,7 +44,20 @@ export class StockController {
     };
   }
 
+  @Get(':id')
+  async getMedicine(@Param('id') id: string) {
+    const medicine = await this.stockService.getMedicine(id);
+    if (!medicine) {
+      throw new NotFoundException(`No medicine with ID ${id} found`);
+    }
+
+    return medicine;
+  }
+
   @Patch(':id')
+  @ApiOkResponse({ description: 'Medicine item successfully updated' })
+  @ApiBadRequestResponse({ description: 'Invalid body format' })
+  @ApiParam({ name: 'id', description: "medicine's ID" })
   async updateMedicine(
     @Param('id') id: string,
     @Body() updateMedicineDto: UpdateMedicineDto,

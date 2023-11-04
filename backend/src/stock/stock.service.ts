@@ -24,6 +24,13 @@ export class StockService {
     return medicines;
   }
 
+  // Returns one medicine
+  getMedicine(id: string) {
+    return this.prisma.medicine.findUnique({
+      where: { id },
+    });
+  }
+
   async updateMedicine(id: string, updateMedicineDto: UpdateMedicineDto) {
     try {
       await this.prisma.medicine.update({
