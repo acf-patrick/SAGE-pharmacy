@@ -145,17 +145,15 @@ const UpdateForm = ({
       quantity: parseFloat(data.get("quantity")!.toString()),
     };
 
-    console.log(medicineToUpdate);
-
     api
       .patch("/stock/" + selectedRows[currentIndex].id, {
         ...medicineToUpdate,
       })
-      .then(() => onClose());
-
-    if (currentIndex < selectedRows.length - 1)
-      setCurrentIndex((currentIndex) => currentIndex + 1);
-    else onClose();
+      .then(() => {
+        if (currentIndex < selectedRows.length - 1)
+          setCurrentIndex((currentIndex) => currentIndex + 1);
+        else onClose();
+      });
   };
 
   return (
@@ -298,8 +296,7 @@ const UpdateForm = ({
               onClick={() =>
                 setCurrentIndex((currentIndex) => currentIndex + 1)
               }
-              disabled={currentIndex >= selectedRows.length - 1}
-            >
+              disabled={currentIndex >= selectedRows.length - 1}>
               Suivant
             </button>
           )}
