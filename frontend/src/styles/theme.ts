@@ -11,6 +11,11 @@ export const theme = {
     cancelButtonLight: "#d32f2f",
     acceptButton: "green",
     acceptButtonLight: "#0da50d",
+    buttons: {
+      edit: "#ff7700",
+      delete: "red",
+      add: "blue",
+    }
   },
   size: {
     modalWidth: "400px",

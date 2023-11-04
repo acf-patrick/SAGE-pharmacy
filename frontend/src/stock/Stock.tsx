@@ -1,13 +1,17 @@
+import { lighten } from "polished";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { AiOutlineDelete, AiOutlineSearch } from "react-icons/ai";
+import { CgFileAdd } from "react-icons/cg";
+import { FiEdit } from "react-icons/fi";
 import { TbBasketCancel } from "react-icons/tb";
 import { keyframes, styled } from "styled-components";
 import { api } from "../api";
 import { ConfirmationDialog, Pagination, UpdateForm } from "../components";
 import { Medicine } from "../models";
-import { Table } from "./components";
 import { appear } from "../styles/animations";
-import { AiOutlineSearch } from "react-icons/ai";
+import { Table } from "./components";
+import AddForm from "../components/AddForm";
 
 type PageQueryResponse = {
   data: Medicine[];
@@ -31,10 +35,43 @@ const StyledStock = styled.div`
   flex-direction: column;
   justify-content: space-around;
 
+  button {
+    border: none;
+    height: 2.5rem;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 250ms;
+    font-weight: bold;
+    * {
+      color: white;
+    }
+
+    svg {
+      font-size: 1.25rem;
+    }
+  }
+
+  .add-button {
+    background-color: ${({ theme }) => theme.colors.buttons.add};
+
+    &:hover {
+      background-color: ${({ theme }) =>
+        lighten(0.1, theme.colors.buttons.add)};
+    }
+  }
+
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+
+    h1 {
+      margin-right: 1rem;
+    }
 
     * {
       animation: 500ms ease-out both ${slide};
@@ -66,29 +103,21 @@ const StyledStock = styled.div`
       gap: 1rem;
 
       button {
-        border: none;
-        height: 2.5rem;
-        padding: 0.5rem 1rem;
-
-        cursor: pointer;
-        border-radius: 5px;
-        color: white;
-        transition: background-color 250ms;
-        font-weight: bold;
-
         &:first-of-type {
-          background-color: #ff7700;
+          background-color: ${({ theme }) => theme.colors.buttons.edit};
 
           &:hover {
-            background-color: orange;
+            background-color: ${({ theme }) =>
+              lighten(0.1, theme.colors.buttons.edit)};
           }
         }
 
         &:last-of-type {
-          background-color: #ff0000;
+          background-color: ${({ theme }) => theme.colors.buttons.delete};
 
           &:hover {
-            background-color: #d32f2f;
+            background-color: ${({ theme }) =>
+              lighten(0.1, theme.colors.buttons.delete)};
           }
         }
       }
@@ -118,6 +147,7 @@ const Stock = () => {
   const [selectedRows, setSelectedRows] = useState<Medicine[]>([]);
   const [searchKeyWord, setSearchKeyWord] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
 
   // Modal for medicine edition will appear when set
   const [updateSelectedRows, setUpdateSelectedRows] = useState(false);
@@ -181,6 +211,10 @@ const Stock = () => {
         <div className="header">
           <h1>Stock</h1>
           <div className="right">
+            <button className="add-button" onClick={() => setShowAddForm(true)}>
+              <CgFileAdd />
+              <span>Ajouter</span>
+            </button>
             <div className="searchbar">
               <input
                 type="text"
@@ -197,9 +231,13 @@ const Stock = () => {
             </div>
             {selectedRows.length > 0 && (
               <div className="buttons">
-                <button onClick={updateRows}>Modifier</button>
+                <button onClick={updateRows}>
+                  <FiEdit />
+                  <span>Modifier</span>
+                </button>
                 <button onClick={() => setShowConfirmation(true)}>
-                  Supprimer
+                  <AiOutlineDelete />
+                  <span>Supprimer</span>
                 </button>
               </div>
             )}
@@ -230,6 +268,17 @@ const Stock = () => {
               onClose={() => {
                 fetchMedicines();
                 setUpdateSelectedRows(false);
+              }}
+            />,
+            document.querySelector("#portal") as HTMLElement
+          )
+        : null}
+      {showAddForm
+        ? createPortal(
+            <AddForm
+              onClose={() => {
+                fetchMedicines();
+                setShowAddForm(false);
               }}
             />,
             document.querySelector("#portal") as HTMLElement
