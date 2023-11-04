@@ -179,30 +179,33 @@ type Field =
 
 export default function Table({
   medicines,
+  selectedRowIds,
   onRowToggle,
 }: {
   medicines: Medicine[];
+  selectedRowIds: string[];
   onRowToggle: (medicine: Medicine) => void;
 }) {
   const [sortBy, setSortBy] = useState<Field>("name");
   const [ascending, setAscending] = useState(true);
 
   const sortedMedicines = useMemo(
-    () =>
-      medicines.sort((m1: Medicine, m2: Medicine) => {
+    () => [
+      ...medicines.sort((m1: Medicine, m2: Medicine) => {
         if (ascending) {
           return m1[sortBy] < m2[sortBy] ? -1 : 1;
         } else {
           return m1[sortBy] > m2[sortBy] ? -1 : 1;
         }
       }),
+    ],
     [medicines, sortBy, ascending]
   );
 
   const headersMap = new Map<string, Field>([
     ["Nom", "name"],
     ["Prix d'achat", "sellingPrice"],
-    ["Pric de vente", "costPrice"],
+    ["Prix de vente", "costPrice"],
     ["Quantité", "quantity"],
     ["Emplacement", "location"],
     ["DCI", "dci"],
@@ -211,16 +214,6 @@ export default function Table({
     ["Stock Max", "max"],
     ["Expiration", "expirationDate"],
   ]);
-
-  const highlightItem = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    medicine: Medicine
-  ) => {
-    const row = e.currentTarget.parentElement!.parentElement!;
-
-    row.classList.toggle("selected");
-    onRowToggle(medicine);
-  };
 
   const dateToLocaleFormat = (date: string) => {
     let s = new Date(date).toLocaleDateString("fr-FR", {
@@ -259,12 +252,21 @@ export default function Table({
         </thead>
         <tbody>
           {sortedMedicines.map((medicine, i) => (
-            <tr key={medicine.name + i}>
+            <tr
+              key={medicine.name + i}
+              className={
+                selectedRowIds.findIndex((id) => id === medicine.id) >= 0
+                  ? "selected"
+                  : ""
+              }>
               <td>
                 <input
                   type="checkbox"
                   name=""
-                  onChange={(e) => highlightItem(e, medicine)}
+                  checked={
+                    selectedRowIds.findIndex((id) => id === medicine.id) >= 0
+                  }
+                  onChange={() => onRowToggle(medicine)}
                 />
                 <div>{medicine.name}</div>
               </td>
