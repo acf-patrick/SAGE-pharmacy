@@ -28,11 +28,82 @@ export class StockController {
   constructor(private readonly stockService: StockService) {}
 
   @Get()
-  @ApiQuery({ name: 'page', description: 'Page index to fetch ' })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page index to fetch',
+    required: false,
+  })
   @ApiBadRequestResponse({ description: 'Page index overflow' })
-  @ApiOperation({ summary: 'Returns medicines list' })
-  async getPage(@Query('page', ParseIntPipe) page: number) {
-    const pageCount = await this.stockService.getPageCount();
+  @ApiOperation({ summary: 'Returns medicines list according to query' })
+  async getMedicines(
+    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
+    @Query('name') name?: string,
+    @Query('sellingPrice', new ParseIntPipe({ optional: true }))
+    sellingPrice?: number,
+    @Query('costPrice', new ParseIntPipe({ optional: true }))
+    costPrice?: number,
+    @Query('quantity', new ParseIntPipe({ optional: true })) quantity?: number,
+    @Query('min', new ParseIntPipe({ optional: true })) min?: number,
+    @Query('max', new ParseIntPipe({ optional: true })) max?: number,
+    @Query('location') location?: string,
+    @Query('dci') dci?: string,
+  ) {
+    let query;
+
+    // build query object 😰
+    {
+      if (dci) {
+        query = {
+          type: 'dci',
+          dci,
+        };
+      } else if (name) {
+        query = { type: 'name', name };
+      } else if (location) {
+        query = {
+          type: 'location',
+          location,
+        };
+      } else if (min >= 0) {
+        query = {
+          type: 'min',
+          min,
+        };
+      } else if (max >= 0) {
+        query = {
+          type: 'max',
+          max,
+        };
+      } else if (quantity >= 0) {
+        query = {
+          type: 'quantity',
+          quantity,
+        };
+      } else if (costPrice >= 0) {
+        query = {
+          type: 'costPrice',
+          costPrice,
+        };
+      } else if (sellingPrice >= 0) {
+        query = {
+          type: 'sellingPrice',
+          sellingPrice,
+        };
+      } else {
+        query = undefined;
+      }
+    }
+
+    const pageCount = await this.stockService.getPageCount(query);
+    if (pageCount + page === 0) {
+      // page == pageCount == 0
+      return {
+        data: [],
+        pageCount,
+        page,
+      };
+    }
+
     if (page >= pageCount) {
       throw new BadRequestException({
         message: 'Page index overflow',
@@ -40,8 +111,7 @@ export class StockController {
       });
     }
 
-    const medicines = await this.stockService.getPage(page);
-
+    const medicines = await this.stockService.getPage(page, query);
     return {
       data: medicines,
       pageCount,
