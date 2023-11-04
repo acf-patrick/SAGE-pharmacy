@@ -12,6 +12,10 @@ const StyledButton = styled.button<{ $current?: boolean }>`
   background-color: ${({ theme, $current }) =>
     $current ? theme.colors.tertiary : "unset"};
 
+  &[disabled] {
+    cursor: default;
+  }
+
   &:hover {
     background-color: ${({ theme }) => theme.colors.primary};
 
@@ -39,18 +43,18 @@ const StyledPagination = styled.div`
 
 const Pagination = ({
   currentPage,
-  setCurrentPage,
+  onPageChange,
   pagesCount,
 }: {
   currentPage: number;
-  setCurrentPage: (n: number) => void;
+  onPageChange: (n: number) => void;
   pagesCount: number;
 }) => {
   const goToNextPage = () => {
-    setCurrentPage(currentPage + 1);
+    onPageChange(currentPage + 1);
   };
   const goToPreviousPage = () => {
-    setCurrentPage(currentPage - 1);
+    onPageChange(currentPage - 1);
   };
 
   return (
@@ -58,8 +62,7 @@ const Pagination = ({
       <StyledPagination>
         <StyledButton
           title="Revenir à la première page"
-          onClick={() => setCurrentPage(0)}
-        >
+          onClick={() => onPageChange(0)}>
           <BsFillSkipStartFill />
         </StyledButton>
         <StyledButton disabled={currentPage == 0} onClick={goToPreviousPage}>
@@ -68,14 +71,12 @@ const Pagination = ({
         <StyledButton $current>{currentPage + 1}</StyledButton>
         <StyledButton
           disabled={currentPage == pagesCount - 1}
-          onClick={goToNextPage}
-        >
+          onClick={goToNextPage}>
           {currentPage == pagesCount - 1 ? "" : currentPage + 2}
         </StyledButton>
         <StyledButton
           title="Aller à la dernière page"
-          onClick={() => setCurrentPage(pagesCount - 1)}
-        >
+          onClick={() => onPageChange(pagesCount - 1)}>
           <BsFillSkipEndFill />
         </StyledButton>
       </StyledPagination>

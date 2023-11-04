@@ -21,7 +21,7 @@ model Medicine {
   isTaxed        Boolean  @default(true)
   min            Int
   max            Int
-  expirationDate DateTime
+  expirationDate DateTime @db.Date
 }
 
 model MedicineFromProvider {
@@ -34,7 +34,7 @@ model MedicineFromProvider {
   dci             String
   Provider        Provider? @relation(fields: [providerId], references: [id])
   providerId      String?
-  expirationDate  DateTime
+  expirationDate  DateTime  @db.Date
 }
 
 model Provider {
