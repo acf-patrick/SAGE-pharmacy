@@ -6,7 +6,8 @@ import { api } from "../api";
 import Pagination from "../components/Pagination";
 import UpdateForm from "../components/UpdateForm";
 import { Medicine } from "../models";
-import Table from "./Table";
+import Table, { appear } from "./Table";
+import { AiOutlineSearch } from "react-icons/ai";
 
 type PageQueryResponse = {
   data: Medicine[];
@@ -41,7 +42,7 @@ const StyledStock = styled.div`
 
     .buttons {
       display: flex;
-      gap: 1rem;
+      gap: 2rem;
 
       button {
         border: none;
@@ -55,18 +56,35 @@ const StyledStock = styled.div`
         font-weight: bold;
 
         &:first-of-type {
-          background-color: orange;
+          background-color: #ff7700;
 
           &:hover {
-            background-color: #ff7700;
+            background-color: orange;
           }
         }
 
         &:last-of-type {
           background-color: #ff0000;
+
           &:hover {
             background-color: #d32f2f;
           }
+        }
+      }
+
+      .searchbar {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        input {
+          height: 2rem;
+        }
+
+        svg {
+          font-size: 1.5rem;
+          text-align: center;
+          cursor: pointer;
         }
       }
     }
@@ -80,6 +98,7 @@ const StyledStock = styled.div`
     justify-content: center;
     align-items: center;
     gap: 3rem;
+    animation: 500ms both ${appear};
 
     svg {
       font-size: 6rem;
@@ -93,18 +112,35 @@ const Stock = () => {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [selectedRows, setSelectedRows] = useState<Medicine[]>([]);
   const [updateSelectedRows, setUpdateSelectedRows] = useState(false);
+  const [searchKeyWord, setSearchKeyWord] = useState("");
 
-  useEffect(() => {
+  const updateSelectedRowsList = (medicine: Medicine) => {
+    setSelectedRows([...selectedRows, medicine]);
+  };
+
+  const fetchMedicines = () => {
     api.get(`/stock?page=${currentPage}`).then((response) => {
       const res: PageQueryResponse = response.data;
       setMedicines(res.data);
       setPagesCount(res.pageCount);
     });
-  }, [currentPage]);
-
-  const updateSelectedRowsList = (medicine: Medicine) => {
-    setSelectedRows([...selectedRows, medicine]);
   };
+
+  const search = () => {
+    const filteredMedicines = medicines.filter((medicine) => {
+      return medicine.name.toLowerCase().includes(searchKeyWord.toLowerCase());
+    });
+    setMedicines(filteredMedicines);
+  };
+
+  const updateRows = () => {
+    if (selectedRows.length > 0) setUpdateSelectedRows(true);
+    else console.error("No row selected!");
+  };
+
+  useEffect(() => {
+    fetchMedicines();
+  }, [currentPage]);
 
   return (
     <>
@@ -112,9 +148,21 @@ const Stock = () => {
         <div className="header">
           <h1>Stock</h1>
           <div className="buttons">
-            <button onClick={() => setUpdateSelectedRows(true)}>
-              Modifier
-            </button>
+            <div className="searchbar">
+              <input
+                type="text"
+                placeholder="Enter un mot clé..."
+                onChange={(e) => {
+                  if (e.currentTarget.value != "") {
+                    setSearchKeyWord(e.currentTarget.value);
+                  } else {
+                    fetchMedicines();
+                  }
+                }}
+              />
+              <AiOutlineSearch title="Rechercher" onClick={search} />
+            </div>
+            <button onClick={updateRows}>Modifier</button>
             <button>Supprimer</button>
           </div>
         </div>
@@ -131,7 +179,7 @@ const Stock = () => {
           </>
         ) : (
           <h2>
-            <span>Stock vide</span>
+            <span>{searchKeyWord == "" ? "Stock vide" : "Aucun résultat"}</span>
             <TbBasketCancel />
           </h2>
         )}
