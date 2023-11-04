@@ -1,7 +1,7 @@
 import { lighten } from "polished";
 import { useMemo, useState } from "react";
 import { BiSolidDownArrow, BiSolidUpArrow } from "react-icons/bi";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import { appear } from "../../styles/animations";
 import { Medicine } from "../../models";
 
