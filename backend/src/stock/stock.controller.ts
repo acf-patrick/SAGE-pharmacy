@@ -2,7 +2,9 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
@@ -12,6 +14,7 @@ import { StockService } from './stock.service';
 import {
   ApiBadRequestResponse,
   ApiOkResponse,
+  ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
 import { UpdateMedicineDto } from './dto/UpdateMedicine.dto';
@@ -42,7 +45,30 @@ export class StockController {
     };
   }
 
+  @Get(':id')
+  async getMedicine(@Param('id') id: string) {
+    const medicine = await this.stockService.getMedicine(id);
+    if (!medicine) {
+      throw new NotFoundException(`No medicine with ID ${id} found`);
+    }
+
+    return medicine;
+  }
+
+  @Delete(':id')
+  async deleteMedicine(@Param('id') id: string) {
+    try {
+      await this.stockService.deleteMedicine(id);
+    } catch {
+      throw new NotFoundException(`No medicine with ID ${id} found`);
+    }
+    return `Medicine ${id} removed`;
+  }
+
   @Patch(':id')
+  @ApiOkResponse({ description: 'Medicine item successfully updated' })
+  @ApiBadRequestResponse({ description: 'Invalid body format' })
+  @ApiParam({ name: 'id', description: "medicine's ID" })
   async updateMedicine(
     @Param('id') id: string,
     @Body() updateMedicineDto: UpdateMedicineDto,
