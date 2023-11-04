@@ -3,10 +3,10 @@ import { createPortal } from "react-dom";
 import { TbBasketCancel } from "react-icons/tb";
 import { keyframes, styled } from "styled-components";
 import { api } from "../api";
-import Pagination from "../components/Pagination";
-import UpdateForm from "../components/UpdateForm";
+import { Pagination, UpdateForm } from "../components";
 import { Medicine } from "../models";
-import Table, { appear } from "./Table";
+import { Table } from "./components";
+import { appear } from "../styles/animations";
 import { AiOutlineSearch } from "react-icons/ai";
 
 type PageQueryResponse = {

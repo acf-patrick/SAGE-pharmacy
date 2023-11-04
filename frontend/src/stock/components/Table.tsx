@@ -2,17 +2,8 @@ import { lighten } from "polished";
 import { useMemo, useState } from "react";
 import { BiSolidDownArrow, BiSolidUpArrow } from "react-icons/bi";
 import styled, { keyframes } from "styled-components";
-import { Medicine } from "../models";
-
-export const appear = keyframes`
-    from {
-        transform: translateY(-1rem);
-        opacity: 0;
-    } to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-`;
+import { appear } from "../../styles/animations";
+import { Medicine } from "../../models";
 
 const StyledTable = styled.div`
   overflow-x: auto;
@@ -226,7 +217,7 @@ export default function Table({
     medicine: Medicine
   ) => {
     const row = e.currentTarget.parentElement!.parentElement!;
-    
+
     row.classList.toggle("selected");
     onRowToggle(medicine);
   };
@@ -253,8 +244,7 @@ export default function Table({
                 onClick={() => {
                   setSortBy(headersMap.get(header)!);
                   setAscending(!ascending);
-                }}
-              >
+                }}>
                 <div className="inner-th">
                   <p>{header}</p>
                   {headersMap.get(header) == sortBy ? (
