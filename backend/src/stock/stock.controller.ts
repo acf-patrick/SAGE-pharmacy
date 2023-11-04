@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -52,6 +53,16 @@ export class StockController {
     }
 
     return medicine;
+  }
+
+  @Delete(':id')
+  async deleteMedicine(@Param('id') id: string) {
+    try {
+      await this.stockService.deleteMedicine(id);
+    } catch {
+      throw new NotFoundException(`No medicine with ID ${id} found`);
+    }
+    return `Medicine ${id} removed`;
   }
 
   @Patch(':id')

@@ -31,6 +31,13 @@ export class StockService {
     });
   }
 
+  // Delete one medicine
+  deleteMedicine(id: string) {
+    return this.prisma.medicine.delete({
+      where: { id },
+    });
+  }
+
   async updateMedicine(id: string, updateMedicineDto: UpdateMedicineDto) {
     try {
       await this.prisma.medicine.update({
