@@ -8,6 +8,7 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import { StockService } from './stock.service';
@@ -68,6 +69,18 @@ export class StockController {
       throw new NotFoundException(`No medicine with ID ${id} found`);
     }
     return `Medicine ${id} removed`;
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Medicine items successfully deleted' })
+  @ApiBadRequestResponse({ description: 'Invalid body format' })
+  async deleteMedicines(@Body() body: {ids: string[]}) {
+    try {
+      await this.stockService.deleteMedicines(body.ids);
+    } catch {
+      throw new NotFoundException("Error when deleting medicines");
+    }
+    return `Medicines removed`;
   }
 
   @Patch(':id')
