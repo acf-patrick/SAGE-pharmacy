@@ -210,7 +210,16 @@ const Stock = () => {
             <UpdateForm
               selectedRows={selectedRows}
               onClose={() => {
+                const rows = document.querySelectorAll(".selected");
+                for (let row of rows) {
+                  row.classList.remove("selected");
+                  const checkbox = row.querySelector(
+                    "input"
+                  ) as HTMLInputElement;
+                  checkbox.checked = false;
+                }
                 fetchMedicines();
+                setSelectedRows([]);
                 setUpdateSelectedRows(false);
               }}
             />,
