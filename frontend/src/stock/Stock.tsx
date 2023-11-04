@@ -35,14 +35,14 @@ const StyledStock = styled.div`
     justify-content: space-between;
     align-items: center;
 
+    .right {
+      display: flex;
+      gap: 1rem;
+    }
+
     h1,
     .buttons {
       animation: 500ms ease-out both ${slide};
-    }
-
-    & > div {
-      display: flex;
-      gap: 2rem;
     }
 
     .buttons {
