@@ -1,5 +1,30 @@
 import { styled } from "styled-components";
-import { darken } from "polished";
+import { darken, lighten } from "polished";
+
+export type Content = {
+  content: string;
+  color: string;
+};
+
+const StyledButton = styled.button<{ $color: string }>`
+  border: none;
+  padding: 0.75rem 0;
+  width: 100px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: color 250ms, background-color 250ms;
+
+  background-color: ${({ $color }) => $color};
+  outline: solid 3px ${({ $color }) => darken(0.25, $color)};
+  color: white;
+
+  &:hover {
+    background-color: ${({ $color }) => lighten(0.1, $color)};
+    outline: solid 3px ${({ $color }) => $color};
+    color: white;
+  }
+`;
 
 const StyledModal = styled.div`
   position: absolute;
@@ -48,42 +73,6 @@ const StyledModal = styled.div`
       display: flex;
       justify-content: flex-end;
       gap: 1rem;
-
-      button {
-        border: none;
-        padding: 0.75rem 0;
-        width: 100px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: color 250ms, background-color 250ms;
-
-        &:first-of-type {
-          background-color: white;
-          outline: solid 3px grey;
-          color: grey;
-
-          &:hover {
-            background-color: grey;
-            outline: solid 3px grey;
-            color: white;
-          }
-        }
-
-        &:last-of-type {
-          background-color: ${({ theme }) =>
-            darken(0.1, theme.colors.secondary)};
-          outline: solid 3px ${({ theme }) => theme.colors.tertiary};
-          color: white;
-
-          &:hover {
-            background-color: ${({ theme }) => theme.colors.tertiary};
-            color: white;
-            outline: solid 2px
-              ${({ theme }) => darken(0.1, theme.colors.secondary)};
-          }
-        }
-      }
     }
   }
 `;
@@ -98,8 +87,8 @@ const ConfirmationDialog = ({
 }: {
   header: string;
   info: string;
-  leftContent: string;
-  rightContent: string;
+  leftContent: Content;
+  rightContent: Content;
   close: () => void;
   action: () => void;
 }) => {
@@ -111,8 +100,12 @@ const ConfirmationDialog = ({
           <p>{info}</p>
         </div>
         <div className="buttons">
-          <button onClick={close}>{leftContent}</button>
-          <button onClick={action}>{rightContent}</button>
+          <StyledButton $color={leftContent.color} onClick={close}>
+            {leftContent.content}
+          </StyledButton>
+          <StyledButton $color={rightContent.color} onClick={action}>
+            {rightContent.content}
+          </StyledButton>
         </div>
       </div>
     </StyledModal>

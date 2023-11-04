@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { TbBasketCancel } from "react-icons/tb";
 import { keyframes, styled } from "styled-components";
 import { api } from "../api";
-import { Pagination, UpdateForm } from "../components";
+import { ConfirmationDialog, Pagination, UpdateForm } from "../components";
 import { Medicine } from "../models";
 import { Table } from "./components";
 import { appear } from "../styles/animations";
@@ -117,6 +117,7 @@ const Stock = () => {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [selectedRows, setSelectedRows] = useState<Medicine[]>([]);
   const [searchKeyWord, setSearchKeyWord] = useState("");
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Modal for medicine edition will appear when set
   const [updateSelectedRows, setUpdateSelectedRows] = useState(false);
@@ -159,6 +160,21 @@ const Stock = () => {
     fetchMedicines();
   }, [currentPage]);
 
+  const deletSelectedRows = () => {
+    const idsToDelete: string[] = [];
+    selectedRows.map((row) => idsToDelete.push(row.id));
+
+    api
+      .post("/stock", {
+        ids: idsToDelete,
+      })
+      .then(() => {
+        setSelectedRows([]);
+        setShowConfirmation(false);
+        fetchMedicines();
+      });
+  };
+
   return (
     <>
       <StyledStock>
@@ -182,7 +198,9 @@ const Stock = () => {
             {selectedRows.length > 0 && (
               <div className="buttons">
                 <button onClick={updateRows}>Modifier</button>
-                <button>Supprimer</button>
+                <button onClick={() => setShowConfirmation(true)}>
+                  Supprimer
+                </button>
               </div>
             )}
           </div>
@@ -222,6 +240,16 @@ const Stock = () => {
             document.querySelector("#portal") as HTMLElement
           )
         : null}
+      {showConfirmation ? (
+        <ConfirmationDialog
+          header="Supprimer l'élément?"
+          info="Cette action est irreversible. Voulez vous vraiment supprimer l'élément?"
+          leftContent={{ color: "grey", content: "Annuler" }}
+          rightContent={{ color: "red", content: "Supprimer" }}
+          close={() => setShowConfirmation(false)}
+          action={deletSelectedRows}
+        />
+      ) : null}
     </>
   );
 };
