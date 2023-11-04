@@ -38,6 +38,15 @@ export class StockService {
     });
   }
 
+  // Delete multiple medicines
+  async deleteMedicines(ids: string[]) {
+    const { count } = await this.prisma.medicine.deleteMany({
+      where: {
+        id: {in: ids}
+      }
+    })
+  }
+
   async updateMedicine(id: string, updateMedicineDto: UpdateMedicineDto) {
     try {
       await this.prisma.medicine.update({
