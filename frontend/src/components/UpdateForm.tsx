@@ -72,14 +72,14 @@ const StyledModal = styled.div`
 
     .buttons {
       user-select: none;
-      width: 100%;
       display: flex;
-      justify-content: center;
-      gap: 2rem;
+      justify-content: flex-end;
+      gap: 1rem;
       position: sticky;
       bottom: 0;
       background: linear-gradient(to bottom, white, #dcd8d8ac);
-      padding: 0.5rem 0;
+      padding: 0.5rem 0 1rem;
+      padding-right: 1rem;
 
       button {
         all: unset;
