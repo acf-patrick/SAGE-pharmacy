@@ -1,18 +1,9 @@
 import { lighten } from "polished";
 import { useMemo, useState } from "react";
 import { BiSolidDownArrow, BiSolidUpArrow } from "react-icons/bi";
-import styled, { keyframes } from "styled-components";
-import { Medicine } from "../models";
-
-export const appear = keyframes`
-    from {
-        transform: translateY(-1rem);
-        opacity: 0;
-    } to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-`;
+import styled from "styled-components";
+import { appear } from "../../styles/animations";
+import { Medicine } from "../../models";
 
 const StyledTable = styled.div`
   overflow-x: auto;
@@ -188,10 +179,10 @@ type Field =
 
 export default function Table({
   medicines,
-  onRowSelect,
+  onRowToggle,
 }: {
   medicines: Medicine[];
-  onRowSelect: (medicine: Medicine) => void;
+  onRowToggle: (medicine: Medicine) => void;
 }) {
   const [sortBy, setSortBy] = useState<Field>("name");
   const [ascending, setAscending] = useState(true);
@@ -226,8 +217,9 @@ export default function Table({
     medicine: Medicine
   ) => {
     const row = e.currentTarget.parentElement!.parentElement!;
+
     row.classList.toggle("selected");
-    onRowSelect(medicine);
+    onRowToggle(medicine);
   };
 
   const dateToLocaleFormat = (date: string) => {
@@ -252,8 +244,7 @@ export default function Table({
                 onClick={() => {
                   setSortBy(headersMap.get(header)!);
                   setAscending(!ascending);
-                }}
-              >
+                }}>
                 <div className="inner-th">
                   <p>{header}</p>
                   {headersMap.get(header) == sortBy ? (

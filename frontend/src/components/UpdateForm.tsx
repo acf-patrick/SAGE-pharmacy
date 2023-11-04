@@ -12,7 +12,7 @@ const appear = keyframes`
 `;
 
 const StyledModal = styled.div`
-  .modal-container {
+  .background {
     position: absolute;
     top: 0;
     left: 0;
@@ -26,7 +26,9 @@ const StyledModal = styled.div`
 
   form {
     background-color: white;
-    width: 400px;
+    width: 100%;
+    min-width: 400px;
+    max-width: 480px;
     height: 500px;
     border-radius: 5px;
     box-shadow: 0 0 5px grey;
@@ -70,14 +72,14 @@ const StyledModal = styled.div`
 
     .buttons {
       user-select: none;
-      width: 100%;
       display: flex;
-      justify-content: center;
-      gap: 2rem;
+      justify-content: flex-end;
+      gap: 1rem;
       position: sticky;
       bottom: 0;
       background: linear-gradient(to bottom, white, #dcd8d8ac);
-      padding: 0.5rem 0;
+      padding: 0.5rem 0 1rem;
+      padding-right: 1rem;
 
       button {
         all: unset;
@@ -158,7 +160,7 @@ const UpdateForm = ({
 
   return (
     <StyledModal>
-      <div className="modal-container" onClick={onClose}></div>
+      <div className="background" onClick={onClose}></div>
       <form onSubmit={updateMedicine}>
         <div className="inputs">
           <div>
