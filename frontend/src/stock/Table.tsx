@@ -188,10 +188,10 @@ type Field =
 
 export default function Table({
   medicines,
-  onRowSelect,
+  onRowToggle,
 }: {
   medicines: Medicine[];
-  onRowSelect: (medicine: Medicine) => void;
+  onRowToggle: (medicine: Medicine) => void;
 }) {
   const [sortBy, setSortBy] = useState<Field>("name");
   const [ascending, setAscending] = useState(true);
@@ -226,8 +226,9 @@ export default function Table({
     medicine: Medicine
   ) => {
     const row = e.currentTarget.parentElement!.parentElement!;
+    
     row.classList.toggle("selected");
-    onRowSelect(medicine);
+    onRowToggle(medicine);
   };
 
   const dateToLocaleFormat = (date: string) => {

@@ -40,9 +40,30 @@ const StyledStock = styled.div`
       animation: 500ms ease-out both ${slide};
     }
 
-    .buttons {
+    & > div {
       display: flex;
       gap: 2rem;
+    }
+
+    .searchbar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      input {
+        height: 2rem;
+      }
+
+      svg {
+        font-size: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+      }
+    }
+
+    .buttons {
+      display: flex;
+      gap: 1rem;
 
       button {
         border: none;
@@ -71,22 +92,6 @@ const StyledStock = styled.div`
           }
         }
       }
-
-      .searchbar {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-
-        input {
-          height: 2rem;
-        }
-
-        svg {
-          font-size: 1.5rem;
-          text-align: center;
-          cursor: pointer;
-        }
-      }
     }
   }
 
@@ -111,26 +116,38 @@ const Stock = () => {
   const [pagesCount, setPagesCount] = useState(1);
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [selectedRows, setSelectedRows] = useState<Medicine[]>([]);
-  const [updateSelectedRows, setUpdateSelectedRows] = useState(false);
   const [searchKeyWord, setSearchKeyWord] = useState("");
 
-  const updateSelectedRowsList = (medicine: Medicine) => {
-    setSelectedRows([...selectedRows, medicine]);
+  // Modal for medicine edition will appear when set
+  const [updateSelectedRows, setUpdateSelectedRows] = useState(false);
+
+  const toggleMedicine = (medicine: Medicine) => {
+    setSelectedRows((rows) =>
+      rows.findIndex(({ id }) => id === medicine.id) >= 0
+        ? rows.filter(({ id }) => id !== medicine.id)
+        : [medicine, ...rows]
+    );
   };
 
   const fetchMedicines = () => {
-    api.get(`/stock?page=${currentPage}`).then((response) => {
-      const res: PageQueryResponse = response.data;
-      setMedicines(res.data);
-      setPagesCount(res.pageCount);
-    });
+    api
+      .get(`/stock?page=${currentPage}`)
+      .then((response) => {
+        const res: PageQueryResponse = response.data;
+        setMedicines(res.data);
+        setPagesCount(res.pageCount);
+      })
+      .catch((err) => console.error(err));
   };
 
   const search = () => {
-    const filteredMedicines = medicines.filter((medicine) => {
-      return medicine.name.toLowerCase().includes(searchKeyWord.toLowerCase());
-    });
-    setMedicines(filteredMedicines);
+    setMedicines((medicines) =>
+      medicines.filter((medicine) => {
+        return medicine.name
+          .toLowerCase()
+          .includes(searchKeyWord.toLowerCase());
+      })
+    );
   };
 
   const updateRows = () => {
@@ -147,7 +164,7 @@ const Stock = () => {
       <StyledStock>
         <div className="header">
           <h1>Stock</h1>
-          <div className="buttons">
+          <div className="right">
             <div className="searchbar">
               <input
                 type="text"
@@ -162,13 +179,17 @@ const Stock = () => {
               />
               <AiOutlineSearch title="Rechercher" onClick={search} />
             </div>
-            <button onClick={updateRows}>Modifier</button>
-            <button>Supprimer</button>
+            {selectedRows.length > 0 && (
+              <div className="buttons">
+                <button onClick={updateRows}>Modifier</button>
+                <button>Supprimer</button>
+              </div>
+            )}
           </div>
         </div>
         {medicines.length > 0 ? (
           <>
-            <Table medicines={medicines} onRowSelect={updateSelectedRowsList} />
+            <Table medicines={medicines} onRowToggle={toggleMedicine} />
             {pagesCount > 1 && (
               <Pagination
                 currentPage={currentPage}
