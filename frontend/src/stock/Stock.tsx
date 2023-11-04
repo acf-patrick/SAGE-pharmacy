@@ -188,7 +188,10 @@ const Stock = () => {
         ? createPortal(
             <UpdateForm
               selectedRows={selectedRows}
-              onClose={() => setUpdateSelectedRows(false)}
+              onClose={() => {
+                fetchMedicines();
+                setUpdateSelectedRows(false);
+              }}
             />,
             document.querySelector("#portal") as HTMLElement
           )
