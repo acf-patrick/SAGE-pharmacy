@@ -189,7 +189,11 @@ const Stock = () => {
         </div>
         {medicines.length > 0 ? (
           <>
-            <Table medicines={medicines} onRowToggle={toggleMedicine} />
+            <Table
+              medicines={medicines}
+              selectedRowIds={selectedRows.map((medicine) => medicine.id)}
+              onRowToggle={toggleMedicine}
+            />
             {pagesCount > 1 && (
               <Pagination
                 currentPage={currentPage}
@@ -211,6 +215,7 @@ const Stock = () => {
               selectedRows={selectedRows}
               onClose={() => {
                 fetchMedicines();
+                setSelectedRows([]);
                 setUpdateSelectedRows(false);
               }}
             />,
