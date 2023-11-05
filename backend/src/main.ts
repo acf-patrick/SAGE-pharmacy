@@ -3,10 +3,16 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { PrismaClientExceptionFilter } from './prisma-client-exception/prisma-client-exception.filter';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+
+  const configs = app.get<ConfigService>(ConfigService);
+
+  if (configs.get<string>('NODE_ENV') !== 'production') {
+    app.enableCors();
+  }
 
   app.useGlobalPipes(new ValidationPipe());
 
@@ -21,6 +27,7 @@ async function bootstrap() {
 
   app.useGlobalFilters(new PrismaClientExceptionFilter());
 
-  await app.listen(3000);
+  const PORT = configs.get<string>('PORT') || 3000;
+  await app.listen(PORT);
 }
 bootstrap();
