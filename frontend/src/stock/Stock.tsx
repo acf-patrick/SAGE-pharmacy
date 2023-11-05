@@ -3,11 +3,15 @@ import { createPortal } from "react-dom";
 import { TbBasketCancel } from "react-icons/tb";
 import { keyframes, styled } from "styled-components";
 import { api } from "../api";
-import { ConfirmationDialog, Pagination, UpdateForm } from "../components";
+import {
+  ConfirmationDialog,
+  Pagination,
+  Searchbar,
+  UpdateForm,
+} from "../components";
 import { Medicine } from "../models";
 import { Table } from "./components";
 import { appear } from "../styles/animations";
-import { AiOutlineSearch } from "react-icons/ai";
 
 type PageQueryResponse = {
   data: Medicine[];
@@ -36,29 +40,14 @@ const StyledStock = styled.div`
     justify-content: space-between;
     align-items: center;
 
-    * {
-      animation: 500ms ease-out both ${slide};
-    }
-
-    & > div {
+    .right {
       display: flex;
-      gap: 2rem;
-    }
-
-    .searchbar {
-      display: flex;
-      align-items: center;
       gap: 1rem;
+    }
 
-      input {
-        height: 2rem;
-      }
-
-      svg {
-        font-size: 1.5rem;
-        text-align: center;
-        cursor: pointer;
-      }
+    h1,
+    .buttons {
+      animation: 500ms ease-out both ${slide};
     }
 
     .buttons {
@@ -118,9 +107,37 @@ const Stock = () => {
   const [selectedRows, setSelectedRows] = useState<Medicine[]>([]);
   const [searchKeyWord, setSearchKeyWord] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [searchField, setSearchField] = useState<
+    | "name"
+    | "sellingPrice"
+    | "costPrice"
+    | "quantity"
+    | "location"
+    | "dci"
+    | "min"
+    | "max"
+  >("name");
 
   // Modal for medicine edition will appear when set
   const [updateSelectedRows, setUpdateSelectedRows] = useState(false);
+
+  useEffect(() => {
+    // clear selections
+    setSelectedRows([]);
+
+    const params = new URLSearchParams();
+    params.set("page", currentPage.toString());
+    params.set(searchField, searchKeyWord);
+
+    api
+      .get(`/stock?${params}`)
+      .then((response) => {
+        const res: PageQueryResponse = response.data;
+        setMedicines(res.data);
+        setPagesCount(res.pageCount);
+      })
+      .catch((err) => console.error(err));
+  }, [searchKeyWord, searchField, currentPage]);
 
   const toggleMedicine = (medicine: Medicine) => {
     setSelectedRows((rows) =>
@@ -130,35 +147,10 @@ const Stock = () => {
     );
   };
 
-  const fetchMedicines = () => {
-    api
-      .get(`/stock?page=${currentPage}`)
-      .then((response) => {
-        const res: PageQueryResponse = response.data;
-        setMedicines(res.data);
-        setPagesCount(res.pageCount);
-      })
-      .catch((err) => console.error(err));
-  };
-
-  const search = () => {
-    setMedicines((medicines) =>
-      medicines.filter((medicine) => {
-        return medicine.name
-          .toLowerCase()
-          .includes(searchKeyWord.toLowerCase());
-      })
-    );
-  };
-
   const updateRows = () => {
     if (selectedRows.length > 0) setUpdateSelectedRows(true);
     else console.error("No row selected!");
   };
-
-  useEffect(() => {
-    fetchMedicines();
-  }, [currentPage]);
 
   const deletSelectedRows = () => {
     const idsToDelete: string[] = [];
@@ -169,10 +161,9 @@ const Stock = () => {
         ids: idsToDelete,
       })
       .then(() => {
-        setSelectedRows([]);
-        setShowConfirmation(false);
-        fetchMedicines();
-      });
+        location.reload();
+      })
+      .catch((err) => console.error(err));
   };
 
   return (
@@ -181,20 +172,47 @@ const Stock = () => {
         <div className="header">
           <h1>Stock</h1>
           <div className="right">
-            <div className="searchbar">
-              <input
-                type="text"
-                placeholder="Enter un mot clé..."
-                onChange={(e) => {
-                  if (e.currentTarget.value != "") {
-                    setSearchKeyWord(e.currentTarget.value);
-                  } else {
-                    fetchMedicines();
-                  }
-                }}
-              />
-              <AiOutlineSearch title="Rechercher" onClick={search} />
-            </div>
+            <Searchbar
+              onFieldChange={(field) => setSearchField(field as any)}
+              onKeywordChange={(keyword) => {
+                setCurrentPage(0);
+                setSearchKeyWord(keyword);
+              }}
+              fields={[
+                {
+                  name: "Nom",
+                  value: "name",
+                },
+                {
+                  name: "Prix d'achat",
+                  value: "costPrice",
+                },
+                {
+                  name: "Prix de vente",
+                  value: "sellingPrice",
+                },
+                {
+                  name: "Quantité",
+                  value: "quantity",
+                },
+                {
+                  name: "Emplacement",
+                  value: "location",
+                },
+                {
+                  name: "DCI",
+                  value: "dci",
+                },
+                {
+                  name: "Stock Min",
+                  value: "min",
+                },
+                {
+                  name: "Stock Max",
+                  value: "max",
+                },
+              ]}
+            />
             {selectedRows.length > 0 && (
               <div className="buttons">
                 <button onClick={updateRows}>Modifier</button>
@@ -215,14 +233,14 @@ const Stock = () => {
             {pagesCount > 1 && (
               <Pagination
                 currentPage={currentPage}
-                setCurrentPage={setCurrentPage}
+                onPageChange={setCurrentPage}
                 pagesCount={pagesCount}
               />
             )}
           </>
         ) : (
           <h2>
-            <span>{searchKeyWord == "" ? "Stock vide" : "Aucun résultat"}</span>
+            <span>Stock vide</span>
             <TbBasketCancel />
           </h2>
         )}
@@ -231,11 +249,7 @@ const Stock = () => {
         ? createPortal(
             <UpdateForm
               selectedRows={selectedRows}
-              onClose={() => {
-                fetchMedicines();
-                setSelectedRows([]);
-                setUpdateSelectedRows(false);
-              }}
+              onClose={() => location.reload()}
             />,
             document.querySelector("#portal") as HTMLElement
           )
