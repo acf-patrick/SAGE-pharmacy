@@ -63,7 +63,9 @@ const Pagination = ({
         <StyledButton
           title="Revenir à la première page"
           onClick={() => onPageChange(0)}>
-          <BsFillSkipStartFill />
+          <span>
+            <BsFillSkipStartFill />
+          </span>
         </StyledButton>
         <StyledButton disabled={currentPage == 0} onClick={goToPreviousPage}>
           {currentPage == 0 ? "" : currentPage}

@@ -40,27 +40,6 @@ const StyledStock = styled.div`
   flex-direction: column;
   justify-content: space-around;
 
-  button {
-    border: none;
-    height: 2.5rem;
-    padding: 0.5rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 250ms;
-    font-weight: bold;
-
-    * {
-      color: white;
-    }
-
-    svg {
-      font-size: 1.25rem;
-    }
-  }
-
   .add-button {
     background-color: ${({ theme }) => theme.colors.buttons.add};
 
@@ -74,6 +53,27 @@ const StyledStock = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
+
+    button {
+      border: none;
+      height: 2.5rem;
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 250ms;
+      font-weight: bold;
+
+      * {
+        color: white;
+      }
+
+      svg {
+        font-size: 1.25rem;
+      }
+    }
 
     h1 {
       margin-right: 1rem;
