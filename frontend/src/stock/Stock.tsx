@@ -1,17 +1,22 @@
+import { lighten } from "polished";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { AiOutlineDelete } from "react-icons/ai";
+import { CgFileAdd } from "react-icons/cg";
+import { FiEdit } from "react-icons/fi";
 import { TbBasketCancel } from "react-icons/tb";
 import { keyframes, styled } from "styled-components";
 import { api } from "../api";
 import {
-  ConfirmationDialog,
   Pagination,
+  ConfirmationDialog,
   Searchbar,
   UpdateForm,
+  AddForm,
 } from "../components";
 import { Medicine } from "../models";
-import { Table } from "./components";
 import { appear } from "../styles/animations";
+import { Table } from "./components";
 
 type PageQueryResponse = {
   data: Medicine[];
@@ -35,14 +40,43 @@ const StyledStock = styled.div`
   flex-direction: column;
   justify-content: space-around;
 
+  button {
+    border: none;
+    height: 2.5rem;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 250ms;
+    font-weight: bold;
+
+    * {
+      color: white;
+    }
+
+    svg {
+      font-size: 1.25rem;
+    }
+  }
+
+  .add-button {
+    background-color: ${({ theme }) => theme.colors.buttons.add};
+
+    &:hover {
+      background-color: ${({ theme }) =>
+        lighten(0.1, theme.colors.buttons.add)};
+    }
+  }
+
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
 
-    .right {
-      display: flex;
-      gap: 1rem;
+    h1 {
+      margin-right: 1rem;
     }
 
     h1,
@@ -50,34 +84,31 @@ const StyledStock = styled.div`
       animation: 500ms ease-out both ${slide};
     }
 
+    & > div {
+      display: flex;
+      gap: 2rem;
+    }
+
     .buttons {
       display: flex;
       gap: 1rem;
 
       button {
-        border: none;
-        height: 2.5rem;
-        padding: 0.5rem 1rem;
-
-        cursor: pointer;
-        border-radius: 5px;
-        color: white;
-        transition: background-color 250ms;
-        font-weight: bold;
-
         &:first-of-type {
-          background-color: #ff7700;
+          background-color: ${({ theme }) => theme.colors.buttons.edit};
 
           &:hover {
-            background-color: orange;
+            background-color: ${({ theme }) =>
+              lighten(0.1, theme.colors.buttons.edit)};
           }
         }
 
         &:last-of-type {
-          background-color: #ff0000;
+          background-color: ${({ theme }) => theme.colors.buttons.delete};
 
           &:hover {
-            background-color: #d32f2f;
+            background-color: ${({ theme }) =>
+              lighten(0.1, theme.colors.buttons.delete)};
           }
         }
       }
@@ -107,6 +138,7 @@ const Stock = () => {
   const [selectedRows, setSelectedRows] = useState<Medicine[]>([]);
   const [searchKeyWord, setSearchKeyWord] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
   const [searchField, setSearchField] = useState<
     | "name"
     | "sellingPrice"
@@ -172,6 +204,10 @@ const Stock = () => {
         <div className="header">
           <h1>Stock</h1>
           <div className="right">
+            <button className="add-button" onClick={() => setShowAddForm(true)}>
+              <CgFileAdd />
+              <span>Ajouter</span>
+            </button>
             <Searchbar
               onFieldChange={(field) => setSearchField(field as any)}
               onKeywordChange={(keyword) => {
@@ -215,9 +251,13 @@ const Stock = () => {
             />
             {selectedRows.length > 0 && (
               <div className="buttons">
-                <button onClick={updateRows}>Modifier</button>
+                <button onClick={updateRows}>
+                  <FiEdit />
+                  <span>Modifier</span>
+                </button>
                 <button onClick={() => setShowConfirmation(true)}>
-                  Supprimer
+                  <AiOutlineDelete />
+                  <span>Supprimer</span>
                 </button>
               </div>
             )}
@@ -250,6 +290,16 @@ const Stock = () => {
             <UpdateForm
               selectedRows={selectedRows}
               onClose={() => location.reload()}
+            />,
+            document.querySelector("#portal") as HTMLElement
+          )
+        : null}
+      {showAddForm
+        ? createPortal(
+            <AddForm
+              onClose={() => {
+                location.reload();
+              }}
             />,
             document.querySelector("#portal") as HTMLElement
           )

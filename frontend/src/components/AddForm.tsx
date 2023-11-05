@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { keyframes, styled } from "styled-components";
 import { api } from "../api";
-import { Medicine, MedicineDto } from "../models";
+import { MedicineDto } from "../models";
 
 const appear = keyframes`
     from {
@@ -119,20 +118,30 @@ const StyledModal = styled.div`
   }
 `;
 
-const UpdateForm = ({
-  selectedRows,
-  onClose,
-}: {
-  selectedRows: Medicine[];
-  onClose: () => void;
-}) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const updateMedicine = (e: React.FormEvent<HTMLFormElement>) => {
+const AddForm = ({ onClose }: { onClose: () => void }) => {
+  const addMedicine = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const form = e.currentTarget as HTMLFormElement;
     const data = new FormData(form);
+
+    const isFormValid =
+      data.get("name")!.toString() != "" &&
+      parseFloat(data.get("cost-price")!.toString()) > 0 &&
+      parseFloat(data.get("selling-price")!.toString()) > 0 &&
+      data.get("dci")!.toString() != "" &&
+      data.get("location")!.toString() != "" &&
+      parseInt(data.get("min")!.toString()) > 0 &&
+      parseInt(data.get("max")!.toString()) > 0 &&
+      parseInt(data.get("quantity")!.toString()) > 0;
+
+    if (!isFormValid) {
+      // TODO: Add form check
+      console.log("Form invalid.");
+      onClose();
+      return;
+    }
+
     const medicineToUpdate: MedicineDto = {
       name: data.get("name")!.toString(),
       costPrice: parseFloat(data.get("cost-price")!.toString()),
@@ -146,37 +155,21 @@ const UpdateForm = ({
     };
 
     api
-      .patch("/stock/" + selectedRows[currentIndex].id, {
+      .post("/stock/medicine", {
         ...medicineToUpdate,
-      })
-      .then(() => {
-        if (currentIndex < selectedRows.length - 1)
-          setCurrentIndex((currentIndex) => currentIndex + 1);
-        else onClose();
       })
       .catch((e) => console.log(e))
       .finally(() => onClose());
-
-    if (currentIndex < selectedRows.length - 1)
-      setCurrentIndex((currentIndex) => currentIndex + 1);
-    else onClose();
   };
 
   return (
     <StyledModal>
       <div className="background" onClick={onClose}></div>
-      <form onSubmit={updateMedicine}>
+      <form onSubmit={addMedicine}>
         <div className="inputs">
           <div>
             <label htmlFor="name">Nom</label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              defaultValue={selectedRows[currentIndex].name}
-              key={selectedRows[currentIndex].id}
-              onChange={() => {}}
-            />
+            <input id="name" name="name" type="text" onChange={() => {}} />
           </div>
           <div>
             <label htmlFor="cost-price">Prix d'achat</label>
@@ -185,8 +178,6 @@ const UpdateForm = ({
               name="cost-price"
               type="number"
               min={0}
-              defaultValue={selectedRows[currentIndex].costPrice}
-              key={selectedRows[currentIndex].id}
               onChange={() => {}}
               onMouseLeave={(e) => {
                 if (parseFloat(e.currentTarget.value) < 0)
@@ -201,8 +192,6 @@ const UpdateForm = ({
               name="selling-price"
               type="number"
               min={0}
-              defaultValue={selectedRows[currentIndex].sellingPrice}
-              key={selectedRows[currentIndex].id}
               onChange={() => {}}
               onMouseLeave={(e) => {
                 if (parseFloat(e.currentTarget.value) < 0)
@@ -217,8 +206,6 @@ const UpdateForm = ({
               name="quantity"
               type="number"
               min={0}
-              defaultValue={selectedRows[currentIndex].quantity}
-              key={selectedRows[currentIndex].id}
               onChange={() => {}}
               onMouseLeave={(e) => {
                 if (parseFloat(e.currentTarget.value) < 0)
@@ -232,32 +219,16 @@ const UpdateForm = ({
               id="location"
               name="location"
               type="text"
-              defaultValue={selectedRows[currentIndex].location}
-              key={selectedRows[currentIndex].id}
               onChange={() => {}}
             />
           </div>
           <div>
             <label htmlFor="dci">DCI</label>
-            <input
-              id="dci"
-              name="dci"
-              type="text"
-              defaultValue={selectedRows[currentIndex].dci}
-              key={selectedRows[currentIndex].id}
-              onChange={() => {}}
-            />
+            <input id="dci" name="dci" type="text" onChange={() => {}} />
           </div>
           <div className="tax">
             <label htmlFor="tax">Taxé</label>
-            <input
-              id="tax"
-              name="tax"
-              type="checkbox"
-              defaultChecked={selectedRows[currentIndex].isTaxed}
-              key={selectedRows[currentIndex].id}
-              onChange={() => {}}
-            />
+            <input id="tax" name="tax" type="checkbox" onChange={() => {}} />
             <span>(Taxé si coché)</span>
           </div>
           <div>
@@ -267,8 +238,6 @@ const UpdateForm = ({
               name="min"
               type="number"
               min={0}
-              defaultValue={selectedRows[currentIndex].min}
-              key={selectedRows[currentIndex].id}
               onChange={() => {}}
               onMouseLeave={(e) => {
                 if (parseFloat(e.currentTarget.value) < 0)
@@ -282,8 +251,6 @@ const UpdateForm = ({
               id="max"
               name="max"
               type="number"
-              defaultValue={selectedRows[currentIndex].max}
-              key={selectedRows[currentIndex].id}
               onChange={() => {}}
               onMouseLeave={(e) => {
                 if (parseFloat(e.currentTarget.value) < 0)
@@ -296,22 +263,11 @@ const UpdateForm = ({
           <button type="button" onClick={onClose}>
             Annuler
           </button>
-          {currentIndex >= selectedRows.length - 1 ? null : (
-            <button
-              type="button"
-              onClick={() =>
-                setCurrentIndex((currentIndex) => currentIndex + 1)
-              }
-              disabled={currentIndex >= selectedRows.length - 1}
-            >
-              Suivant
-            </button>
-          )}
-          <button>Modifier</button>
+          <button>Ajouter</button>
         </div>
       </form>
     </StyledModal>
   );
 };
 
-export default UpdateForm;
+export default AddForm;
