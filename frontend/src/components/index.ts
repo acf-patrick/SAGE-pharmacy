@@ -3,3 +3,4 @@ export { default as ConfirmationDialog } from "./ConfirmationDialog";
 export { default as Pagination } from "./Pagination";
 export { default as Sidebar } from "./SideBar";
 export { default as Searchbar } from "./Searchbar";
+export { default as AddForm } from "./AddForm";
