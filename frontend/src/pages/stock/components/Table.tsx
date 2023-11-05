@@ -2,8 +2,8 @@ import { lighten } from "polished";
 import { useMemo, useState } from "react";
 import { BiSolidDownArrow, BiSolidUpArrow } from "react-icons/bi";
 import styled from "styled-components";
-import { appear } from "../../styles/animations";
-import { Medicine } from "../../models";
+import { appear } from "../../../styles/animations";
+import { Medicine } from "../../../models";
 
 const StyledTable = styled.div`
   overflow-x: auto;

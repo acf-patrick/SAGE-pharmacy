@@ -6,16 +6,16 @@ import { CgFileAdd } from "react-icons/cg";
 import { FiEdit } from "react-icons/fi";
 import { TbBasketCancel } from "react-icons/tb";
 import { keyframes, styled } from "styled-components";
-import { api } from "../api";
+import { api } from "../../api";
 import {
   Pagination,
   ConfirmationDialog,
   Searchbar,
   UpdateForm,
   AddForm,
-} from "../components";
-import { Medicine } from "../models";
-import { appear } from "../styles/animations";
+} from "../../components";
+import { Medicine } from "../../models";
+import { appear } from "../../styles/animations";
 import { Table } from "./components";
 
 type PageQueryResponse = {
