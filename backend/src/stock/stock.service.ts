@@ -1,6 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateMedicineDto } from './dto/UpdateMedicine.dto';
+import { CreateMedicineDto } from './dto/CreateMedicine.dto';
 
 type Query =
   | {
@@ -45,6 +50,21 @@ export class StockService {
   private pageLength = 20;
 
   constructor(private prisma: PrismaService) {}
+
+  async createMedicine(createMedicineDto: CreateMedicineDto) {
+    try {
+      const { id } = await this.prisma.medicine.create({
+        data: createMedicineDto,
+        select: {
+          id: true,
+        },
+      });
+      return id;
+    } catch (e) {
+      console.error(e);
+      throw new BadRequestException('Invalid DTO format');
+    }
+  }
 
   // Returns number of pages for medicines in stock matching given query
   async getPageCount(query?: Query) {
@@ -244,9 +264,9 @@ export class StockService {
   async deleteMedicines(ids: string[]) {
     const { count } = await this.prisma.medicine.deleteMany({
       where: {
-        id: {in: ids}
-      }
-    })
+        id: { in: ids },
+      },
+    });
   }
 
   async updateMedicine(id: string, updateMedicineDto: UpdateMedicineDto) {

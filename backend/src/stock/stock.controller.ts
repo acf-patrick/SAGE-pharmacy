@@ -21,11 +21,22 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { UpdateMedicineDto } from './dto/UpdateMedicine.dto';
+import { CreateMedicineDto } from './dto/CreateMedicine.dto';
 
 @ApiTags('Stock 📦')
 @Controller('api/stock')
 export class StockController {
   constructor(private readonly stockService: StockService) {}
+
+  @Post('medicine')
+  @ApiOperation({ summary: 'Adds medicine to the stock' })
+  @ApiOkResponse({ description: 'Returns medicine ID' })
+  async addMedicine(@Body() createMedicineDto: CreateMedicineDto) {
+    const medicineId = await this.stockService.createMedicine(
+      createMedicineDto,
+    );
+    return medicineId;
+  }
 
   @Get()
   @ApiQuery({
@@ -144,11 +155,11 @@ export class StockController {
   @Post()
   @ApiOperation({ summary: 'Medicine items successfully deleted' })
   @ApiBadRequestResponse({ description: 'Invalid body format' })
-  async deleteMedicines(@Body() body: {ids: string[]}) {
+  async deleteMedicines(@Body() body: { ids: string[] }) {
     try {
       await this.stockService.deleteMedicines(body.ids);
     } catch {
-      throw new NotFoundException("Error when deleting medicines");
+      throw new NotFoundException('Error when deleting medicines');
     }
     return `Medicines removed`;
   }
