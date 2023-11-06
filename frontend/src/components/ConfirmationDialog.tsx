@@ -1,5 +1,6 @@
 import { styled } from "styled-components";
 import { darken, lighten } from "polished";
+import { createPortal } from "react-dom";
 
 export type Content = {
   content: string;
@@ -92,7 +93,7 @@ const ConfirmationDialog = ({
   close: () => void;
   action: () => void;
 }) => {
-  return (
+  return createPortal(
     <StyledModal>
       <div className="modal">
         <div className="content">
@@ -108,7 +109,8 @@ const ConfirmationDialog = ({
           </StyledButton>
         </div>
       </div>
-    </StyledModal>
+    </StyledModal>,
+    document.querySelector("#portal")!
   );
 };
 

@@ -285,25 +285,19 @@ const Stock = () => {
           </h2>
         )}
       </StyledStock>
-      {updateSelectedRows
-        ? createPortal(
-            <UpdateForm
-              selectedRows={selectedRows}
-              onClose={() => location.reload()}
-            />,
-            document.querySelector("#portal") as HTMLElement
-          )
-        : null}
-      {showAddForm
-        ? createPortal(
-            <AddForm
-              onClose={() => {
-                location.reload();
-              }}
-            />,
-            document.querySelector("#portal") as HTMLElement
-          )
-        : null}
+      {updateSelectedRows ? (
+        <UpdateForm
+          selectedRows={selectedRows}
+          onClose={() => location.reload()}
+        />
+      ) : null}
+      {showAddForm ? (
+        <AddForm
+          onClose={() => {
+            location.reload();
+          }}
+        />
+      ) : null}
       {showConfirmation ? (
         <ConfirmationDialog
           header="Supprimer l'élément?"

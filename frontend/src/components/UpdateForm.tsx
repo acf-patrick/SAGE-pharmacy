@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { keyframes, styled } from "styled-components";
 import { api } from "../api";
+import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Medicine, MedicineDto } from "../models";
+import { keyframes, styled } from "styled-components";
 
 const appear = keyframes`
     from {
@@ -162,7 +163,7 @@ const UpdateForm = ({
     else onClose();
   };
 
-  return (
+  return createPortal(
     <StyledModal>
       <div className="background" onClick={onClose}></div>
       <form onSubmit={updateMedicine}>
@@ -310,7 +311,8 @@ const UpdateForm = ({
           <button>Modifier</button>
         </div>
       </form>
-    </StyledModal>
+    </StyledModal>,
+    document.querySelector("#portal")!
   );
 };
 
