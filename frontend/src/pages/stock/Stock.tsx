@@ -322,13 +322,16 @@ export default function Stock() {
       ) : null}
       {showAddForm ? (
         <AddForm
-          onClose={() => {
-            fetchMedicines();
-            setToastQuery("ajouté");
-            setTimeout(() => {
-              setToastQuery("");
-            }, 4500);
+          onClose={(submited) => {
             setShowAddForm(false);
+
+            if (submited) {
+              fetchMedicines();
+              setTimeout(() => {
+                setToastQuery("");
+              }, 4500);
+              setToastQuery("ajouté");
+            }
           }}
         />
       ) : null}

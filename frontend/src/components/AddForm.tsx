@@ -160,7 +160,7 @@ const StyledModal = styled.div`
   }
 `;
 
-const AddForm = ({ onClose }: { onClose: () => void }) => {
+const AddForm = ({ onClose }: { onClose: (submited: boolean) => void }) => {
   const [error, setError] = useState("");
 
   const addMedicine = (e: React.FormEvent<HTMLFormElement>) => {
@@ -189,7 +189,7 @@ const AddForm = ({ onClose }: { onClose: () => void }) => {
       .post("/stock/medicine", {
         ...medicineToUpdate,
       })
-      .then(() => onClose())
+      .then(() => onClose(true))
       .catch((e) => {
         if (e.response.status == 400) {
           setError(
@@ -203,21 +203,21 @@ const AddForm = ({ onClose }: { onClose: () => void }) => {
 
   return createPortal(
     <StyledModal>
-      <div className="background" onClick={onClose}></div>
+      <div className="background" onClick={() => onClose(false)}></div>
       <form onSubmit={addMedicine}>
         <div className="inputs">
           <div>
             <label htmlFor="name">Nom</label>
-            <input id="name" name="name" type="text" onChange={() => {}} />
+            <input required id="name" name="name" type="text" />
           </div>
           <div>
             <label htmlFor="cost-price">Prix d'achat</label>
             <input
+              required
               id="cost-price"
               name="cost-price"
               type="number"
-              min={0}
-              onChange={() => {}}
+              min={100}
               onMouseLeave={(e) => {
                 if (parseFloat(e.currentTarget.value) < 0)
                   e.currentTarget.value = "0";
@@ -227,93 +227,52 @@ const AddForm = ({ onClose }: { onClose: () => void }) => {
           <div>
             <label htmlFor="selling-price">Prix de vente</label>
             <input
+              required
               id="selling-price"
               name="selling-price"
               type="number"
-              min={0}
-              onChange={() => {}}
-              onMouseLeave={(e) => {
-                if (parseFloat(e.currentTarget.value) < 0)
-                  e.currentTarget.value = "0";
-              }}
+              min={100}
             />
           </div>
           <div>
             <label htmlFor="quantity">Quantité</label>
             <input
+              required
               id="quantity"
               name="quantity"
               type="number"
-              min={0}
-              onChange={() => {}}
-              onMouseLeave={(e) => {
-                if (parseFloat(e.currentTarget.value) < 0)
-                  e.currentTarget.value = "0";
-              }}
+              min={1}
             />
           </div>
           <div>
             <label htmlFor="location">Emplacement</label>
-            <input
-              id="location"
-              name="location"
-              type="text"
-              onChange={() => {}}
-            />
+            <input required id="location" name="location" type="text" />
           </div>
           <div>
             <label htmlFor="dci">DCI</label>
-            <input id="dci" name="dci" type="text" onChange={() => {}} />
+            <input required id="dci" name="dci" type="text" />
           </div>
           <div className="tax">
             <label htmlFor="tax">Taxé</label>
-            <input id="tax" name="tax" type="checkbox" onChange={() => {}} />
+            <input id="tax" name="tax" type="checkbox" />
             <span>(Taxé si coché)</span>
           </div>
           <div>
             <label htmlFor="min">Stock Min</label>
-            <input
-              id="min"
-              name="min"
-              type="number"
-              min={0}
-              onChange={() => {}}
-              onMouseLeave={(e) => {
-                if (parseFloat(e.currentTarget.value) < 0)
-                  e.currentTarget.value = "0";
-              }}
-            />
+            <input required id="min" name="min" type="number" min={1} />
           </div>
           <div>
             <label htmlFor="max">Stock Max</label>
-            <input
-              id="max"
-              name="max"
-              type="number"
-              onChange={() => {}}
-              onMouseLeave={(e) => {
-                if (parseFloat(e.currentTarget.value) < 0)
-                  e.currentTarget.value = "0";
-              }}
-            />
+            <input required id="max" name="max" type="number" min={1} />
           </div>
           <div>
             <label htmlFor="max">Expiration</label>
-            <input
-              id="expiration"
-              name="expiration"
-              type="date"
-              onChange={() => {}}
-              onMouseLeave={(e) => {
-                if (parseFloat(e.currentTarget.value) < 0)
-                  e.currentTarget.value = "0";
-              }}
-            />
+            <input required id="expiration" name="expiration" type="date" />
           </div>
         </div>
         <div className="buttons">
           {error.length > 0 ? <p>{error}</p> : null}
-          <button type="button" onClick={onClose}>
+          <button type="button" onClick={() => onClose(false)}>
             Annuler
           </button>
           <button>Ajouter</button>
