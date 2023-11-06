@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { Medicine, MedicineDto } from "../models";
 import { keyframes, styled } from "styled-components";
 
-const errorAppear = keyframes`
+export const errorAppear = keyframes`
 from {
   opacity: 0;
   transform: translateY(5px);
@@ -14,7 +14,7 @@ from {
 }
 `;
 
-const appear = keyframes`
+export const appear = keyframes`
     from {
         opacity: 0;
     } to {
@@ -93,9 +93,10 @@ const StyledModal = styled.div`
       padding: 0.5rem 1rem 1rem;
 
       p {
-        margin: unset;
-        color: red;
-        font-weight: 400;
+        margin: 0 1rem;
+        font-size: ${({ theme }) => theme.error.fontSize};
+        color: ${({ theme }) => theme.error.color};
+        font-weight: 500;
         text-align: justify;
         animation: ${errorAppear} 500ms both;
       }
@@ -193,6 +194,8 @@ const UpdateForm = ({
         console.error(e);
         if (e.response.status === 409) {
           setError("Deux médicaments ne peuvent avoir exactement le même nom.");
+        } else if (e.response.status === 404 || e.response.status == 400) {
+          setError("Produit invalide! Veuillez vérifier les champs.");
         }
       });
   };

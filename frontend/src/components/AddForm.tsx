@@ -1,16 +1,9 @@
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { keyframes, styled } from "styled-components";
 import { api } from "../api";
 import { MedicineDto } from "../models";
-import { useRef } from "react";
-
-const appear = keyframes`
-    from {
-        opacity: 0;
-    } to {
-        opacity: 1;
-    }
-`;
+import { appear, errorAppear } from "./UpdateForm";
 
 const StyledModal = styled.div`
   .background {
@@ -121,12 +114,12 @@ const StyledModal = styled.div`
       padding-right: 1rem;
 
       p {
+        margin: 0 1rem;
         font-size: ${({ theme }) => theme.error.fontSize};
         color: ${({ theme }) => theme.error.color};
-        opacity: 0;
-        transition: opacity 250ms;
-        margin: 0;
-        margin-left: 1rem;
+        font-weight: 500;
+        text-align: justify;
+        animation: ${errorAppear} 500ms both;
       }
 
       button {
@@ -168,7 +161,7 @@ const StyledModal = styled.div`
 `;
 
 const AddForm = ({ onClose }: { onClose: () => void }) => {
-  const errorRef = useRef<HTMLParagraphElement>(null);
+  const [error, setError] = useState("");
 
   const addMedicine = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -199,9 +192,11 @@ const AddForm = ({ onClose }: { onClose: () => void }) => {
       .then(() => onClose())
       .catch((e) => {
         if (e.response.status == 400) {
-          console.log("Status: " + e.response.status);
-          errorRef.current!.style.opacity = "1";
-          setTimeout(() => (errorRef.current!.style.opacity = "0"), 3000);
+          setError(
+            "Produit invalide ou nom déjà existant! Veuillez vérifier les champs."
+          );
+        } else if (e.response.status == 409) {
+          setError("Deux médicaments ne peuvent avoir exactement le même nom.");
         }
       });
   };
@@ -317,7 +312,7 @@ const AddForm = ({ onClose }: { onClose: () => void }) => {
           </div>
         </div>
         <div className="buttons">
-          <p ref={errorRef}>Produit invalide! Veuillez vérifier les champs.</p>
+          {error.length > 0 ? <p>{error}</p> : null}
           <button type="button" onClick={onClose}>
             Annuler
           </button>

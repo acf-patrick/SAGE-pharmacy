@@ -22,7 +22,7 @@ export const theme = {
     modalHeight: "250px",
   },
   error: {
-    fontSize: "1rem",
+    fontSize: "0.9rem",
     color: "red",
   },
 };
