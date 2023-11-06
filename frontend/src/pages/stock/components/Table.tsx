@@ -63,6 +63,7 @@ const StyledTable = styled.div`
 
     td {
       min-width: 10rem;
+      overflow-y: auto;
 
       &:not(:last-of-type) {
         border-right: solid 1px black;
@@ -81,14 +82,18 @@ const StyledTable = styled.div`
         align-items: center;
         padding-left: 1rem;
 
-        > div {
+        &>div {
+          height: 100%;
+          overflow-y: auto;
+        }
+
+        & > div > div {
           display: flex;
           justify-content: flex-start;
           align-items: center;
           flex-grow: 1;
-          height: 100%;
+          //height: 100%;
           max-width: 200px;
-          overflow-x: auto;
           outline: none;
 
           &::-webkit-scrollbar {
@@ -237,7 +242,8 @@ export default function Table({
                 onClick={() => {
                   setSortBy(headersMap.get(header)!);
                   setAscending(!ascending);
-                }}>
+                }}
+              >
                 <div className="inner-th">
                   <p>{header}</p>
                   {headersMap.get(header) == sortBy ? (
@@ -258,7 +264,8 @@ export default function Table({
                 selectedRowIds.findIndex((id) => id === medicine.id) >= 0
                   ? "selected"
                   : ""
-              }>
+              }
+            >
               <td>
                 <input
                   type="checkbox"
@@ -268,7 +275,9 @@ export default function Table({
                   }
                   onChange={() => onRowToggle(medicine)}
                 />
-                <div>{medicine.name}</div>
+                <div>
+                  <div>{medicine.name}</div>
+                </div>
               </td>
               <td>{medicine.costPrice}</td>
               <td>{medicine.sellingPrice}</td>
