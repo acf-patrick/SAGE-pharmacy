@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { keyframes, styled } from "styled-components";
+import { styled } from "styled-components";
 import { api } from "../api";
 import { MedicineDto } from "../models";
 import { appear, errorAppear } from "./UpdateForm";

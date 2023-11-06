@@ -16,6 +16,7 @@ import {
 import { Medicine } from "../../models";
 import { appear } from "../../styles/animations";
 import { Table } from "./components";
+import ToastNotification from "../../components/ToastNotification";
 
 type PageQueryResponse = {
   data: Medicine[];
@@ -151,6 +152,8 @@ export default function Stock() {
 
   // Modal for medicine edition will appear when set
   const [updateSelectedRows, setUpdateSelectedRows] = useState(false);
+
+  const [toastQuery, setToastQuery] = useState("");
 
   useEffect(() => {
     // clear selections
@@ -308,6 +311,10 @@ export default function Stock() {
           onClose={(update) => {
             if (update) {
               fetchMedicines();
+              setToastQuery("modifié");
+              setTimeout(() => {
+                setToastQuery("");
+              }, 4500);
             }
             setUpdateSelectedRows(false);
           }}
@@ -317,6 +324,10 @@ export default function Stock() {
         <AddForm
           onClose={() => {
             fetchMedicines();
+            setToastQuery("ajouté");
+            setTimeout(() => {
+              setToastQuery("");
+            }, 4500);
             setShowAddForm(false);
           }}
         />
@@ -335,6 +346,11 @@ export default function Stock() {
           action={deletSelectedRows}
         />
       ) : null}
+      <ToastNotification
+        onRender={toastQuery.length > 0}
+        content={`Produit ${toastQuery} avec succès.`}
+        onClose={() => setToastQuery("")}
+      />
     </>
   );
 }
