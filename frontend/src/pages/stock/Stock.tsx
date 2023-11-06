@@ -1,6 +1,5 @@
 import { lighten } from "polished";
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 import { AiOutlineDelete } from "react-icons/ai";
 import { CgFileAdd } from "react-icons/cg";
 import { FiEdit } from "react-icons/fi";
