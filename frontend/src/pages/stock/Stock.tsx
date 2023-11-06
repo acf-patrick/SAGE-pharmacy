@@ -12,11 +12,11 @@ import {
   Searchbar,
   UpdateForm,
   AddForm,
+  ToastNotification,
 } from "../../components";
 import { Medicine } from "../../models";
 import { appear } from "../../styles/animations";
 import { Table } from "./components";
-import ToastNotification from "../../components/ToastNotification";
 
 type PageQueryResponse = {
   data: Medicine[];
