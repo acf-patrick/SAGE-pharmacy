@@ -12,7 +12,7 @@ datasource db {
 
 model Medicine {
   id             String   @id @default(uuid())
-  name           String
+  name           String   @unique
   sellingPrice   Int
   costPrice      Int
   quantity       Int

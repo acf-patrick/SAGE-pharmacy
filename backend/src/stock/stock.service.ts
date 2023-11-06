@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateMedicineDto } from './dto/UpdateMedicine.dto';
 
-type Query =
+type MedicineQuery =
   | {
       type: 'name';
       name: string;
@@ -47,7 +47,7 @@ export class StockService {
   constructor(private prisma: PrismaService) {}
 
   // Returns number of pages for medicines in stock matching given query
-  async getPageCount(query?: Query) {
+  async getPageCount(query?: MedicineQuery) {
     let count: number;
 
     if (query) {
@@ -127,7 +127,7 @@ export class StockService {
   }
 
   // Returns medicine items from one page
-  async getPage(page: number, query?: Query) {
+  async getPage(page: number, query?: MedicineQuery) {
     const index = page ? page : 0;
     let medicines;
 
