@@ -1,8 +1,18 @@
 import { api } from "../api";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Medicine, MedicineDto } from "../models";
 import { keyframes, styled } from "styled-components";
+
+const errorAppear = keyframes`
+from {
+  opacity: 0;
+  transform: translateY(5px);
+} to {
+  opacity: 1;
+  transform: translate(0);
+}
+`;
 
 const appear = keyframes`
     from {
@@ -71,16 +81,31 @@ const StyledModal = styled.div`
       }
     }
 
+    .footer {
+      display: flex;
+      flex-direction: row-reverse;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      bottom: 0;
+      background: linear-gradient(to bottom, white, #dcd8d8ac);
+      padding: 0.5rem 1rem 1rem;
+
+      p {
+        margin: unset;
+        color: red;
+        font-weight: 400;
+        text-align: justify;
+        animation: ${errorAppear} 500ms both;
+      }
+    }
+
     .buttons {
       user-select: none;
       display: flex;
       justify-content: flex-end;
       gap: 1rem;
-      position: sticky;
-      bottom: 0;
-      background: linear-gradient(to bottom, white, #dcd8d8ac);
-      padding: 0.5rem 0 1rem;
-      padding-right: 1rem;
 
       button {
         all: unset;
@@ -125,9 +150,15 @@ const UpdateForm = ({
   onClose,
 }: {
   selectedRows: Medicine[];
-  onClose: () => void;
+  onClose: (update: boolean) => void;
 }) => {
+  const [updatePerformed, setUpdatePerformed] = useState(false);
+  const [error, setError] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    setError("");
+  }, [currentIndex]);
 
   const updateMedicine = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -151,21 +182,24 @@ const UpdateForm = ({
         ...medicineToUpdate,
       })
       .then(() => {
-        if (currentIndex < selectedRows.length - 1)
+        if (currentIndex < selectedRows.length - 1) {
+          setUpdatePerformed(true);
           setCurrentIndex((currentIndex) => currentIndex + 1);
-        else onClose();
+        } else {
+          onClose(true);
+        }
       })
-      .catch((e) => console.log(e))
-      .finally(() => onClose());
-
-    if (currentIndex < selectedRows.length - 1)
-      setCurrentIndex((currentIndex) => currentIndex + 1);
-    else onClose();
+      .catch((e) => {
+        console.error(e);
+        if (e.response.status === 409) {
+          setError("Deux médicaments ne peuvent avoir exactement le même nom.");
+        }
+      });
   };
 
   return createPortal(
     <StyledModal>
-      <div className="background" onClick={onClose}></div>
+      <div className="background" onClick={() => onClose(false)}></div>
       <form onSubmit={updateMedicine}>
         <div className="inputs">
           <div>
@@ -293,22 +327,25 @@ const UpdateForm = ({
             />
           </div>
         </div>
-        <div className="buttons">
-          <button type="button" onClick={onClose}>
-            Annuler
-          </button>
-          {currentIndex >= selectedRows.length - 1 ? null : (
-            <button
-              type="button"
-              onClick={() =>
-                setCurrentIndex((currentIndex) => currentIndex + 1)
-              }
-              disabled={currentIndex >= selectedRows.length - 1}
-            >
-              Suivant
+        <div className="footer">
+          <div className="buttons">
+            <button type="button" onClick={() => onClose(updatePerformed)}>
+              Annuler
             </button>
-          )}
-          <button>Modifier</button>
+            {currentIndex >= selectedRows.length - 1 ? null : (
+              <button
+                type="button"
+                onClick={() =>
+                  setCurrentIndex((currentIndex) => currentIndex + 1)
+                }
+                disabled={currentIndex >= selectedRows.length - 1}
+              >
+                Suivant
+              </button>
+            )}
+            <button>Modifier</button>
+          </div>
+          {error.length > 0 ? <p>{error}</p> : null}
         </div>
       </form>
     </StyledModal>,
