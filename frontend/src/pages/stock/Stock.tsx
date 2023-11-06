@@ -1,5 +1,5 @@
 import { lighten } from "polished";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { CgFileAdd } from "react-icons/cg";
 import { FiEdit } from "react-icons/fi";
@@ -130,7 +130,7 @@ const StyledStock = styled.div`
   }
 `;
 
-const Stock = () => {
+export default function Stock() {
   const [currentPage, setCurrentPage] = useState(0);
   const [pagesCount, setPagesCount] = useState(1);
   const [medicines, setMedicines] = useState<Medicine[]>([]);
@@ -184,18 +184,36 @@ const Stock = () => {
   };
 
   const deletSelectedRows = () => {
-    const idsToDelete: string[] = [];
-    selectedRows.map((row) => idsToDelete.push(row.id));
+    setShowConfirmation(false);
+    const idsToDelete = selectedRows.map((row) => row.id);
 
     api
       .post("/stock", {
         ids: idsToDelete,
       })
       .then(() => {
-        location.reload();
+        fetchMedicines();
       })
       .catch((err) => console.error(err));
   };
+
+  const fetchMedicines = useCallback(() => {
+    // clear selections
+    setSelectedRows([]);
+
+    const params = new URLSearchParams();
+    params.set("page", currentPage.toString());
+    params.set(searchField, searchKeyWord);
+
+    api
+      .get(`/stock?${params}`)
+      .then((response) => {
+        const res: PageQueryResponse = response.data;
+        setMedicines(res.data);
+        setPagesCount(res.pageCount);
+      })
+      .catch((err) => console.error(err));
+  }, [searchKeyWord, searchField, currentPage]);
 
   return (
     <>
@@ -287,7 +305,12 @@ const Stock = () => {
       {updateSelectedRows ? (
         <UpdateForm
           selectedRows={selectedRows}
-          onClose={() => location.reload()}
+          onClose={(update) => {
+            if (update) {
+              fetchMedicines();
+            }
+            setUpdateSelectedRows(false);
+          }}
         />
       ) : null}
       {showAddForm ? (
@@ -299,16 +322,18 @@ const Stock = () => {
       ) : null}
       {showConfirmation ? (
         <ConfirmationDialog
-          header="Supprimer l'élément?"
-          info="Cette action est irreversible. Voulez vous vraiment supprimer l'élément?"
+          header={`Supprimer ${selectedRows.length > 1 ? "les" : "l'"} élément${
+            selectedRows.length > 1 ? "s" : ""
+          }`}
+          info={`Cette action est irreversible. Voulez vous vraiment supprimer ${
+            selectedRows.length > 1 ? "les" : "l'"
+          } élément${selectedRows.length > 1 ? "s" : ""}?`}
           leftContent={{ color: "grey", content: "Annuler" }}
           rightContent={{ color: "red", content: "Supprimer" }}
-          close={() => setShowConfirmation(false)}
+          onClose={() => setShowConfirmation(false)}
           action={deletSelectedRows}
         />
       ) : null}
     </>
   );
-};
-
-export default Stock;
+}
