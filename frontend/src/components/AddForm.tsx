@@ -1,15 +1,9 @@
+import { useState } from "react";
+import { createPortal } from "react-dom";
 import { keyframes, styled } from "styled-components";
 import { api } from "../api";
 import { MedicineDto } from "../models";
-import { createPortal } from "react-dom";
-
-const appear = keyframes`
-    from {
-        opacity: 0;
-    } to {
-        opacity: 1;
-    }
-`;
+import { appear, errorAppear } from "./UpdateForm";
 
 const StyledModal = styled.div`
   .background {
@@ -58,6 +52,44 @@ const StyledModal = styled.div`
         input[type="number"] {
           padding: 0.75rem;
         }
+
+        input[type="date"] {
+          padding: 0.75rem;
+          cursor: pointer;
+
+          &::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+          }
+        }
+        input[type="date"]::-webkit-datetime-edit,
+        input[type="date"]::-webkit-inner-spin-button,
+        input[type="date"]::-webkit-clear-button {
+          color: #fff;
+          position: relative;
+        }
+
+        input[type="date"]::-webkit-datetime-edit-year-field {
+          position: absolute !important;
+          border-left: 1px solid #8c8c8c;
+          padding: 2px 5px;
+          color: #000;
+          left: 56px;
+        }
+
+        input[type="date"]::-webkit-datetime-edit-month-field {
+          position: absolute !important;
+          border-left: 1px solid #8c8c8c;
+          padding: 2px 5px;
+          color: #000;
+          left: 26px;
+        }
+
+        input[type="date"]::-webkit-datetime-edit-day-field {
+          position: absolute !important;
+          color: #000;
+          padding: 2px;
+          left: 4px;
+        }
       }
 
       .tax {
@@ -80,6 +112,15 @@ const StyledModal = styled.div`
       background: linear-gradient(to bottom, white, #dcd8d8ac);
       padding: 0.5rem 0 1rem;
       padding-right: 1rem;
+
+      p {
+        margin: 0 1rem;
+        font-size: ${({ theme }) => theme.error.fontSize};
+        color: ${({ theme }) => theme.error.color};
+        font-weight: 500;
+        text-align: justify;
+        animation: ${errorAppear} 500ms both;
+      }
 
       button {
         all: unset;
@@ -120,28 +161,13 @@ const StyledModal = styled.div`
 `;
 
 const AddForm = ({ onClose }: { onClose: () => void }) => {
+  const [error, setError] = useState("");
+
   const addMedicine = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const form = e.currentTarget as HTMLFormElement;
     const data = new FormData(form);
-
-    const isFormValid =
-      data.get("name")!.toString() != "" &&
-      parseFloat(data.get("cost-price")!.toString()) > 0 &&
-      parseFloat(data.get("selling-price")!.toString()) > 0 &&
-      data.get("dci")!.toString() != "" &&
-      data.get("location")!.toString() != "" &&
-      parseInt(data.get("min")!.toString()) > 0 &&
-      parseInt(data.get("max")!.toString()) > 0 &&
-      parseInt(data.get("quantity")!.toString()) > 0;
-
-    if (!isFormValid) {
-      // TODO: Add form check
-      console.log("Form invalid.");
-      onClose();
-      return;
-    }
 
     const medicineToUpdate: MedicineDto = {
       name: data.get("name")!.toString(),
@@ -153,14 +179,26 @@ const AddForm = ({ onClose }: { onClose: () => void }) => {
       min: parseInt(data.get("min")!.toString()),
       max: parseInt(data.get("max")!.toString()),
       quantity: parseInt(data.get("quantity")!.toString()),
+      expirationDate:
+        data.get("expiration")!.toString() == ""
+          ? new Date().toISOString()
+          : new Date(data.get("expiration")!.toString()).toISOString(),
     };
 
     api
       .post("/stock/medicine", {
         ...medicineToUpdate,
       })
-      .catch((e) => console.log(e))
-      .finally(() => onClose());
+      .then(() => onClose())
+      .catch((e) => {
+        if (e.response.status == 400) {
+          setError(
+            "Produit invalide ou nom déjà existant! Veuillez vérifier les champs."
+          );
+        } else if (e.response.status == 409) {
+          setError("Deux médicaments ne peuvent avoir exactement le même nom.");
+        }
+      });
   };
 
   return createPortal(
@@ -259,8 +297,22 @@ const AddForm = ({ onClose }: { onClose: () => void }) => {
               }}
             />
           </div>
+          <div>
+            <label htmlFor="max">Expiration</label>
+            <input
+              id="expiration"
+              name="expiration"
+              type="date"
+              onChange={() => {}}
+              onMouseLeave={(e) => {
+                if (parseFloat(e.currentTarget.value) < 0)
+                  e.currentTarget.value = "0";
+              }}
+            />
+          </div>
         </div>
         <div className="buttons">
+          {error.length > 0 ? <p>{error}</p> : null}
           <button type="button" onClick={onClose}>
             Annuler
           </button>

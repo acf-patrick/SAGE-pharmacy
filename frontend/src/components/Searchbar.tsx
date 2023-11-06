@@ -27,6 +27,7 @@ const StyledSearchbar = styled.div`
   select {
     cursor: pointer;
     font-size: 1rem;
+    height: 2.25rem;
   }
 `;
 
@@ -51,7 +52,8 @@ export default function Searchbar({
           if (onFieldChange) {
             onFieldChange(e.currentTarget.value);
           }
-        }}>
+        }}
+      >
         {fields.map((field, i) => (
           <option key={i} value={field.value}>
             {field.name}

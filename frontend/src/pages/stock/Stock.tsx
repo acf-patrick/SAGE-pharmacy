@@ -316,7 +316,8 @@ export default function Stock() {
       {showAddForm ? (
         <AddForm
           onClose={() => {
-            location.reload();
+            fetchMedicines();
+            setShowAddForm(false);
           }}
         />
       ) : null}

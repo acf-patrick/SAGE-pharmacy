@@ -81,18 +81,16 @@ const StyledTable = styled.div`
         gap: 1rem;
         align-items: center;
         padding-left: 1rem;
+        min-width: 240px;
 
-        &>div {
+        & > div {
           height: 100%;
           overflow-y: auto;
+          display: flex;
+          align-items: center;
         }
 
         & > div > div {
-          display: flex;
-          justify-content: flex-start;
-          align-items: center;
-          flex-grow: 1;
-          //height: 100%;
           max-width: 200px;
           outline: none;
 
