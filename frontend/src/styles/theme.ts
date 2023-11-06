@@ -16,6 +16,9 @@ export const theme = {
       delete: "red",
       add: "blue",
     },
+    lowStock: "#ff7e7e",
+    nearExpiration: "#f7f7ab",
+    lowAndNearExpiration: "orange"
   },
   size: {
     modalWidth: "400px",
