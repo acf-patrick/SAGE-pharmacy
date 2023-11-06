@@ -28,16 +28,20 @@ const StyledButton = styled.button<{ $color: string }>`
 `;
 
 const StyledModal = styled.div`
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  top: 0;
-  left: 0;
-  display: grid;
-  place-items: center;
-  backdrop-filter: blur(2px);
+  .background {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    left: 0;
+    backdrop-filter: blur(2px);
+  }
 
   .modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     background-color: ${({ theme }) => theme.colors.modalBackground};
     height: ${({ theme }) => theme.size.modalHeight};
     width: ${({ theme }) => theme.size.modalWidth};
@@ -83,25 +87,26 @@ const ConfirmationDialog = ({
   info,
   leftContent,
   rightContent,
-  close,
+  onClose,
   action,
 }: {
   header: string;
   info: string;
   leftContent: Content;
   rightContent: Content;
-  close: () => void;
+  onClose: () => void;
   action: () => void;
 }) => {
   return createPortal(
     <StyledModal>
+      <div className="background" onClick={onClose}></div>
       <div className="modal">
         <div className="content">
           <h1>{header}</h1>
           <p>{info}</p>
         </div>
         <div className="buttons">
-          <StyledButton $color={leftContent.color} onClick={close}>
+          <StyledButton $color={leftContent.color} onClick={onClose}>
             {leftContent.content}
           </StyledButton>
           <StyledButton $color={rightContent.color} onClick={action}>

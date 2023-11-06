@@ -277,8 +277,12 @@ export class StockService {
         },
         data: updateMedicineDto,
       });
-    } catch {
-      throw new NotFoundException(`No medicine with given ID ${id} found`);
+    } catch (e) {
+      if (e.code === 'P2002') {
+        throw e;
+      } else {
+        throw new NotFoundException(`No medicine with given ID ${id} found`);
+      }
     }
   }
 }
