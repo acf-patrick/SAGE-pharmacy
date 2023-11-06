@@ -2,8 +2,8 @@ import { lighten } from "polished";
 import { useMemo, useState } from "react";
 import { BiSolidDownArrow, BiSolidUpArrow } from "react-icons/bi";
 import styled from "styled-components";
-import { appear } from "../../../styles/animations";
 import { Medicine } from "../../../models";
+import { appear } from "../../../styles/animations";
 
 const StyledTable = styled.div`
   overflow-x: auto;
@@ -32,6 +32,30 @@ const StyledTable = styled.div`
     width: 100%;
 
     tr {
+      &.low {
+        td {
+          background-color: ${({ theme }) => theme.colors.lowStock};
+        }
+      }
+
+      &.near-expiration {
+        td {
+          background-color: ${({ theme }) => theme.colors.nearExpiration};
+        }
+      }
+
+      &.low.near-expiration {
+        td {
+          background-color: ${({ theme }) => theme.colors.lowAndNearExpiration};
+        }
+
+        &.selected {
+          td {
+            background-color: ${({ theme }) => theme.colors.selectedRow};
+          }
+        }
+      }
+
       &.selected {
         * {
           color: white;
@@ -229,6 +253,20 @@ export default function Table({
     return s;
   };
 
+  const createRowClass = (medicine: Medicine) => {
+    let classValue = "";
+    if (selectedRowIds.findIndex((id) => id === medicine.id) >= 0)
+      classValue += " selected";
+    if (medicine.quantity <= medicine.min) classValue += " low";
+
+    var diff = Math.abs(
+      new Date(medicine.expirationDate).getTime() - new Date().getTime()
+    );
+    var diffDays = Math.ceil(diff / (1000 * 3600 * 24));
+    if (diffDays < 10) classValue += " near-expiration";
+    return classValue;
+  };
+
   return (
     <StyledTable>
       <table>
@@ -256,14 +294,7 @@ export default function Table({
         </thead>
         <tbody>
           {sortedMedicines.map((medicine, i) => (
-            <tr
-              key={medicine.name + i}
-              className={
-                selectedRowIds.findIndex((id) => id === medicine.id) >= 0
-                  ? "selected"
-                  : ""
-              }
-            >
+            <tr key={medicine.name + i} className={createRowClass(medicine)}>
               <td>
                 <input
                   type="checkbox"
