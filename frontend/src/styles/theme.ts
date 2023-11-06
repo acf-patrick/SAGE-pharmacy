@@ -15,10 +15,14 @@ export const theme = {
       edit: "#ff7700",
       delete: "red",
       add: "blue",
-    }
+    },
   },
   size: {
     modalWidth: "400px",
     modalHeight: "250px",
+  },
+  error: {
+    fontSize: "1rem",
+    color: "red",
   },
 };

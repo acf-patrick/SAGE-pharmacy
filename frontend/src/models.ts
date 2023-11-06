@@ -22,4 +22,5 @@ export type MedicineDto = {
   isTaxed: boolean;
   min: number;
   max: number;
+  expirationDate?: string;
 };
