@@ -1,5 +1,5 @@
 import { lighten } from "polished";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useContext } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { CgFileAdd } from "react-icons/cg";
 import { FiEdit } from "react-icons/fi";
@@ -12,11 +12,11 @@ import {
   Searchbar,
   UpdateForm,
   AddForm,
-  ToastNotification,
 } from "../../components";
 import { Medicine } from "../../models";
 import { appear } from "../../styles/animations";
 import { Table } from "./components";
+import { NotificationContext } from "../../contexts";
 
 type PageQueryResponse = {
   data: Medicine[];
@@ -153,7 +153,8 @@ export default function Stock() {
   // Modal for medicine edition will appear when set
   const [updateSelectedRows, setUpdateSelectedRows] = useState(false);
 
-  const [toastQuery, setToastQuery] = useState("");
+  const notificationContext = useContext(NotificationContext);
+  const { setNotificationMessage } = notificationContext!;
 
   useEffect(() => {
     // clear selections
@@ -195,6 +196,7 @@ export default function Stock() {
         ids: idsToDelete,
       })
       .then(() => {
+        setNotificationMessage("Suppression réussie");
         fetchMedicines();
       })
       .catch((err) => console.error(err));
@@ -311,10 +313,7 @@ export default function Stock() {
           onClose={(update) => {
             if (update) {
               fetchMedicines();
-              setToastQuery("modifié");
-              setTimeout(() => {
-                setToastQuery("");
-              }, 4500);
+              setNotificationMessage("Produit modifié avec succès");
             }
             setUpdateSelectedRows(false);
           }}
@@ -327,10 +326,7 @@ export default function Stock() {
 
             if (submited) {
               fetchMedicines();
-              setTimeout(() => {
-                setToastQuery("");
-              }, 4500);
-              setToastQuery("ajouté");
+              setNotificationMessage("Produit ajouté avec succès.");
             }
           }}
         />
@@ -349,11 +345,6 @@ export default function Stock() {
           action={deletSelectedRows}
         />
       ) : null}
-      <ToastNotification
-        onRender={toastQuery.length > 0}
-        content={`Produit ${toastQuery} avec succès.`}
-        onClose={() => setToastQuery("")}
-      />
     </>
   );
 }
