@@ -1,8 +1,9 @@
 import { Outlet } from "react-router-dom";
 import styled, { ThemeProvider } from "styled-components";
-import SideBar from "./components/SideBar.tsx";
 import { GlobalStyles } from "./styles/globalStyles.ts";
 import { theme } from "./styles/theme";
+import { NotificationProvider } from "./contexts/provider";
+import { Sidebar, ToastNotification } from "./components";
 
 const StyledContainer = styled.div`
   width: 100vw;
@@ -16,9 +17,12 @@ function App() {
     <ThemeProvider theme={theme}>
       <GlobalStyles />
       <StyledContainer>
-        <SideBar />
+        <Sidebar />
         <div className="right">
-          <Outlet />
+          <NotificationProvider>
+            <Outlet />
+            <ToastNotification />
+          </NotificationProvider>
         </div>
       </StyledContainer>
     </ThemeProvider>
