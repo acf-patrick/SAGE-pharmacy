@@ -47,6 +47,11 @@ const StyledTable = styled.div`
       &.low.near-expiration {
         td {
           background-color: ${({ theme }) => theme.colors.lowAndNearExpiration};
+
+          &:nth-of-type(4) {
+            color: red;
+            font-weight: 700;
+          }
         }
 
         &.selected {

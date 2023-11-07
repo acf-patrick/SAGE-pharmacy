@@ -85,7 +85,7 @@ export default function ToastNotification() {
           "notification-appears",
           notificationMessage.length > 0
         );
-      }, 0);
+      }, 100);
     }
   }, [notificationMessage]);
 
@@ -95,7 +95,8 @@ export default function ToastNotification() {
         className="notification-appears"
         $color="green"
         onClick={close}
-        ref={innerRef}>
+        ref={innerRef}
+      >
         <div className="toast">
           <AiOutlineCloseCircle />
           <p>{notificationMessage}</p>
