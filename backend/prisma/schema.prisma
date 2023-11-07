@@ -30,7 +30,6 @@ model MedicineFromProvider {
   priceWithTax    Int
   priceWithoutTax Int
   quantity        Int
-  location        String
   dci             String
   Provider        Provider? @relation(fields: [providerId], references: [id])
   providerId      String?

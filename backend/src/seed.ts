@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const prisma = new PrismaClient();
 
-async function main() {
+function createMedicines() {
   const medicines = [
     {
       name: 'Paracetamol',
@@ -62,11 +62,77 @@ async function main() {
     }
   }
 
-  const items = await prisma.medicine.createMany({
+  return prisma.medicine.createMany({
     data: records,
   });
+}
 
-  console.log(items);
+async function createProviders() {
+  const providers = [
+    {
+      name: 'F1',
+      min: 100_000,
+      medicines: [
+        {
+          name: 'Paracetamol',
+          quantity: 2,
+          priceWithoutTax: 900,
+          priceWithTax: 1000,
+          dci: 'Antidouleur',
+          expirationDate: new Date(),
+        },
+        {
+          name: 'Vitamine C',
+          quantity: 20,
+          priceWithoutTax: 1450,
+          priceWithTax: 1500,
+          dci: 'Effervescent',
+          expirationDate: new Date(),
+        },
+      ],
+    },
+    {
+      name: 'F2',
+      min: 100_000,
+      medicines: [
+        {
+          name: 'Metronidazol',
+          quantity: 2,
+          priceWithoutTax: 900,
+          priceWithTax: 1000,
+          dci: 'Antidouleur',
+          expirationDate: new Date(),
+        },
+        {
+          name: 'Vitamine C',
+          quantity: 20,
+          priceWithoutTax: 1450,
+          priceWithTax: 1500,
+          dci: 'Effervescent',
+          expirationDate: new Date(),
+        },
+      ],
+    },
+  ];
+
+  for (let provider of providers) {
+    await prisma.provider.create({
+      data: {
+        name: provider.name,
+        min: provider.min,
+        medicines: {
+          createMany: {
+            data: provider.medicines,
+          },
+        },
+      },
+    });
+  }
+}
+
+async function main() {
+  await createMedicines();
+  await createProviders();
 }
 
 main()

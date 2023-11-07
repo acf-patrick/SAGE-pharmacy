@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateMedicineDto } from './dto/UpdateMedicine.dto';
 import { CreateMedicineDto } from './dto/CreateMedicine.dto';
+import { Medicine } from '@prisma/client';
 
 type MedicineQuery =
   | {
@@ -284,5 +285,11 @@ export class StockService {
         throw new NotFoundException(`No medicine with given ID ${id} found`);
       }
     }
+  }
+
+  async getNearLowMedicines() {
+    const medicines: Medicine[] = await this.prisma
+      .$queryRaw`SELECT * FROM "Medicine" WHERE "quantity" <= "min";`;
+    return medicines;
   }
 }

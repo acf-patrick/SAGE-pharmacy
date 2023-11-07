@@ -130,6 +130,15 @@ export class StockController {
     };
   }
 
+  @Get('near-low')
+  @ApiOperation({
+    summary:
+      'Returns medicines that has quantity lesser or equal than min value',
+  })
+  getNearLowMedicines() {
+    return this.stockService.getNearLowMedicines();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Returns medicine with given ID' })
   async getMedicine(@Param('id') id: string) {
