@@ -9,14 +9,15 @@ export const Context = createContext<
 >(undefined);
 
 export function Provider({ children }: { children: any }) {
-  const [notification, setNotification] = useState("This is a notification");
+  const [notification, setNotification] = useState("");
 
   return (
     <Context.Provider
       value={{
         notificationMessage: notification,
         setNotificationMessage: setNotification,
-      }}>
+      }}
+    >
       {children}
     </Context.Provider>
   );

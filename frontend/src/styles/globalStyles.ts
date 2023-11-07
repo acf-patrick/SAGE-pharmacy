@@ -28,6 +28,9 @@ body {
   &::-webkit-scrollbar-thumb:hover {
     background: ${({ theme }) => lighten(0.2, theme.colors.tertiary)};
   }
+
+  scrollbar-width: thin;
+  scrollbar-color: ${({ theme }) => theme.colors.tertiary} white !important;
 }
 
 a {
