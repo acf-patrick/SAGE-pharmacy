@@ -57,6 +57,10 @@ export default function ToastNotification() {
   const notificationContext = useContext(NotificationContext);
   const { notificationMessage, setNotificationMessage } = notificationContext!;
 
+  if (!notificationMessage) {
+    return null;
+  }
+
   const innerRef = useRef<HTMLDivElement>(null);
 
   const close = () => {
