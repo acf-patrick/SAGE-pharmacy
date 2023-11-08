@@ -118,33 +118,27 @@ const Purchase = () => {
   const [order, setOrder] = useState<MedicineFromProvider[]>([]);
 
   useEffect(() => {
-    api.get("stock/near-low").then(async (response) => {
-      const medicines: Medicine[] = response.data;
-      const names: string[] = [];
-      medicines.map((medicine) => names.push(medicine.name));
-      const matchingMedicines = await getMedicinesMatches(names);
-      setMatchedMedicines(matchingMedicines);
-      setProviderDatas(
-        matchingMedicines.map((med) => ({
-          name: med.providerMedicines[0].provider.name,
-        }))
-      );
-    });
+    getMedicinesMatches()
+      .then((matchingMedicines) => {
+        setMatchedMedicines(matchingMedicines);
+        setProviderDatas(
+          matchingMedicines.map((med) => ({
+            name: med.providerMedicines[0].provider.name,
+          }))
+        );
+      })
+      .catch((err) => console.error(err));
   }, []);
 
-  const getMedicinesMatches = async (names: string[]) => {
-    const res = await api.post("/provider/match", {
-      names,
-    });
-
+  const getMedicinesMatches = async () => {
+    const res = await api.get("/provider/provide");
     const matches: MatchMedicine[] = [];
 
-    for (let name of names) {
-      if (res.data[name])
-        matches.push({
-          name: name,
-          providerMedicines: res.data[name],
-        });
+    for (let name of Object.keys(res.data)) {
+      matches.push({
+        name: name,
+        providerMedicines: res.data[name],
+      });
     }
 
     return matches;
