@@ -1,5 +1,5 @@
 import { lighten } from "polished";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TbBasketCancel } from "react-icons/tb";
 import { styled } from "styled-components";
 import { api } from "../../api";
@@ -7,7 +7,57 @@ import { appear } from "../../components/UpdateForm";
 import { Medicine, MedicineFromProvider } from "../../models";
 
 const StyledPurchase = styled.div`
-  margin: 0 2rem;
+  padding: 0 2rem;
+
+  .container {
+    display: grid;
+    grid-template-columns: 10rem 25rem 10rem;
+    grid-auto-rows: 50px;
+    border: solid 1px black;
+    width: fit-content;
+    border-radius: 5px;
+    max-height: ${({ theme }) => theme.size.purchaseHeight};
+    overflow-y: auto;
+
+    > div {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-right: solid 1px black;
+      font-weight: 600;
+
+      &:nth-of-type(3n) {
+        border-right: unset;
+      }
+
+      select {
+        cursor: pointer;
+        height: 2rem;
+        width: 85%;
+        border-radius: 4px;
+        font-weight: bolder;
+      }
+    }
+
+    .header-item {
+      background-color: red;
+
+      &:nth-of-type(odd) {
+        background-color: ${({ theme }) => theme.colors.tertiary};
+      }
+      &:nth-of-type(even) {
+        background-color: ${({ theme }) => theme.colors.secondary};
+      }
+    }
+
+    .odd {
+      background-color: #80808051;
+    }
+
+    .even {
+      background-color: white;
+    }
+  }
 
   h2 {
     height: 100%;
@@ -46,24 +96,6 @@ const StyledPurchase = styled.div`
       }
     }
   }
-
-  ul {
-    border: solid 1px black;
-    border-radius: 5px;
-    padding: 0 1rem;
-
-    li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-
-      select {
-        cursor: pointer;
-        height: 2rem;
-      }
-    }
-  }
 `;
 
 export type MatchMedicine = {
@@ -74,12 +106,26 @@ export type MatchMedicine = {
 const Purchase = () => {
   const [matchedMedicines, setMatchedMedicines] = useState<MatchMedicine[]>([]);
 
+  const [providerDatas, setProviderDatas] = useState<
+    {
+      name: string;
+    }[]
+  >([]);
+
+  const [order, setOrder] = useState<MedicineFromProvider[]>([]);
+
   useEffect(() => {
     api.get("stock/near-low").then(async (response) => {
       const medicines: Medicine[] = response.data;
       const names: string[] = [];
       medicines.map((medicine) => names.push(medicine.name));
-      setMatchedMedicines(await getMedicinesMatches(names));
+      const matchingMedicines = await getMedicinesMatches(names);
+      setMatchedMedicines(matchingMedicines);
+      setProviderDatas(
+        matchingMedicines.map((med) => ({
+          name: med.providerMedicines[0].providerName,
+        }))
+      );
     });
   }, []);
 
@@ -101,25 +147,69 @@ const Purchase = () => {
     return matches;
   };
 
+  const orderMedicines = () => {
+    const selects = document.querySelectorAll("select");
+    const medicinesToOrder: MedicineFromProvider[] = [];
+    for (let select of selects) {
+      const value = JSON.parse(select.value);
+      medicinesToOrder.push(value.medicine);
+    }
+    setOrder(medicinesToOrder);
+  };
+
+  useEffect(() => console.log(order), [order]);
+
   return (
     <StyledPurchase>
       <div className="header">
         <h1>Purchase</h1>
-        <button>Commander</button>
+        <button onClick={orderMedicines}>Commander</button>
       </div>
       {matchedMedicines.length > 0 ? (
-        <ul>
+        <div className="container">
+          <div className="header-item">En rupture</div>
+          <div className="header-item">Depuis fournisseur</div>
+          <div className="header-item">Fournisseur</div>
           {matchedMedicines.map((medicine, i) => (
-            <li key={i}>
-              <p>{medicine.name}</p>
-              <select name={medicine.name} id={medicine.name}>
-                {medicine.providerMedicines.map((match, i) => (
-                  <option key={i}>{match.medicine.name}</option>
-                ))}
-              </select>
-            </li>
+            <React.Fragment key={i}>
+              <div className={i % 2 == 0 ? "even" : "odd"}>{medicine.name}</div>
+              <div className={i % 2 == 0 ? "even" : "odd"}>
+                {medicine.providerMedicines.length == 1 ? (
+                  <div>{medicine.providerMedicines[0].medicine.name}</div>
+                ) : (
+                  <select
+                    name={medicine.name}
+                    id={medicine.name}
+                    onChange={(e) => {
+                      const { providerName } = JSON.parse(
+                        e.currentTarget.value
+                      );
+                      setProviderDatas((providerDatas) => {
+                        providerDatas[i].name = providerName;
+                        return [...providerDatas];
+                      });
+                    }}
+                  >
+                    {medicine.providerMedicines.map((match, i) => (
+                      <option
+                        key={i}
+                        value={JSON.stringify({
+                          medicine: match.medicine,
+                          providerName: match.providerName,
+                        })}
+                      >
+                        {match.medicine.name + " (" + match.providerName + ")"}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+              <div className={i % 2 == 0 ? "even" : "odd"}>
+                {providerDatas[i].name}
+              </div>
+            </React.Fragment>
           ))}
-        </ul>
+        </div>
       ) : (
         <h2>
           <span>Achat vide</span>
