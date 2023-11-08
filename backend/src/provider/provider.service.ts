@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MedicineFromProvider } from '@prisma/client';
+import { StockService } from 'src/stock/stock.service';
 
 // Utility type used for stock medicine and provider's medicine matching
 type MedicineMapRecord = {
@@ -8,11 +9,15 @@ type MedicineMapRecord = {
   provider: {
     name: string;
   };
+  quantityToOrder: number;
 };
 
 @Injectable()
 export class ProviderService {
-  constructor(readonly prisma: PrismaService) {}
+  constructor(
+    readonly prisma: PrismaService,
+    private stockService: StockService,
+  ) {}
 
   // Returns all providers with their medicines
   getAll() {
@@ -75,11 +80,22 @@ export class ProviderService {
         const record: MedicineMapRecord[] = [];
         for (let medicine of medicines) {
           const provider = await this.getOne(medicine.providerId);
+          const medicineInStock = await this.stockService.getMedicineByName(
+            name,
+          );
+
+          const numberOfMedicinesToOrder =
+            medicineInStock.max - medicineInStock.quantity;
+
           record.push({
-            medicine: medicine,
+            medicine,
             provider: {
               name: provider.name,
             },
+            quantityToOrder:
+              medicine.quantity > numberOfMedicinesToOrder
+                ? numberOfMedicinesToOrder
+                : medicine.quantity,
           });
         }
         map.set(name, record);

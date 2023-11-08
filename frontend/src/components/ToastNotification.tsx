@@ -90,7 +90,9 @@ export default function ToastNotification() {
   }, [notificationMessage]);
 
   return createPortal(
-    <StyledContainer>
+    <StyledContainer
+      style={{ display: !notificationMessage ? "none" : "block" }}
+    >
       <StyledToastDiv
         className="notification-appears"
         $color="green"

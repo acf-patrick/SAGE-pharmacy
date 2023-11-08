@@ -11,7 +11,7 @@ const StyledPurchase = styled.div`
 
   .container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr 0.5fr repeat(2, 1fr);
     grid-auto-rows: 50px;
     border: solid 1px black;
     width: fit-content;
@@ -20,16 +20,20 @@ const StyledPurchase = styled.div`
     overflow-y: auto;
     width: 100%;
 
+    input[type="number"] {
+      border: none;
+      outline: none;
+      text-align: center;
+      border-right: solid 1px black;
+      font-weight: 700;
+    }
+
     > div {
       display: flex;
       justify-content: center;
       align-items: center;
       border-right: solid 1px black;
       font-weight: 600;
-
-      &:nth-of-type(3n) {
-        border-right: unset;
-      }
 
       select {
         cursor: pointer;
@@ -107,11 +111,13 @@ const StyledPurchase = styled.div`
   }
 `;
 
+// Got from request response from /provider/provide
 export type MatchMedicine = {
   name: string;
   providerMedicines: {
     medicine: MedicineFromProvider;
     provider: { name: string };
+    quantityToOrder: number;
   }[];
 };
 
@@ -121,6 +127,7 @@ const Purchase = () => {
   const [providerDatas, setProviderDatas] = useState<
     {
       name: string;
+      order: number; // Number of medicine to order
     }[]
   >([]);
 
@@ -133,23 +140,34 @@ const Purchase = () => {
         setProviderDatas(
           matchingMedicines.map((med) => ({
             name: med.providerMedicines[0].provider.name,
+            order: med.providerMedicines[0].quantityToOrder,
           }))
         );
       })
       .catch((err) => console.error(err));
   }, []);
 
+  // Get all matched near-low quantity medicines
   const getMedicinesMatches = async () => {
     const res = await api.get("/provider/provide");
+    const data: Record<
+      string,
+      {
+        medicine: MedicineFromProvider;
+        provider: { name: string };
+        quantityToOrder: number;
+      }[]
+    > = res.data;
+
+    // return data;
+
     const matches: MatchMedicine[] = [];
 
-    for (let name of Object.keys(res.data)) {
-      if (res.data[name]) {
-        matches.push({
-          name: name,
-          providerMedicines: res.data[name],
-        });
-      }
+    for (let name of Object.keys(data)) {
+      matches.push({
+        name,
+        providerMedicines: data[name],
+      });
     }
 
     return matches;
@@ -169,17 +187,20 @@ const Purchase = () => {
     setOrder(medicinesToOrder);
   };
 
-  useEffect(() => console.log(order), [order]);
+  useEffect(() => {
+    console.log(order);
+  }, [order]);
 
   return (
     <StyledPurchase>
       <div className="header">
-        <h1>Purchase</h1>
+        <h1>Achats</h1>
         <button onClick={orderMedicines}>Commander</button>
       </div>
       {matchedMedicines.length > 0 ? (
         <div className="container">
           <div className="header-item">En rupture</div>
+          <div className="header-item">A commander</div>
           <div className="header-item">Depuis fournisseur</div>
           <div className="header-item">Fournisseur</div>
           {matchedMedicines.map((medicine, i) => (
@@ -187,6 +208,12 @@ const Purchase = () => {
               <div className={"name " + (i % 2 == 0 ? "even" : "odd")}>
                 {medicine.name}
               </div>
+              <input
+                className={i % 2 == 0 ? "even" : "odd"}
+                type="number"
+                defaultValue={medicine.providerMedicines[i].quantityToOrder}
+                max={medicine.providerMedicines[i].medicine.quantity}
+              />
               <div className={i % 2 == 0 ? "even" : "odd"}>
                 {medicine.providerMedicines.length == 1 ? (
                   <div

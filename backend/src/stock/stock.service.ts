@@ -254,6 +254,12 @@ export class StockService {
     });
   }
 
+  getMedicineByName(name: string) {
+    return this.prisma.medicine.findUnique({
+      where: { name },
+    });
+  }
+
   // Delete one medicine
   deleteMedicine(id: string) {
     return this.prisma.medicine.delete({

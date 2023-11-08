@@ -9,7 +9,7 @@ export const Context = createContext<
 >(undefined);
 
 export function Provider({ children }: { children: any }) {
-  const [notification, setNotification] = useState("Stock chargé");
+  const [notification, setNotification] = useState("");
 
   return (
     <Context.Provider
