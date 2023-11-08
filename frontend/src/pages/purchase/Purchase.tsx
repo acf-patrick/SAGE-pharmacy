@@ -3,8 +3,29 @@ import React, { useEffect, useState } from "react";
 import { TbBasketCancel } from "react-icons/tb";
 import { styled } from "styled-components";
 import { api } from "../../api";
-import { appear } from "../../components/UpdateForm";
 import { MedicineFromProvider } from "../../models";
+import { appear } from "../../styles/animations";
+
+// Got from request response from /provider/provide
+type MatchMedicine = {
+  name: string;
+  providerMedicines: {
+    medicine: MedicineFromProvider;
+    provider: { name: string };
+    quantityToOrder: number;
+  }[];
+};
+
+type ValueFromSelectBox = {
+  medicine: MedicineFromProvider;
+  providerName: string;
+  quantityToOrder: number;
+};
+
+type Order = {
+  medicineId: string;
+  quantityToOrder: number;
+};
 
 const StyledPurchase = styled.div`
   padding: 0 2rem;
@@ -92,6 +113,7 @@ const StyledPurchase = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
+    animation: ${appear} 500ms both;
 
     button {
       background-color: ${({ theme }) => theme.colors.tertiary};
@@ -111,16 +133,6 @@ const StyledPurchase = styled.div`
   }
 `;
 
-// Got from request response from /provider/provide
-export type MatchMedicine = {
-  name: string;
-  providerMedicines: {
-    medicine: MedicineFromProvider;
-    provider: { name: string };
-    quantityToOrder: number;
-  }[];
-};
-
 const Purchase = () => {
   const [matchedMedicines, setMatchedMedicines] = useState<MatchMedicine[]>([]);
 
@@ -128,10 +140,11 @@ const Purchase = () => {
     {
       name: string;
       order: number; // Number of medicine to order
+      available: number;
     }[]
   >([]);
 
-  const [order, setOrder] = useState<MedicineFromProvider[]>([]);
+  const [order, setOrder] = useState<Order[]>([]);
 
   useEffect(() => {
     getMedicinesMatches()
@@ -141,11 +154,16 @@ const Purchase = () => {
           matchingMedicines.map((med) => ({
             name: med.providerMedicines[0].provider.name,
             order: med.providerMedicines[0].quantityToOrder,
+            available: med.providerMedicines[0].medicine.quantity,
           }))
         );
       })
       .catch((err) => console.error(err));
   }, []);
+
+  useEffect(() => {
+    console.log(matchedMedicines);
+  }, [matchedMedicines]);
 
   // Get all matched near-low quantity medicines
   const getMedicinesMatches = async () => {
@@ -158,8 +176,6 @@ const Purchase = () => {
         quantityToOrder: number;
       }[]
     > = res.data;
-
-    // return data;
 
     const matches: MatchMedicine[] = [];
 
@@ -176,13 +192,27 @@ const Purchase = () => {
   const orderMedicines = () => {
     const selects = document.querySelectorAll("select");
     const medicinesNamesDiv = document.querySelectorAll(".medicine-name");
-    const medicinesToOrder: MedicineFromProvider[] = [];
+    const medicinesToOrder: Order[] = [];
     for (let select of selects) {
-      const value = JSON.parse(select.value);
-      medicinesToOrder.push(value.medicine);
+      const prev = select.parentElement!
+        .previousElementSibling! as HTMLInputElement;
+      const value: ValueFromSelectBox = JSON.parse(select.value);
+
+      medicinesToOrder.push({
+        medicineId: value.medicine.id,
+        quantityToOrder: parseInt(prev.value),
+      });
     }
     for (let div of medicinesNamesDiv) {
-      medicinesToOrder.push(JSON.parse(div.getAttribute("data-medicine")!));
+      const prev = div.parentElement!
+        .previousElementSibling! as HTMLInputElement;
+      const medicine: MedicineFromProvider = JSON.parse(
+        div.getAttribute("data-medicine")!
+      )!;
+      medicinesToOrder.push({
+        medicineId: medicine.id,
+        quantityToOrder: parseInt(prev.value),
+      });
     }
     setOrder(medicinesToOrder);
   };
@@ -211,8 +241,8 @@ const Purchase = () => {
               <input
                 className={i % 2 == 0 ? "even" : "odd"}
                 type="number"
-                defaultValue={medicine.providerMedicines[i].quantityToOrder}
-                max={medicine.providerMedicines[i].medicine.quantity}
+                defaultValue={providerDatas[i].order}
+                max={providerDatas[i].available}
               />
               <div className={i % 2 == 0 ? "even" : "odd"}>
                 {medicine.providerMedicines.length == 1 ? (
@@ -229,11 +259,17 @@ const Purchase = () => {
                     name={medicine.name}
                     id={medicine.name}
                     onChange={(e) => {
-                      const { providerName } = JSON.parse(
+                      const obj: ValueFromSelectBox = JSON.parse(
                         e.currentTarget.value
                       );
+
+                      const { medicine, providerName, quantityToOrder } = obj;
+
                       setProviderDatas((providerDatas) => {
                         providerDatas[i].name = providerName;
+                        providerDatas[i].available = medicine.quantity;
+                        providerDatas[i].order = quantityToOrder;
+
                         return [...providerDatas];
                       });
                     }}
@@ -244,6 +280,7 @@ const Purchase = () => {
                         value={JSON.stringify({
                           medicine: match.medicine,
                           providerName: match.provider.name,
+                          order: match.quantityToOrder,
                         })}
                       >
                         {match.medicine.name + " (" + match.provider.name + ")"}
