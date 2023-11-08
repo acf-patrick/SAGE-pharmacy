@@ -3,20 +3,26 @@ import {
   Body,
   Post,
   Param,
+  HttpCode,
   NotFoundException,
   Controller,
 } from '@nestjs/common';
 import { ProviderService } from './provider.service';
 import { StockService } from '../stock/stock.service';
-import { ApiOperation } from '@nestjs/swagger';
-import { MedicineFromProvider } from '@prisma/client';
+import {
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { MatchMedicinesDTO } from './dto/MatchMedicines.dto';
 
+@ApiTags('Provider 🏭')
 @Controller('api/provider')
 export class ProviderController {
   constructor(
     private readonly providerService: ProviderService,
-    stockService: StockService,
+    private stockService: StockService,
   ) {}
 
   @Get()
@@ -25,35 +31,31 @@ export class ProviderController {
     return this.providerService.getAll();
   }
 
+  @Get('provide')
+  @ApiOperation({
+    summary:
+      'Check medicines with near low quantity and find matches from providers',
+  })
+  @ApiOkResponse({
+    description:
+      'Returns a map that has medicine name as key and medicine list from providers ',
+  })
+  @ApiNotFoundResponse({ description: 'If no matching has been done' })
+  async provideMedicinesForNearLow() {
+    const names = (await this.stockService.getNearLowMedicines()).map(
+      (record) => record.name,
+    );
+
+    return this.providerService.getMatchingMedicinesForNameList(names);
+  }
+
   @Post('match')
-  async getMatchingMedicines(@Body() { names }: MatchMedicinesDTO) {
-    const map = new Map<string, any>();
-    for (let name of names) {
-      let medicines: any = await this.providerService.getMatchingMedicines(name);
-      if (medicines.length > 0) {
-        const tmp = [];
-        for (let medicine of medicines) {
-          const provider = await this.providerService.getOne(medicine.providerId);
-          tmp.push({
-            medicine: medicine,
-            providerName: provider.name
-          });
-        }
-        medicines = tmp
-        map.set(name, medicines);
-      }
-    }
-
-    if (map.size === 0) {
-      throw new NotFoundException('No matching medicines for given names');
-    }
-
-    let ret: any = {};
-    for (let key of map.keys()) {
-      ret[key] = map.get(key);
-    }
-
-    return ret;
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Map medicine names to medicines from providers',
+  })
+  getMatchingMedicines(@Body() { names }: MatchMedicinesDTO) {
+    return this.providerService.getMatchingMedicinesForNameList(names);
   }
 
   @Get(':id')
