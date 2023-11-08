@@ -1,4 +1,5 @@
 import {
+  HttpCode,
   BadRequestException,
   Body,
   Controller,
@@ -162,6 +163,7 @@ export class StockController {
   }
 
   @Post()
+  @HttpCode(204)
   @ApiOperation({ summary: 'Medicine items successfully deleted' })
   @ApiBadRequestResponse({ description: 'Invalid body format' })
   async deleteMedicines(@Body() body: { ids: string[] }) {

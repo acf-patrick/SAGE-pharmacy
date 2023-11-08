@@ -1,5 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { MedicineFromProvider } from '@prisma/client';
+
+// Utility type used for stock medicine and provider's medicine matching
+type MedicineMapRecord = {
+  medicine: MedicineFromProvider;
+  provider: {
+    name: string;
+  };
+};
 
 @Injectable()
 export class ProviderService {
@@ -35,5 +44,42 @@ export class ProviderService {
         },
       },
     });
+  }
+
+  // return matching medicines for name list
+  async getMatchingMedicinesForNameList(
+    names: string[],
+  ): Promise<Record<string, MedicineMapRecord[]>> {
+    const map = new Map<string, MedicineMapRecord[]>();
+
+    for (let name of names) {
+      let medicines = await this.getMatchingMedicines(name);
+      if (medicines.length > 0) {
+        const record: MedicineMapRecord[] = [];
+        for (let medicine of medicines) {
+          const provider = await this.getOne(medicine.providerId);
+          record.push({
+            medicine: medicine,
+            provider: {
+              name: provider.name,
+            },
+          });
+        }
+        map.set(name, record);
+      }
+    }
+
+    if (map.size === 0) {
+      throw new NotFoundException(
+        'No available medicine from provider for given medicine names',
+      );
+    }
+
+    let ret: any = {};
+    for (let key of map.keys()) {
+      ret[key] = map.get(key);
+    }
+
+    return ret;
   }
 }
