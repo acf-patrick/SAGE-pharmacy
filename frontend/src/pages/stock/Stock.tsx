@@ -333,14 +333,14 @@ export default function Stock() {
       ) : null}
       {showConfirmation ? (
         <ConfirmationDialog
-          header={`Supprimer ${selectedRows.length > 1 ? "les" : "l'"} élément${
+          title={`Supprimer ${selectedRows.length > 1 ? "les" : "l'"} élément${
             selectedRows.length > 1 ? "s" : ""
           }`}
-          info={`Cette action est irreversible. Voulez vous vraiment supprimer ${
+          message={`Cette action est irreversible. Voulez vous vraiment supprimer ${
             selectedRows.length > 1 ? "les" : "l'"
           } élément${selectedRows.length > 1 ? "s" : ""}?`}
-          leftContent={{ color: "grey", content: "Annuler" }}
-          rightContent={{ color: "red", content: "Supprimer" }}
+          cancel={{ buttonColor: "grey", text: "Annuler" }}
+          confirm={{ buttonColor: "red", text: "Supprimer" }}
           onClose={() => setShowConfirmation(false)}
           action={deletSelectedRows}
         />

@@ -3,8 +3,8 @@ import { darken, lighten } from "polished";
 import { createPortal } from "react-dom";
 
 export type Content = {
-  content: string;
-  color: string;
+  text: string;
+  buttonColor: string;
 };
 
 const StyledButton = styled.button<{ $color: string }>`
@@ -83,17 +83,17 @@ const StyledModal = styled.div`
 `;
 
 const ConfirmationDialog = ({
-  header,
-  info,
-  leftContent,
-  rightContent,
+  title,
+  message,
+  confirm,
+  cancel,
   onClose,
   action,
 }: {
-  header: string;
-  info: string;
-  leftContent: Content;
-  rightContent: Content;
+  title: string;
+  message: string;
+  confirm: Content;
+  cancel: Content;
   onClose: () => void;
   action: () => void;
 }) => {
@@ -102,15 +102,15 @@ const ConfirmationDialog = ({
       <div className="background" onClick={onClose}></div>
       <div className="modal">
         <div className="content">
-          <h1>{header}</h1>
-          <p>{info}</p>
+          <h1>{title}</h1>
+          <p>{message}</p>
         </div>
         <div className="buttons">
-          <StyledButton $color={leftContent.color} onClick={onClose}>
-            {leftContent.content}
+          <StyledButton $color={cancel.buttonColor} onClick={onClose}>
+            {cancel.text}
           </StyledButton>
-          <StyledButton $color={rightContent.color} onClick={action}>
-            {rightContent.content}
+          <StyledButton $color={confirm.buttonColor} onClick={action}>
+            {confirm.text}
           </StyledButton>
         </div>
       </div>

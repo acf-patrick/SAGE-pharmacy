@@ -222,6 +222,7 @@ const Purchase = () => {
       });
     }
 
+    console.log(medicinesToOrder);
     setOrder(medicinesToOrder);
   };
 
@@ -315,11 +316,14 @@ const Purchase = () => {
       </StyledPurchase>
       {showConfirmation ? (
         <ConfirmationDialog
-          action={orderMedicines}
-          header="Confirmer la commande?"
-          info="Voulez-vous vraimnet commander les produits listés?"
-          leftContent={{ content: "Commander", color: "green" }}
-          rightContent={{ content: "Annuler", color: "red" }}
+          action={() => {
+            orderMedicines();
+            setShowConfirmation(false);
+          }}
+          title="Confirmer la commande?"
+          message="Voulez-vous vraimnet commander les produits listés?"
+          confirm={{ text: "Commander", buttonColor: "green" }}
+          cancel={{ text: "Annuler", buttonColor: "red" }}
           onClose={() => setShowConfirmation(false)}
         />
       ) : null}
