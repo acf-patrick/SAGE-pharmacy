@@ -18,6 +18,7 @@ const StyledPurchase = styled.div`
     border-radius: 5px;
     max-height: ${({ theme }) => theme.size.purchaseHeight};
     overflow-y: auto;
+    width: 100%;
 
     > div {
       display: flex;
@@ -41,10 +42,13 @@ const StyledPurchase = styled.div`
 
     .name {
       padding: 0 1rem;
+      overflow-x: auto;
+      justify-content: flex-start;
     }
 
     .header-item {
       background-color: red;
+      color: white;
 
       &:nth-of-type(odd) {
         background-color: ${({ theme }) => theme.colors.tertiary};
@@ -140,10 +144,12 @@ const Purchase = () => {
     const matches: MatchMedicine[] = [];
 
     for (let name of Object.keys(res.data)) {
-      matches.push({
-        name: name,
-        providerMedicines: res.data[name],
-      });
+      if (res.data[name]) {
+        matches.push({
+          name: name,
+          providerMedicines: res.data[name],
+        });
+      }
     }
 
     return matches;
@@ -151,10 +157,14 @@ const Purchase = () => {
 
   const orderMedicines = () => {
     const selects = document.querySelectorAll("select");
+    const medicinesNamesDiv = document.querySelectorAll(".medicine-name");
     const medicinesToOrder: MedicineFromProvider[] = [];
     for (let select of selects) {
       const value = JSON.parse(select.value);
       medicinesToOrder.push(value.medicine);
+    }
+    for (let div of medicinesNamesDiv) {
+      medicinesToOrder.push(JSON.parse(div.getAttribute("data-medicine")!));
     }
     setOrder(medicinesToOrder);
   };
@@ -179,7 +189,14 @@ const Purchase = () => {
               </div>
               <div className={i % 2 == 0 ? "even" : "odd"}>
                 {medicine.providerMedicines.length == 1 ? (
-                  <div>{medicine.providerMedicines[0].medicine.name}</div>
+                  <div
+                    className="medicine-name"
+                    data-medicine={JSON.stringify(
+                      medicine.providerMedicines[0].medicine
+                    )}
+                  >
+                    {medicine.providerMedicines[0].medicine.name}
+                  </div>
                 ) : (
                   <select
                     name={medicine.name}
