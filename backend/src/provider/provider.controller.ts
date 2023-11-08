@@ -27,10 +27,19 @@ export class ProviderController {
 
   @Post('match')
   async getMatchingMedicines(@Body() { names }: MatchMedicinesDTO) {
-    const map = new Map<string, MedicineFromProvider[]>();
+    const map = new Map<string, any>();
     for (let name of names) {
-      const medicines = await this.providerService.getMatchingMedicines(name);
+      let medicines: any = await this.providerService.getMatchingMedicines(name);
       if (medicines.length > 0) {
+        const tmp = [];
+        for (let medicine of medicines) {
+          const provider = await this.providerService.getOne(medicine.providerId);
+          tmp.push({
+            medicine: medicine,
+            providerName: provider.name
+          });
+        }
+        medicines = tmp
         map.set(name, medicines);
       }
     }
