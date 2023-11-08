@@ -4,14 +4,14 @@ import { TbBasketCancel } from "react-icons/tb";
 import { styled } from "styled-components";
 import { api } from "../../api";
 import { appear } from "../../components/UpdateForm";
-import { Medicine, MedicineFromProvider } from "../../models";
+import { MedicineFromProvider } from "../../models";
 
 const StyledPurchase = styled.div`
   padding: 0 2rem;
 
   .container {
     display: grid;
-    grid-template-columns: 10rem 25rem 10rem;
+    grid-template-columns: repeat(3, 1fr);
     grid-auto-rows: 50px;
     border: solid 1px black;
     width: fit-content;
@@ -39,12 +39,17 @@ const StyledPurchase = styled.div`
       }
     }
 
+    .name {
+      padding: 0 1rem;
+    }
+
     .header-item {
       background-color: red;
 
       &:nth-of-type(odd) {
         background-color: ${({ theme }) => theme.colors.tertiary};
       }
+
       &:nth-of-type(even) {
         background-color: ${({ theme }) => theme.colors.secondary};
       }
@@ -169,7 +174,9 @@ const Purchase = () => {
           <div className="header-item">Fournisseur</div>
           {matchedMedicines.map((medicine, i) => (
             <React.Fragment key={i}>
-              <div className={i % 2 == 0 ? "even" : "odd"}>{medicine.name}</div>
+              <div className={"name " + (i % 2 == 0 ? "even" : "odd")}>
+                {medicine.name}
+              </div>
               <div className={i % 2 == 0 ? "even" : "odd"}>
                 {medicine.providerMedicines.length == 1 ? (
                   <div>{medicine.providerMedicines[0].medicine.name}</div>
