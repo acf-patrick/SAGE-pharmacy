@@ -18,11 +18,12 @@ export const theme = {
     },
     lowStock: "#ff7e7e",
     nearExpiration: "#f7f7ab",
-    lowAndNearExpiration: "orange"
+    lowAndNearExpiration: "orange",
   },
   size: {
     modalWidth: "400px",
     modalHeight: "250px",
+    purchaseHeight: "85vh",
   },
   error: {
     fontSize: "0.9rem",
