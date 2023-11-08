@@ -100,7 +100,10 @@ const StyledPurchase = styled.div`
 
 export type MatchMedicine = {
   name: string;
-  providerMedicines: { medicine: MedicineFromProvider; providerName: string }[];
+  providerMedicines: {
+    medicine: MedicineFromProvider;
+    provider: { name: string };
+  }[];
 };
 
 const Purchase = () => {
@@ -123,7 +126,7 @@ const Purchase = () => {
       setMatchedMedicines(matchingMedicines);
       setProviderDatas(
         matchingMedicines.map((med) => ({
-          name: med.providerMedicines[0].providerName,
+          name: med.providerMedicines[0].provider.name,
         }))
       );
     });
@@ -195,10 +198,10 @@ const Purchase = () => {
                         key={i}
                         value={JSON.stringify({
                           medicine: match.medicine,
-                          providerName: match.providerName,
+                          providerName: match.provider.name,
                         })}
                       >
-                        {match.medicine.name + " (" + match.providerName + ")"}
+                        {match.medicine.name + " (" + match.provider.name + ")"}
                       </option>
                     ))}
                   </select>

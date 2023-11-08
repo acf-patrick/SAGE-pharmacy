@@ -34,13 +34,30 @@ export class ProviderService {
     });
   }
 
+  getMedicineNames() {
+    return this.prisma.medicineFromProvider.findMany({
+      select: {
+        name: true,
+      },
+    });
+  }
+
   // temporary matching technique
-  getMatchingMedicines(name: string) {
+  async getMatchingMedicines(name: string) {
+    const medicineNames = (await this.getMedicineNames()).map(
+      ({ name }) => name,
+    );
+
+    const names = medicineNames.filter(
+      (medicine) =>
+        medicine.toLowerCase().includes(name.toLowerCase()) ||
+        name.toLowerCase().includes(medicine.toLowerCase()),
+    );
+
     return this.prisma.medicineFromProvider.findMany({
       where: {
         name: {
-          mode: 'insensitive',
-          contains: name,
+          in: names,
         },
       },
     });
