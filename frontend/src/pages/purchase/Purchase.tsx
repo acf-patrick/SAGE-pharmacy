@@ -5,6 +5,7 @@ import { styled } from "styled-components";
 import { api } from "../../api";
 import { MedicineFromProvider } from "../../models";
 import { appear } from "../../styles/animations";
+import { ConfirmationDialog } from "../../components";
 
 // Got from request response from /provider/provide
 type MatchMedicine = {
@@ -144,6 +145,8 @@ const Purchase = () => {
     }[]
   >([]);
 
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
   const [order, setOrder] = useState<Order[]>([]);
 
   useEffect(() => {
@@ -222,86 +225,101 @@ const Purchase = () => {
   }, [order]);
 
   return (
-    <StyledPurchase>
-      <div className="header">
-        <h1>Achats</h1>
-        <button onClick={orderMedicines}>Commander</button>
-      </div>
-      {matchedMedicines.length > 0 ? (
-        <div className="container">
-          <div className="header-item">En rupture</div>
-          <div className="header-item">A commander</div>
-          <div className="header-item">Depuis fournisseur</div>
-          <div className="header-item">Fournisseur</div>
-          {matchedMedicines.map((medicine, i) => (
-            <React.Fragment key={i}>
-              <div className={"name " + (i % 2 == 0 ? "even" : "odd")}>
-                {medicine.name}
-              </div>
-              <input
-                className={i % 2 == 0 ? "even" : "odd"}
-                type="number"
-                defaultValue={providerDatas[i].order}
-                max={providerDatas[i].available}
-              />
-              <div className={i % 2 == 0 ? "even" : "odd"}>
-                {medicine.providerMedicines.length == 1 ? (
-                  <div
-                    className="medicine-name"
-                    data-medicine={JSON.stringify(
-                      medicine.providerMedicines[0].medicine
-                    )}
-                  >
-                    {medicine.providerMedicines[0].medicine.name}
-                  </div>
-                ) : (
-                  <select
-                    name={medicine.name}
-                    id={medicine.name}
-                    onChange={(e) => {
-                      const obj: ValueFromSelectBox = JSON.parse(
-                        e.currentTarget.value
-                      );
-
-                      const { medicine, providerName, quantityToOrder } = obj;
-
-                      setProviderDatas((providerDatas) => {
-                        providerDatas[i].name = providerName;
-                        providerDatas[i].available = medicine.quantity;
-                        providerDatas[i].order = quantityToOrder;
-
-                        return [...providerDatas];
-                      });
-                    }}
-                  >
-                    {medicine.providerMedicines.map((match, i) => (
-                      <option
-                        key={i}
-                        value={JSON.stringify({
-                          medicine: match.medicine,
-                          providerName: match.provider.name,
-                          order: match.quantityToOrder,
-                        })}
-                      >
-                        {match.medicine.name + " (" + match.provider.name + ")"}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-              <div className={i % 2 == 0 ? "even" : "odd"}>
-                {providerDatas[i].name}
-              </div>
-            </React.Fragment>
-          ))}
+    <>
+      <StyledPurchase>
+        <div className="header">
+          <h1>Achats</h1>
+          <button onClick={() => setShowConfirmation(true)}>Commander</button>
         </div>
-      ) : (
-        <h2>
-          <span>Achat vide</span>
-          <TbBasketCancel />
-        </h2>
-      )}
-    </StyledPurchase>
+        {matchedMedicines.length > 0 ? (
+          <div className="container">
+            <div className="header-item">En rupture</div>
+            <div className="header-item">A commander</div>
+            <div className="header-item">Depuis fournisseur</div>
+            <div className="header-item">Fournisseur</div>
+            {matchedMedicines.map((medicine, i) => (
+              <React.Fragment key={i}>
+                <div className={"name " + (i % 2 == 0 ? "even" : "odd")}>
+                  {medicine.name}
+                </div>
+                <input
+                  className={i % 2 == 0 ? "even" : "odd"}
+                  type="number"
+                  defaultValue={providerDatas[i].order}
+                  max={providerDatas[i].available}
+                />
+                <div className={i % 2 == 0 ? "even" : "odd"}>
+                  {medicine.providerMedicines.length == 1 ? (
+                    <div
+                      className="medicine-name"
+                      data-medicine={JSON.stringify(
+                        medicine.providerMedicines[0].medicine
+                      )}
+                    >
+                      {medicine.providerMedicines[0].medicine.name}
+                    </div>
+                  ) : (
+                    <select
+                      name={medicine.name}
+                      id={medicine.name}
+                      onChange={(e) => {
+                        const obj: ValueFromSelectBox = JSON.parse(
+                          e.currentTarget.value
+                        );
+
+                        const { medicine, providerName, quantityToOrder } = obj;
+
+                        setProviderDatas((providerDatas) => {
+                          providerDatas[i].name = providerName;
+                          providerDatas[i].available = medicine.quantity;
+                          providerDatas[i].order = quantityToOrder;
+
+                          return [...providerDatas];
+                        });
+                      }}
+                    >
+                      {medicine.providerMedicines.map((match, i) => (
+                        <option
+                          key={i}
+                          value={JSON.stringify({
+                            medicine: match.medicine,
+                            providerName: match.provider.name,
+                            order: match.quantityToOrder,
+                          })}
+                        >
+                          {match.medicine.name +
+                            " (" +
+                            match.provider.name +
+                            ")"}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+                <div className={i % 2 == 0 ? "even" : "odd"}>
+                  {providerDatas[i].name}
+                </div>
+              </React.Fragment>
+            ))}
+          </div>
+        ) : (
+          <h2>
+            <span>Achat vide</span>
+            <TbBasketCancel />
+          </h2>
+        )}
+      </StyledPurchase>
+      {showConfirmation ? (
+        <ConfirmationDialog
+          action={orderMedicines}
+          header="Confirmer la commande?"
+          info="Voulez-vous vraimnet commander les produits listés?"
+          leftContent={{ content: "Commander", color: "green" }}
+          rightContent={{ content: "Annuler", color: "red" }}
+          onClose={() => setShowConfirmation(false)}
+        />
+      ) : null}
+    </>
   );
 };
 
