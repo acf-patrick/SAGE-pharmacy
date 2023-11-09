@@ -1,13 +1,13 @@
 import { lighten } from "polished";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TbBasketCancel } from "react-icons/tb";
+import { MoonLoader } from "react-spinners";
 import { styled } from "styled-components";
 import { api } from "../../api";
+import { ConfirmationDialog } from "../../components";
+import { useNotification } from "../../hooks";
 import { MedicineFromProvider } from "../../models";
 import { appear } from "../../styles/animations";
-import { ConfirmationDialog } from "../../components";
-import { MoonLoader } from "react-spinners";
-import { useNotification } from "../../hooks";
 
 // Converted map from request response from /provider/provide to common JS object
 type MatchMedicine = {

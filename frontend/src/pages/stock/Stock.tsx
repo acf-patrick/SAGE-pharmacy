@@ -1,25 +1,24 @@
 import { lighten } from "polished";
-import { useEffect, useState, useCallback, useContext } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { CgFileAdd } from "react-icons/cg";
 import { FiEdit } from "react-icons/fi";
+import { MdSelectAll } from "react-icons/md";
 import { TbBasketCancel } from "react-icons/tb";
+import { MoonLoader } from "react-spinners";
 import { keyframes, styled } from "styled-components";
 import { api } from "../../api";
 import {
-  Pagination,
+  AddForm,
   ConfirmationDialog,
+  Pagination,
   Searchbar,
   UpdateForm,
-  AddForm,
 } from "../../components";
+import { useNotification } from "../../hooks";
 import { Medicine } from "../../models";
 import { appear } from "../../styles/animations";
 import { Table } from "./components";
-import { NotificationContext } from "../../contexts";
-import { MoonLoader } from "react-spinners";
-import { MdSelectAll } from "react-icons/md";
-import { useNotification } from "../../hooks";
 
 type PageQueryResponse = {
   data: Medicine[];
