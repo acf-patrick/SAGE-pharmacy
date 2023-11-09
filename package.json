@@ -15,8 +15,5 @@
     "dev": "concurrently \"cd backend && yarn start:dev\" \"cd frontend && yarn dev --host\" \"cd backend && npx prisma studio\"",
     "start": "cd backend && yarn start:prod",
     "postinstall": "cd frontend && yarn && cd ../backend && yarn && npx prisma migrate dev"
-  },
-  "dependencies": {
-    "react-spinners": "^0.13.8"
   }
 }
