@@ -1,11 +1,13 @@
 import { lighten } from "polished";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { TbBasketCancel } from "react-icons/tb";
 import { styled } from "styled-components";
 import { api } from "../../api";
 import { MedicineFromProvider } from "../../models";
 import { appear } from "../../styles/animations";
 import { ConfirmationDialog } from "../../components";
+import { MoonLoader } from "react-spinners";
+import { useNotification } from "../../hooks";
 
 // Converted map from request response from /provider/provide to common JS object
 type MatchMedicine = {
@@ -30,6 +32,29 @@ type Order = {
 
 const StyledPurchase = styled.div`
   padding: 0 2rem;
+  position: relative;
+
+  .checkbox {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+
+    label {
+      cursor: pointer;
+    }
+
+    input {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+
+  .pending {
+    position: absolute;
+    top: 50vh;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 
   .container {
     display: grid;
@@ -115,7 +140,9 @@ const StyledPurchase = styled.div`
     justify-content: space-between;
     align-items: center;
     animation: ${appear} 500ms both;
+  }
 
+  .buttons {
     button {
       background-color: ${({ theme }) => theme.colors.tertiary};
       color: white;
@@ -137,6 +164,8 @@ const StyledPurchase = styled.div`
 const Purchase = () => {
   // Medicines proposed from GET /api/provider/provide
   const [matchedMedicines, setMatchedMedicines] = useState<MatchMedicine[]>([]);
+  const [selectedRowIndices, setselectedRowIndices] = useState<number[]>([]);
+  const [pending, setPending] = useState(true);
 
   const [providerDatas, setProviderDatas] = useState<
     {
@@ -149,6 +178,8 @@ const Purchase = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   const [order, setOrder] = useState<Order[]>([]);
+
+  const { pushNotification } = useNotification();
 
   useEffect(() => {
     console.log(order);
@@ -166,7 +197,8 @@ const Purchase = () => {
           }))
         );
       })
-      .catch((err) => console.error(err));
+      .catch((err) => console.error(err))
+      .finally(() => setPending(false));
   }, []);
 
   // Get all matched near-low quantity medicines
@@ -200,6 +232,10 @@ const Purchase = () => {
     const medicinesToOrder: Order[] = [];
 
     for (let select of selects) {
+      if (select.getAttribute("data-selected") !== "true") {
+        continue;
+      }
+
       const prev = select.parentElement!
         .previousElementSibling! as HTMLInputElement;
       const value: ValueFromSelectBox = JSON.parse(select.value);
@@ -211,6 +247,10 @@ const Purchase = () => {
     }
 
     for (let div of medicinesNamesDiv) {
+      if (div.getAttribute("data-selected") !== "true") {
+        continue;
+      }
+
       const prev = div.parentElement!
         .previousElementSibling! as HTMLInputElement;
       const medicine: MedicineFromProvider = JSON.parse(
@@ -222,7 +262,6 @@ const Purchase = () => {
       });
     }
 
-    console.log(medicinesToOrder);
     setOrder(medicinesToOrder);
   };
 
@@ -243,75 +282,133 @@ const Purchase = () => {
     });
   };
 
+  const orderInputValueOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const defaultValue = e.currentTarget.defaultValue;
+    const maxValue = e.currentTarget.max;
+    if (isNaN(parseInt(e.currentTarget.value))) {
+      e.currentTarget.value = defaultValue;
+    }
+    if (parseInt(e.currentTarget.value) > parseInt(maxValue))
+      e.currentTarget.value = maxValue;
+  };
+
   return (
     <>
       <StyledPurchase>
         <div className="header">
           <h1>Achats</h1>
-          <button onClick={() => setShowConfirmation(true)}>Commander</button>
+          <div className="buttons">
+            <button
+              onClick={() => {
+                if (selectedRowIndices.length === 0) {
+                  pushNotification(
+                    "Sélectionner des lignes pour passer une commande!"
+                  );
+                } else {
+                  setShowConfirmation(true);
+                }
+              }}
+            >
+              Commander
+            </button>
+          </div>
         </div>
-        {matchedMedicines.length > 0 ? (
-          <div className="container">
-            <>
-              <div className="header-item">En rupture</div>
-              <div className="header-item">A commander</div>
-              <div className="header-item">Depuis fournisseur</div>
-              <div className="header-item">Fournisseur</div>
-            </>
-            {matchedMedicines.map((medicine, i) => (
-              <React.Fragment key={i}>
-                <div className={"name " + (i % 2 == 0 ? "even" : "odd")}>
-                  {medicine.name}
-                </div>
-                <input
-                  className={i % 2 == 0 ? "even" : "odd"}
-                  type="number"
-                  key={providerDatas[i].order}
-                  defaultValue={providerDatas[i].order}
-                  max={providerDatas[i].available}
-                />
-                <div className={i % 2 == 0 ? "even" : "odd"}>
-                  {medicine.providerMedicines.length == 1 ? (
-                    <div
-                      className="medicine-name"
-                      data-medicine={JSON.stringify(
-                        medicine.providerMedicines[0].medicine
-                      )}>
-                      {medicine.providerMedicines[0].medicine.name}
-                    </div>
-                  ) : (
-                    <select
-                      name={medicine.name}
-                      id={medicine.name}
-                      onChange={(e) => selectedMedicineOnChange(i, e)}>
-                      {medicine.providerMedicines.map((match, i) => (
-                        <option
-                          key={i}
-                          value={JSON.stringify({
-                            medicine: match.medicine,
-                            providerName: match.provider.name,
-                            order: match.quantityToOrder,
-                          })}>
-                          {match.medicine.name +
-                            " (" +
-                            match.provider.name +
-                            ")"}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-                <div className={i % 2 == 0 ? "even" : "odd"}>
-                  {providerDatas[i].name}
-                </div>
-              </React.Fragment>
-            ))}
+        {pending ? (
+          <div className="pending">
+            <MoonLoader color="#90B77D" loading={pending} size={45} />
           </div>
         ) : (
-          <h2>
-            <span>Achat vide</span>
-            <TbBasketCancel />
-          </h2>
+          <>
+            {matchedMedicines.length > 0 ? (
+              <div className="container">
+                <>
+                  <div className="header-item">En rupture</div>
+                  <div className="header-item">A commander</div>
+                  <div className="header-item">Depuis fournisseur</div>
+                  <div className="header-item">Fournisseur</div>
+                </>
+                {matchedMedicines.map((medicine, i) => (
+                  <React.Fragment key={i}>
+                    <div
+                      className={[
+                        "checkbox",
+                        "name",
+                        i % 2 == 0 ? "even" : "odd",
+                      ].join(" ")}
+                    >
+                      <input
+                        type="checkbox"
+                        id={medicine.name}
+                        checked={selectedRowIndices.includes(i)}
+                        onChange={(e) => {
+                          if (e.currentTarget.checked) {
+                            setselectedRowIndices((indices) => [...indices, i]);
+                          } else {
+                            setselectedRowIndices((indices) =>
+                              indices.filter((index) => i !== index)
+                            );
+                          }
+                        }}
+                      />
+                      <label htmlFor={medicine.name}>{medicine.name}</label>
+                    </div>
+                    <input
+                      className={i % 2 == 0 ? "even" : "odd"}
+                      type="number"
+                      key={providerDatas[i].order}
+                      defaultValue={providerDatas[i].order}
+                      max={providerDatas[i].available}
+                      onChange={orderInputValueOnChange}
+                    />
+                    <div className={i % 2 == 0 ? "even" : "odd"}>
+                      {medicine.providerMedicines.length == 1 ? (
+                        <div
+                          data-selected={selectedRowIndices.includes(i)}
+                          className="medicine-name"
+                          data-medicine={JSON.stringify(
+                            medicine.providerMedicines[0].medicine
+                          )}
+                        >
+                          {medicine.providerMedicines[0].medicine.name}
+                        </div>
+                      ) : (
+                        <select
+                          data-selected={selectedRowIndices.includes(i)}
+                          name={medicine.name}
+                          id={medicine.name}
+                          onChange={(e) => selectedMedicineOnChange(i, e)}
+                        >
+                          {medicine.providerMedicines.map((match, i) => (
+                            <option
+                              key={i}
+                              value={JSON.stringify({
+                                medicine: match.medicine,
+                                providerName: match.provider.name,
+                                order: match.quantityToOrder,
+                              })}
+                            >
+                              {match.medicine.name +
+                                " (" +
+                                match.provider.name +
+                                ")"}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                    <div className={i % 2 == 0 ? "even" : "odd"}>
+                      {providerDatas[i].name}
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
+            ) : (
+              <h2>
+                <span>Achat vide</span>
+                <TbBasketCancel />
+              </h2>
+            )}
+          </>
         )}
       </StyledPurchase>
       {showConfirmation ? (
