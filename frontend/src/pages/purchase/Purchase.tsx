@@ -255,6 +255,18 @@ const Purchase = () => {
     });
   };
 
+  const orderInputValueChangeHandler = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const defaultValue = e.currentTarget.defaultValue;
+    const maxValue = e.currentTarget.max;
+    if (isNaN(parseInt(e.currentTarget.value))) {
+      e.currentTarget.value = defaultValue;
+    }
+    if (parseInt(e.currentTarget.value) > parseInt(maxValue))
+      e.currentTarget.value = maxValue;
+  };
+
   return (
     <>
       <StyledPurchase>
@@ -279,7 +291,8 @@ const Purchase = () => {
                 {matchedMedicines.map((medicine, i) => (
                   <React.Fragment key={i}>
                     <div className={"name " + (i % 2 == 0 ? "even" : "odd")}>
-                      {medicine.name}
+                      <input type="checkbox" name="" id="" />
+                      <span> {medicine.name}</span>
                     </div>
                     <input
                       className={i % 2 == 0 ? "even" : "odd"}
@@ -287,6 +300,7 @@ const Purchase = () => {
                       key={providerDatas[i].order}
                       defaultValue={providerDatas[i].order}
                       max={providerDatas[i].available}
+                      onChange={orderInputValueChangeHandler}
                     />
                     <div className={i % 2 == 0 ? "even" : "odd"}>
                       {medicine.providerMedicines.length == 1 ? (
