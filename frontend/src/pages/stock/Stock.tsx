@@ -19,6 +19,7 @@ import { Table } from "./components";
 import { NotificationContext } from "../../contexts";
 import { MoonLoader } from "react-spinners";
 import { MdSelectAll } from "react-icons/md";
+import { useNotification } from "../../hooks";
 
 type PageQueryResponse = {
   data: Medicine[];
@@ -172,9 +173,7 @@ export default function Stock() {
 
   // Modal for medicine edition will appear when set
   const [updateSelectedRows, setUpdateSelectedRows] = useState(false);
-
-  const notificationContext = useContext(NotificationContext);
-  const { setNotificationMessage } = notificationContext!;
+  const { pushNotification } = useNotification();
 
   useEffect(() => {
     // clear selections
@@ -190,9 +189,9 @@ export default function Stock() {
         const res: PageQueryResponse = response.data;
         setMedicines(res.data);
         setPagesCount(res.pageCount);
-        setPending(false);
       })
-      .catch((err) => console.error(err));
+      .catch((err) => console.error(err))
+      .finally(() => setPending(false));
   }, [searchKeyWord, searchField, currentPage]);
 
   const toggleMedicine = (medicine: Medicine) => {
@@ -217,7 +216,7 @@ export default function Stock() {
         ids: idsToDelete,
       })
       .then(() => {
-        setNotificationMessage("Suppression réussie");
+        pushNotification("Suppression réussie");
         fetchMedicines();
       })
       .catch((err) => console.error(err));
@@ -360,7 +359,7 @@ export default function Stock() {
           onClose={(update) => {
             if (update) {
               fetchMedicines();
-              setNotificationMessage("Produit modifié avec succès");
+              pushNotification("Produit modifié avec succès");
             }
             setUpdateSelectedRows(false);
           }}
@@ -373,7 +372,7 @@ export default function Stock() {
 
             if (submited) {
               fetchMedicines();
-              setNotificationMessage("Produit ajouté avec succès.");
+              pushNotification("Produit ajouté avec succès.");
             }
           }}
         />
