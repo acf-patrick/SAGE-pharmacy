@@ -1,5 +1,5 @@
 import { lighten } from "polished";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TbBasketCancel } from "react-icons/tb";
 import { styled } from "styled-components";
 import { api } from "../../api";
