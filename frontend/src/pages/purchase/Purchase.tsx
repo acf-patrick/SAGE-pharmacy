@@ -6,6 +6,7 @@ import { api } from "../../api";
 import { MedicineFromProvider } from "../../models";
 import { appear } from "../../styles/animations";
 import { ConfirmationDialog } from "../../components";
+import { MoonLoader } from "react-spinners";
 
 // Converted map from request response from /provider/provide to common JS object
 type MatchMedicine = {
@@ -30,6 +31,14 @@ type Order = {
 
 const StyledPurchase = styled.div`
   padding: 0 2rem;
+  position: relative;
+
+  .pending {
+    position: absolute;
+    top: 50vh;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 
   .container {
     display: grid;
@@ -137,6 +146,7 @@ const StyledPurchase = styled.div`
 const Purchase = () => {
   // Medicines proposed from GET /api/provider/provide
   const [matchedMedicines, setMatchedMedicines] = useState<MatchMedicine[]>([]);
+  const [pending, setPending] = useState(true);
 
   const [providerDatas, setProviderDatas] = useState<
     {
@@ -189,6 +199,8 @@ const Purchase = () => {
         providerMedicines: data[name],
       });
     }
+
+    setPending(false);
 
     return matches;
   };
@@ -250,68 +262,79 @@ const Purchase = () => {
           <h1>Achats</h1>
           <button onClick={() => setShowConfirmation(true)}>Commander</button>
         </div>
-        {matchedMedicines.length > 0 ? (
-          <div className="container">
-            <>
-              <div className="header-item">En rupture</div>
-              <div className="header-item">A commander</div>
-              <div className="header-item">Depuis fournisseur</div>
-              <div className="header-item">Fournisseur</div>
-            </>
-            {matchedMedicines.map((medicine, i) => (
-              <React.Fragment key={i}>
-                <div className={"name " + (i % 2 == 0 ? "even" : "odd")}>
-                  {medicine.name}
-                </div>
-                <input
-                  className={i % 2 == 0 ? "even" : "odd"}
-                  type="number"
-                  key={providerDatas[i].order}
-                  defaultValue={providerDatas[i].order}
-                  max={providerDatas[i].available}
-                />
-                <div className={i % 2 == 0 ? "even" : "odd"}>
-                  {medicine.providerMedicines.length == 1 ? (
-                    <div
-                      className="medicine-name"
-                      data-medicine={JSON.stringify(
-                        medicine.providerMedicines[0].medicine
-                      )}>
-                      {medicine.providerMedicines[0].medicine.name}
-                    </div>
-                  ) : (
-                    <select
-                      name={medicine.name}
-                      id={medicine.name}
-                      onChange={(e) => selectedMedicineOnChange(i, e)}>
-                      {medicine.providerMedicines.map((match, i) => (
-                        <option
-                          key={i}
-                          value={JSON.stringify({
-                            medicine: match.medicine,
-                            providerName: match.provider.name,
-                            order: match.quantityToOrder,
-                          })}>
-                          {match.medicine.name +
-                            " (" +
-                            match.provider.name +
-                            ")"}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-                <div className={i % 2 == 0 ? "even" : "odd"}>
-                  {providerDatas[i].name}
-                </div>
-              </React.Fragment>
-            ))}
+        {pending ? (
+          <div className="pending">
+            <MoonLoader color="#90B77D" loading={pending} size={45} />
           </div>
         ) : (
-          <h2>
-            <span>Achat vide</span>
-            <TbBasketCancel />
-          </h2>
+          <>
+            {matchedMedicines.length > 0 ? (
+              <div className="container">
+                <>
+                  <div className="header-item">En rupture</div>
+                  <div className="header-item">A commander</div>
+                  <div className="header-item">Depuis fournisseur</div>
+                  <div className="header-item">Fournisseur</div>
+                </>
+                {matchedMedicines.map((medicine, i) => (
+                  <React.Fragment key={i}>
+                    <div className={"name " + (i % 2 == 0 ? "even" : "odd")}>
+                      {medicine.name}
+                    </div>
+                    <input
+                      className={i % 2 == 0 ? "even" : "odd"}
+                      type="number"
+                      key={providerDatas[i].order}
+                      defaultValue={providerDatas[i].order}
+                      max={providerDatas[i].available}
+                    />
+                    <div className={i % 2 == 0 ? "even" : "odd"}>
+                      {medicine.providerMedicines.length == 1 ? (
+                        <div
+                          className="medicine-name"
+                          data-medicine={JSON.stringify(
+                            medicine.providerMedicines[0].medicine
+                          )}
+                        >
+                          {medicine.providerMedicines[0].medicine.name}
+                        </div>
+                      ) : (
+                        <select
+                          name={medicine.name}
+                          id={medicine.name}
+                          onChange={(e) => selectedMedicineOnChange(i, e)}
+                        >
+                          {medicine.providerMedicines.map((match, i) => (
+                            <option
+                              key={i}
+                              value={JSON.stringify({
+                                medicine: match.medicine,
+                                providerName: match.provider.name,
+                                order: match.quantityToOrder,
+                              })}
+                            >
+                              {match.medicine.name +
+                                " (" +
+                                match.provider.name +
+                                ")"}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                    <div className={i % 2 == 0 ? "even" : "odd"}>
+                      {providerDatas[i].name}
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
+            ) : (
+              <h2>
+                <span>Achat vide</span>
+                <TbBasketCancel />
+              </h2>
+            )}
+          </>
         )}
       </StyledPurchase>
       {showConfirmation ? (

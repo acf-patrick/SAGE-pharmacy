@@ -17,6 +17,8 @@ import { Medicine } from "../../models";
 import { appear } from "../../styles/animations";
 import { Table } from "./components";
 import { NotificationContext } from "../../contexts";
+import { MoonLoader } from "react-spinners";
+import { MdSelectAll } from "react-icons/md";
 
 type PageQueryResponse = {
   data: Medicine[];
@@ -39,6 +41,14 @@ const StyledStock = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-around;
+  position: relative;
+
+  .pending {
+    position: absolute;
+    top: 50vh;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 
   .add-button {
     background-color: ${({ theme }) => theme.colors.buttons.add};
@@ -53,6 +63,15 @@ const StyledStock = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
+
+    .select-all-button {
+      background-color: ${({ theme }) => theme.colors.selectAllBackground};
+
+      &:hover {
+        background-color: ${({ theme }) =>
+          lighten(0.1, theme.colors.selectAllBackground)};
+      }
+    }
 
     button {
       border: none;
@@ -149,6 +168,7 @@ export default function Stock() {
     | "min"
     | "max"
   >("name");
+  const [pending, setPending] = useState(true);
 
   // Modal for medicine edition will appear when set
   const [updateSelectedRows, setUpdateSelectedRows] = useState(false);
@@ -170,6 +190,7 @@ export default function Stock() {
         const res: PageQueryResponse = response.data;
         setMedicines(res.data);
         setPagesCount(res.pageCount);
+        setPending(false);
       })
       .catch((err) => console.error(err));
   }, [searchKeyWord, searchField, currentPage]);
@@ -220,12 +241,28 @@ export default function Stock() {
       .catch((err) => console.error(err));
   }, [searchKeyWord, searchField, currentPage]);
 
+  const toggleAllRows = (toggle: boolean) => {
+    setSelectedRows(toggle ? medicines : []);
+  };
+
   return (
     <>
       <StyledStock>
         <div className="header">
           <h1>Stock</h1>
           <div className="right">
+            <button
+              className="select-all-button"
+              onClick={() =>
+                toggleAllRows(selectedRows.length != medicines.length)
+              }
+            >
+              <MdSelectAll />
+              <span>
+                {selectedRows.length == medicines.length ? "Desel." : "Sel."}{" "}
+                Tout
+              </span>
+            </button>
             <button className="add-button" onClick={() => setShowAddForm(true)}>
               <CgFileAdd />
               <span>Ajouter</span>
@@ -285,27 +322,37 @@ export default function Stock() {
             )}
           </div>
         </div>
-        {medicines.length > 0 ? (
-          <>
-            <Table
-              medicines={medicines}
-              selectedRowIds={selectedRows.map((medicine) => medicine.id)}
-              onRowToggle={toggleMedicine}
-            />
-            {pagesCount > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                onPageChange={setCurrentPage}
-                pagesCount={pagesCount}
-              />
-            )}
-          </>
-        ) : (
-          <h2>
-            <span>Stock vide</span>
-            <TbBasketCancel />
-          </h2>
-        )}
+        <>
+          {pending ? (
+            <div className="pending">
+              <MoonLoader color="#90B77D" loading={pending} size={45} />
+            </div>
+          ) : (
+            <>
+              {medicines.length > 0 ? (
+                <>
+                  <Table
+                    medicines={medicines}
+                    selectedRowIds={selectedRows.map((medicine) => medicine.id)}
+                    onRowToggle={toggleMedicine}
+                  />
+                  {pagesCount > 1 && (
+                    <Pagination
+                      currentPage={currentPage}
+                      onPageChange={setCurrentPage}
+                      pagesCount={pagesCount}
+                    />
+                  )}
+                </>
+              ) : (
+                <h2>
+                  <span>Stock vide</span>
+                  <TbBasketCancel />
+                </h2>
+              )}
+            </>
+          )}
+        </>
       </StyledStock>
       {updateSelectedRows ? (
         <UpdateForm
