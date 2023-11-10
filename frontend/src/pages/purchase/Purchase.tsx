@@ -1,12 +1,13 @@
 import { lighten } from "polished";
 import React, { useEffect, useState } from "react";
 import { TbBasketCancel } from "react-icons/tb";
+import { MoonLoader } from "react-spinners";
 import { styled } from "styled-components";
 import { api } from "../../api";
+import { ConfirmationDialog } from "../../components";
+import { useNotification } from "../../hooks";
 import { MedicineFromProvider } from "../../models";
 import { appear } from "../../styles/animations";
-import { ConfirmationDialog } from "../../components";
-import { MoonLoader } from "react-spinners";
 
 // Converted map from request response from /provider/provide to common JS object
 type MatchMedicine = {
@@ -32,6 +33,21 @@ type Order = {
 const StyledPurchase = styled.div`
   padding: 0 2rem;
   position: relative;
+
+  .checkbox {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+
+    label {
+      cursor: pointer;
+    }
+
+    input {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
 
   .pending {
     position: absolute;
@@ -124,7 +140,9 @@ const StyledPurchase = styled.div`
     justify-content: space-between;
     align-items: center;
     animation: ${appear} 500ms both;
+  }
 
+  .buttons {
     button {
       background-color: ${({ theme }) => theme.colors.tertiary};
       color: white;
@@ -146,6 +164,7 @@ const StyledPurchase = styled.div`
 const Purchase = () => {
   // Medicines proposed from GET /api/provider/provide
   const [matchedMedicines, setMatchedMedicines] = useState<MatchMedicine[]>([]);
+  const [selectedRowIndices, setselectedRowIndices] = useState<number[]>([]);
   const [pending, setPending] = useState(true);
 
   const [providerDatas, setProviderDatas] = useState<
@@ -159,6 +178,8 @@ const Purchase = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   const [order, setOrder] = useState<Order[]>([]);
+
+  const { pushNotification } = useNotification();
 
   useEffect(() => {
     console.log(order);
@@ -176,7 +197,8 @@ const Purchase = () => {
           }))
         );
       })
-      .catch((err) => console.error(err));
+      .catch((err) => console.error(err))
+      .finally(() => setPending(false));
   }, []);
 
   // Get all matched near-low quantity medicines
@@ -200,8 +222,6 @@ const Purchase = () => {
       });
     }
 
-    setPending(false);
-
     return matches;
   };
 
@@ -212,6 +232,10 @@ const Purchase = () => {
     const medicinesToOrder: Order[] = [];
 
     for (let select of selects) {
+      if (select.getAttribute("data-selected") !== "true") {
+        continue;
+      }
+
       const prev = select.parentElement!
         .previousElementSibling! as HTMLInputElement;
       const value: ValueFromSelectBox = JSON.parse(select.value);
@@ -223,6 +247,10 @@ const Purchase = () => {
     }
 
     for (let div of medicinesNamesDiv) {
+      if (div.getAttribute("data-selected") !== "true") {
+        continue;
+      }
+
       const prev = div.parentElement!
         .previousElementSibling! as HTMLInputElement;
       const medicine: MedicineFromProvider = JSON.parse(
@@ -234,7 +262,6 @@ const Purchase = () => {
       });
     }
 
-    console.log(medicinesToOrder);
     setOrder(medicinesToOrder);
   };
 
@@ -255,9 +282,7 @@ const Purchase = () => {
     });
   };
 
-  const orderInputValueChangeHandler = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const orderInputValueOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const defaultValue = e.currentTarget.defaultValue;
     const maxValue = e.currentTarget.max;
     if (isNaN(parseInt(e.currentTarget.value))) {
@@ -272,7 +297,21 @@ const Purchase = () => {
       <StyledPurchase>
         <div className="header">
           <h1>Achats</h1>
-          <button onClick={() => setShowConfirmation(true)}>Commander</button>
+          <div className="buttons">
+            <button
+              onClick={() => {
+                if (selectedRowIndices.length === 0) {
+                  pushNotification(
+                    "Sélectionner des lignes pour passer une commande!"
+                  );
+                } else {
+                  setShowConfirmation(true);
+                }
+              }}
+            >
+              Commander
+            </button>
+          </div>
         </div>
         {pending ? (
           <div className="pending">
@@ -290,9 +329,28 @@ const Purchase = () => {
                 </>
                 {matchedMedicines.map((medicine, i) => (
                   <React.Fragment key={i}>
-                    <div className={"name " + (i % 2 == 0 ? "even" : "odd")}>
-                      <input type="checkbox" name="" id="" />
-                      <span> {medicine.name}</span>
+                    <div
+                      className={[
+                        "checkbox",
+                        "name",
+                        i % 2 == 0 ? "even" : "odd",
+                      ].join(" ")}
+                    >
+                      <input
+                        type="checkbox"
+                        id={medicine.name}
+                        checked={selectedRowIndices.includes(i)}
+                        onChange={(e) => {
+                          if (e.currentTarget.checked) {
+                            setselectedRowIndices((indices) => [...indices, i]);
+                          } else {
+                            setselectedRowIndices((indices) =>
+                              indices.filter((index) => i !== index)
+                            );
+                          }
+                        }}
+                      />
+                      <label htmlFor={medicine.name}>{medicine.name}</label>
                     </div>
                     <input
                       className={i % 2 == 0 ? "even" : "odd"}
@@ -300,11 +358,12 @@ const Purchase = () => {
                       key={providerDatas[i].order}
                       defaultValue={providerDatas[i].order}
                       max={providerDatas[i].available}
-                      onChange={orderInputValueChangeHandler}
+                      onChange={orderInputValueOnChange}
                     />
                     <div className={i % 2 == 0 ? "even" : "odd"}>
                       {medicine.providerMedicines.length == 1 ? (
                         <div
+                          data-selected={selectedRowIndices.includes(i)}
                           className="medicine-name"
                           data-medicine={JSON.stringify(
                             medicine.providerMedicines[0].medicine
@@ -314,6 +373,7 @@ const Purchase = () => {
                         </div>
                       ) : (
                         <select
+                          data-selected={selectedRowIndices.includes(i)}
                           name={medicine.name}
                           id={medicine.name}
                           onChange={(e) => selectedMedicineOnChange(i, e)}

@@ -4,6 +4,13 @@ import { AiOutlineCloseCircle } from "react-icons/ai";
 import { styled } from "styled-components";
 import { NotificationContext } from "../contexts";
 
+function useFirstRender() {
+  const ref = useRef(true);
+  const firstRender = ref.current;
+  ref.current = false;
+  return firstRender;
+}
+
 const StyledContainer = styled.div`
   .notification-appears {
     opacity: 1;
@@ -29,12 +36,14 @@ const StyledToastDiv = styled.div<{ $color?: string }>`
     display: flex;
     align-items: center;
     position: relative;
+    padding-right: 1rem;
+    box-shadow: 0 5px 10px #00000060;
 
     p {
       color: white;
       margin-left: 1rem;
       font-weight: 600;
-      font-size: 1.25rem;
+      font-size: 1rem;
     }
 
     svg {
@@ -54,6 +63,7 @@ export default function ToastNotification() {
     return null;
   }
 
+  const firstRender = useFirstRender();
   const notificationContext = useContext(NotificationContext);
   const { notificationMessage, setNotificationMessage } = notificationContext!;
 
@@ -90,12 +100,13 @@ export default function ToastNotification() {
   }, [notificationMessage]);
 
   return createPortal(
-    <StyledContainer
-      style={{ display: !notificationMessage ? "none" : "block" }}
-    >
+    <StyledContainer>
       <StyledToastDiv
         className="notification-appears"
         $color="green"
+        style={{
+          display: firstRender ? "none" : "block",
+        }}
         onClick={close}
         ref={innerRef}
       >
