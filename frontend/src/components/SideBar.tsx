@@ -1,11 +1,20 @@
 import { styled } from "styled-components";
 import { paths } from "../paths";
 import { lighten } from "polished";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 
 const StyledSideBar = styled.div`
   max-width: 280px;
   background-color: ${({ theme }) => theme.colors.secondary};
+
+  .active {
+    background: white;
+
+    &:hover {
+      background: white;
+    }
+  }
 
   .logo {
     display: flex;
@@ -34,17 +43,18 @@ const StyledSideBar = styled.div`
         display: flex;
         align-items: center;
         gap: 1rem;
-
-        &:hover {
-          background-color: ${({ theme }) =>
-            lighten(0.1, theme.colors.secondary)};
-        }
       }
+    }
+
+    li:hover {
+      background-color: ${({ theme }) => lighten(0.1, theme.colors.secondary)};
     }
   }
 `;
 
-const SideBar = () => {
+export default function SideBar() {
+  const location = useLocation();
+
   return (
     <StyledSideBar>
       <div className="logo">
@@ -54,7 +64,10 @@ const SideBar = () => {
         <ul>
           {paths.map((path) => (
             <li key={path.name}>
-              <Link to={path.to}>
+              <Link
+                to={path.to}
+                className={location.pathname.includes(path.to) ? "active" : ""}
+              >
                 {path.icon}
                 {path.name}
               </Link>
@@ -64,6 +77,4 @@ const SideBar = () => {
       </nav>
     </StyledSideBar>
   );
-};
-
-export default SideBar;
+}
