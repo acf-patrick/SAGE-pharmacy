@@ -98,6 +98,8 @@ const StyledPurchase = styled.div`
     }
 
     .header-item {
+    position: sticky;
+    top: 0;
       background-color: red;
       color: white;
 
