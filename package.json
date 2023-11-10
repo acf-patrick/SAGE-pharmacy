@@ -15,6 +15,7 @@
     "postbuild": "mkdir -p backend/client && cp -r frontend/dist/* backend/client && cd backend && npx prisma migrate deploy && npx prisma db seed",
     "dev": "concurrently \"cd backend && yarn start:dev\" \"cd frontend && yarn dev --host\" \"cd backend && npx prisma studio\"",
     "start": "cd backend && yarn start:prod",
-    "postinstall": "cd frontend && yarn && cd ../backend && yarn"
+    "postinstall": "cd frontend && yarn && cd ../backend && yarn",
+    "deploy": "git checkout test-deploy && git merge main && git push origin HEAD"
   }
 }
