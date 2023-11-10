@@ -34,6 +34,11 @@ const StyledPurchase = styled.div`
   padding: 0 2rem;
   position: relative;
 
+  input[type="checkbox"] {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
   .checkbox {
     display: flex;
     gap: 0.5rem;
@@ -41,11 +46,6 @@ const StyledPurchase = styled.div`
 
     label {
       cursor: pointer;
-    }
-
-    input {
-      width: 1.125rem;
-      height: 1.125rem;
     }
   }
 
@@ -98,10 +98,24 @@ const StyledPurchase = styled.div`
     }
 
     .header-item {
-    position: sticky;
-    top: 0;
+      position: sticky;
+      top: 0;
       background-color: red;
       color: white;
+
+      &:first-of-type {
+        input {
+          cursor: pointer;
+          width: 1.25rem;
+          height: 1.25rem;
+          position: absolute;
+          left: 1rem;
+        }
+
+        span {
+          color: white;
+        }
+      }
 
       &:nth-of-type(odd) {
         background-color: ${({ theme }) => theme.colors.tertiary};
@@ -167,6 +181,8 @@ const Purchase = () => {
   // Medicines proposed from GET /api/provider/provide
   const [matchedMedicines, setMatchedMedicines] = useState<MatchMedicine[]>([]);
   const [selectedRowIndices, setselectedRowIndices] = useState<number[]>([]);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [order, setOrder] = useState<Order[]>([]);
   const [pending, setPending] = useState(true);
 
   const [providerDatas, setProviderDatas] = useState<
@@ -176,10 +192,6 @@ const Purchase = () => {
       available: number;
     }[]
   >([]);
-
-  const [showConfirmation, setShowConfirmation] = useState(false);
-
-  const [order, setOrder] = useState<Order[]>([]);
 
   const { pushNotification } = useNotification();
 
@@ -242,10 +254,13 @@ const Purchase = () => {
         .previousElementSibling! as HTMLInputElement;
       const value: ValueFromSelectBox = JSON.parse(select.value);
 
-      medicinesToOrder.push({
-        medicineId: value.medicine.id,
-        quantityToOrder: parseInt(prev.value),
-      });
+      const quantity = parseInt(prev.value);
+      if (quantity) {
+        medicinesToOrder.push({
+          medicineId: value.medicine.id,
+          quantityToOrder: parseInt(prev.value),
+        });
+      }
     }
 
     for (let div of medicinesNamesDiv) {
@@ -258,10 +273,14 @@ const Purchase = () => {
       const medicine: MedicineFromProvider = JSON.parse(
         div.getAttribute("data-medicine")!
       )!;
-      medicinesToOrder.push({
-        medicineId: medicine.id,
-        quantityToOrder: parseInt(prev.value),
-      });
+
+      const quantity = parseInt(prev.value);
+      if (quantity) {
+        medicinesToOrder.push({
+          medicineId: medicine.id,
+          quantityToOrder: quantity,
+        });
+      }
     }
 
     setOrder(medicinesToOrder);
@@ -300,7 +319,6 @@ const Purchase = () => {
         <div className="header">
           <h1>Achats</h1>
           <div className="buttons">
-            <button>testa</button>
             <button
               onClick={() => {
                 if (selectedRowIndices.length === 0) {
@@ -325,7 +343,29 @@ const Purchase = () => {
             {matchedMedicines.length > 0 ? (
               <div className="container">
                 <>
-                  <div className="header-item">En rupture</div>
+                  <div className="header-item">
+                    <input
+                      type="checkbox"
+                      title={
+                        selectedRowIndices.length === matchedMedicines.length
+                          ? "Tout désélectionner"
+                          : "Tout sélectionner"
+                      }
+                      checked={
+                        selectedRowIndices.length === matchedMedicines.length
+                      }
+                      onChange={(e) => {
+                        if (!e.currentTarget.checked) {
+                          setselectedRowIndices([]);
+                        } else {
+                          setselectedRowIndices(
+                            matchedMedicines.map((_, i) => i)
+                          );
+                        }
+                      }}
+                    />
+                    <span>En rupture</span>
+                  </div>
                   <div className="header-item">A commander</div>
                   <div className="header-item">Depuis fournisseur</div>
                   <div className="header-item">Fournisseur</div>
@@ -360,7 +400,7 @@ const Purchase = () => {
                       type="number"
                       key={providerDatas[i].order}
                       defaultValue={providerDatas[i].order}
-                      min={1}
+                      min={0}
                       max={providerDatas[i].available}
                       onChange={orderInputValueOnChange}
                     />
