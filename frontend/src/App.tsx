@@ -5,6 +5,11 @@ import { theme } from "./styles/theme";
 import { NotificationProvider } from "./contexts/provider";
 import { Sidebar, ToastNotification } from "./components";
 
+if (import.meta.env.PROD) {
+  document.addEventListener("contextmenu", (e) => e.preventDefault());
+  document.body.style.userSelect = "none";
+}
+
 const StyledContainer = styled.div`
   width: 100vw;
   height: 100vh;

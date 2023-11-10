@@ -300,6 +300,7 @@ const Purchase = () => {
         <div className="header">
           <h1>Achats</h1>
           <div className="buttons">
+            <button>testa</button>
             <button
               onClick={() => {
                 if (selectedRowIndices.length === 0) {
@@ -359,6 +360,7 @@ const Purchase = () => {
                       type="number"
                       key={providerDatas[i].order}
                       defaultValue={providerDatas[i].order}
+                      min={1}
                       max={providerDatas[i].available}
                       onChange={orderInputValueOnChange}
                     />
