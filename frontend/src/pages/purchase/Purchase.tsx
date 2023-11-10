@@ -7,7 +7,7 @@ import { api } from "../../api";
 import { ConfirmationDialog } from "../../components";
 import { useNotification } from "../../hooks";
 import { MedicineFromProvider } from "../../models";
-import { appear } from "../../styles/animations";
+import { appearFromLeft, appear } from "../../styles/animations";
 
 // Converted map from request response from /provider/provide to common JS object
 type MatchMedicine = {
@@ -56,8 +56,9 @@ const StyledPurchase = styled.div`
     transform: translate(-50%, -50%);
   }
 
-  .container {
+  .table {
     display: grid;
+    animation: ${appear} 500ms 500ms both;
     grid-template-columns: 1fr 0.5fr repeat(2, 1fr);
     grid-auto-rows: 50px;
     border: solid 1px black;
@@ -151,11 +152,14 @@ const StyledPurchase = styled.div`
     }
   }
 
-  .header {
+  header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    animation: ${appear} 500ms both;
+
+    h1 {
+      animation: ${appearFromLeft} 500ms both;
+    }
   }
 
   .buttons {
@@ -316,8 +320,8 @@ const Purchase = () => {
   return (
     <>
       <StyledPurchase>
-        <div className="header">
-          <h1>Achats</h1>
+        <header>
+          <h1>Achats 🛒</h1>
           <div className="buttons">
             <button
               onClick={() => {
@@ -333,7 +337,7 @@ const Purchase = () => {
               Commander
             </button>
           </div>
-        </div>
+        </header>
         {pending ? (
           <div className="pending">
             <MoonLoader color="#90B77D" loading={pending} size={45} />
@@ -341,7 +345,7 @@ const Purchase = () => {
         ) : (
           <>
             {matchedMedicines.length > 0 ? (
-              <div className="container">
+              <div className="table">
                 <>
                   <div className="header-item">
                     <input

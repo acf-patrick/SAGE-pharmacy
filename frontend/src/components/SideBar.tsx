@@ -1,8 +1,7 @@
-import { styled } from "styled-components";
-import { paths } from "../paths";
 import { lighten } from "polished";
 import { Link, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { styled } from "styled-components";
+import { paths } from "../paths";
 
 const StyledSideBar = styled.div`
   max-width: 280px;
@@ -58,7 +57,7 @@ export default function SideBar() {
   return (
     <StyledSideBar>
       <div className="logo">
-        <img src="/images/logo.png" alt="Pharmacie Hasimbola"></img>
+        <img src="/images/logo.png" alt="Pharmacie Hasimbola" />
       </div>
       <nav>
         <ul>

@@ -59,7 +59,7 @@ const StyledStock = styled.div`
     }
   }
 
-  .header {
+  header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -246,8 +246,8 @@ export default function Stock() {
   return (
     <>
       <StyledStock>
-        <div className="header">
-          <h1>Stock</h1>
+        <header>
+          <h1>Stock 📦</h1>
           <div className="right">
             <button
               className="select-all-button"
@@ -319,7 +319,7 @@ export default function Stock() {
               </div>
             )}
           </div>
-        </div>
+        </header>
         <>
           {pending ? (
             <div className="pending">
