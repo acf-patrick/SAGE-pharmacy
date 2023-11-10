@@ -16,6 +16,6 @@
     "dev": "concurrently \"cd backend && yarn start:dev\" \"cd frontend && yarn dev --host\" \"cd backend && npx prisma studio\"",
     "start": "cd backend && yarn start:prod",
     "postinstall": "cd frontend && yarn && cd ../backend && yarn",
-    "deploy": "git checkout test-deploy && git merge main && git push origin HEAD && git checkout main"
+    "deploy": "git checkout preview && git merge main && git push origin HEAD && git checkout main"
   }
 }
