@@ -50,7 +50,7 @@ const StyledStock = styled.div`
     transform: translate(-50%, -50%);
   }
 
-  .add-button {
+  .add-btn {
     background-color: ${({ theme }) => theme.colors.buttons.add};
 
     &:hover {
@@ -59,19 +59,37 @@ const StyledStock = styled.div`
     }
   }
 
+  .edit-btn {
+    background-color: ${({ theme }) => theme.colors.buttons.edit};
+
+    &:hover {
+      background-color: ${({ theme }) =>
+        lighten(0.1, theme.colors.buttons.edit)};
+    }
+  }
+
+  .delete-btn {
+    background-color: ${({ theme }) => theme.colors.buttons.delete};
+
+    &:hover {
+      background-color: ${({ theme }) =>
+        lighten(0.1, theme.colors.buttons.delete)};
+    }
+  }
+
+  .select-all-btn {
+    background-color: ${({ theme }) => theme.colors.selectAllBackground};
+
+    &:hover {
+      background-color: ${({ theme }) =>
+        lighten(0.1, theme.colors.selectAllBackground)};
+    }
+  }
+
   header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-
-    .select-all-button {
-      background-color: ${({ theme }) => theme.colors.selectAllBackground};
-
-      &:hover {
-        background-color: ${({ theme }) =>
-          lighten(0.1, theme.colors.selectAllBackground)};
-      }
-    }
 
     button {
       border: none;
@@ -111,26 +129,6 @@ const StyledStock = styled.div`
     .buttons {
       display: flex;
       gap: 1rem;
-
-      button {
-        &:first-of-type {
-          background-color: ${({ theme }) => theme.colors.buttons.edit};
-
-          &:hover {
-            background-color: ${({ theme }) =>
-              lighten(0.1, theme.colors.buttons.edit)};
-          }
-        }
-
-        &:last-of-type {
-          background-color: ${({ theme }) => theme.colors.buttons.delete};
-
-          &:hover {
-            background-color: ${({ theme }) =>
-              lighten(0.1, theme.colors.buttons.delete)};
-          }
-        }
-      }
     }
   }
 
@@ -249,22 +247,6 @@ export default function Stock() {
         <header>
           <h1>Stock 📦</h1>
           <div className="right">
-            <button
-              className="select-all-button"
-              onClick={() =>
-                toggleAllRows(selectedRows.length != medicines.length)
-              }
-            >
-              <MdSelectAll />
-              <span>
-                {selectedRows.length == medicines.length ? "Desel." : "Sel."}{" "}
-                Tout
-              </span>
-            </button>
-            <button className="add-button" onClick={() => setShowAddForm(true)}>
-              <CgFileAdd />
-              <span>Ajouter</span>
-            </button>
             <Searchbar
               onFieldChange={(field) => setSearchField(field as any)}
               onKeywordChange={(keyword) => {
@@ -306,18 +288,39 @@ export default function Stock() {
                 },
               ]}
             />
-            {selectedRows.length > 0 && (
-              <div className="buttons">
-                <button onClick={updateRows}>
-                  <FiEdit />
-                  <span>Modifier</span>
-                </button>
-                <button onClick={() => setShowConfirmation(true)}>
-                  <AiOutlineDelete />
-                  <span>Supprimer</span>
-                </button>
-              </div>
-            )}
+            <div className="buttons">
+              <button
+                className="select-all-btn"
+                onClick={() =>
+                  toggleAllRows(selectedRows.length != medicines.length)
+                }
+              >
+                <MdSelectAll />
+                <span>
+                  {selectedRows.length == medicines.length ? "Desel." : "Sel."}{" "}
+                  Tout
+                </span>
+              </button>
+              <button className="add-btn" onClick={() => setShowAddForm(true)}>
+                <CgFileAdd />
+                <span>Ajouter</span>
+              </button>
+              {selectedRows.length > 0 && (
+                <>
+                  <button className="edit-btn" onClick={updateRows}>
+                    <FiEdit />
+                    <span>Modifier</span>
+                  </button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => setShowConfirmation(true)}
+                  >
+                    <AiOutlineDelete />
+                    <span>Supprimer</span>
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </header>
         <>
