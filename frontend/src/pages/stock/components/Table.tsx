@@ -302,15 +302,15 @@ export default function Table({
             <tr key={medicine.name + i} className={createRowClass(medicine)}>
               <td>
                 <input
+                  id={medicine.name}
                   type="checkbox"
-                  name=""
                   checked={
                     selectedRowIds.findIndex((id) => id === medicine.id) >= 0
                   }
                   onChange={() => onRowToggle(medicine)}
                 />
                 <div>
-                  <div>{medicine.name}</div>
+                  <label htmlFor={medicine.name}>{medicine.name}</label>
                 </div>
               </td>
               <td>{medicine.costPrice}</td>
