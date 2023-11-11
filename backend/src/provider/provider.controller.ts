@@ -46,7 +46,7 @@ export class ProviderController {
       (record) => record.name,
     );
 
-    return this.providerService.getMatchingMedicinesForNameList(names);
+    return this.providerService.getMatchingMedicinesForList(names);
   }
 
   @Post('match')
@@ -55,7 +55,7 @@ export class ProviderController {
     summary: 'Map medicine names to medicines from providers',
   })
   getMatchingMedicines(@Body() { names }: MatchMedicinesDTO) {
-    return this.providerService.getMatchingMedicinesForNameList(names);
+    return this.providerService.getMatchingMedicinesForList(names);
   }
 
   @Get(':id')
