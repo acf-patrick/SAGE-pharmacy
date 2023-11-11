@@ -8,10 +8,15 @@ const StyledSideBar = styled.div`
   background-color: ${({ theme }) => theme.colors.secondary};
 
   .active {
-    background: white;
+    position: relative;
 
-    &:hover {
-      background: white;
+    &::before {
+      transform: scaleX(1);
+      transition: transform 500ms;
+    }
+
+    span {
+      position: relative;
     }
   }
 
@@ -36,17 +41,35 @@ const StyledSideBar = styled.div`
       padding: 0;
 
       a {
-        cursor: pointer;
-        font-size: 1.25rem;
-        padding: 10px 1rem;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
+        &::before {
+          display: block;
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: white;
+          transform-origin: left;
+          transform: scaleX(0);
+        }
+
+        & > span {
+          cursor: pointer;
+          font-size: 1.25rem;
+          padding: 10px 2rem;
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
       }
     }
 
-    li:hover {
-      background-color: ${({ theme }) => lighten(0.1, theme.colors.secondary)};
+    li {
+      &:hover {
+        background-color: ${({ theme }) =>
+          lighten(0.1, theme.colors.secondary)};
+      }
     }
   }
 `;
@@ -65,10 +88,11 @@ export default function SideBar() {
             <li key={path.name}>
               <Link
                 to={path.to}
-                className={location.pathname.includes(path.to) ? "active" : ""}
-              >
-                {path.icon}
-                {path.name}
+                className={location.pathname.includes(path.to) ? "active" : ""}>
+                <span>
+                  {path.icon}
+                  {path.name}
+                </span>
               </Link>
             </li>
           ))}
