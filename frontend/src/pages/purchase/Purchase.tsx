@@ -39,6 +39,10 @@ const StyledPurchase = styled.div`
     height: 1.125rem;
   }
 
+  .shadow {
+    box-shadow: 0 1px 10px black;
+  }
+
   .checkbox {
     display: flex;
     gap: 0.5rem;
@@ -156,6 +160,13 @@ const StyledPurchase = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: sticky;
+    padding: 0 2rem;
+    margin: 0 -2rem 1rem;
+    top: 0;
+    z-index: 2;
+    background: white;
+    transition: box-shadow 250ms;
 
     h1 {
       animation: ${appearFromLeft} 500ms both;
@@ -186,7 +197,7 @@ const Purchase = () => {
   const [matchedMedicines, setMatchedMedicines] = useState<MatchMedicine[]>([]);
   const [selectedRowIndices, setselectedRowIndices] = useState<number[]>([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [order, setOrder] = useState<Order[]>([]);
+  const [_, setOrder] = useState<Order[]>([]);
   const [pending, setPending] = useState(true);
 
   const [providerDatas, setProviderDatas] = useState<
@@ -199,13 +210,21 @@ const Purchase = () => {
 
   const { pushNotification } = useNotification();
 
-  useEffect(() => {
-    console.log(order);
-  }, [order]);
+  const addShadowOnHeaderOnScroll = () => {
+    const container = document.querySelector(".right") as HTMLDivElement;
+    container.addEventListener("scroll", () => {
+      const header = document.querySelector("header");
+      if (header) {
+        header.classList.toggle("shadow", container.scrollTop >= 10);
+      }
+    });
+  };
 
   useEffect(() => {
     getMedicinesMatches()
       .then((matchingMedicines) => {
+        addShadowOnHeaderOnScroll();
+
         setMatchedMedicines(matchingMedicines);
         setProviderDatas(
           matchingMedicines.map((med) => ({
@@ -332,8 +351,7 @@ const Purchase = () => {
                 } else {
                   setShowConfirmation(true);
                 }
-              }}
-            >
+              }}>
               Commander
             </button>
           </div>
@@ -381,8 +399,7 @@ const Purchase = () => {
                         "checkbox",
                         "name",
                         i % 2 == 0 ? "even" : "odd",
-                      ].join(" ")}
-                    >
+                      ].join(" ")}>
                       <input
                         type="checkbox"
                         id={medicine.name}
@@ -415,8 +432,7 @@ const Purchase = () => {
                           className="medicine-name"
                           data-medicine={JSON.stringify(
                             medicine.providerMedicines[0].medicine
-                          )}
-                        >
+                          )}>
                           {medicine.providerMedicines[0].medicine.name}
                         </div>
                       ) : (
@@ -424,8 +440,7 @@ const Purchase = () => {
                           data-selected={selectedRowIndices.includes(i)}
                           name={medicine.name}
                           id={medicine.name}
-                          onChange={(e) => selectedMedicineOnChange(i, e)}
-                        >
+                          onChange={(e) => selectedMedicineOnChange(i, e)}>
                           {medicine.providerMedicines.map((match, i) => (
                             <option
                               key={i}
@@ -433,8 +448,7 @@ const Purchase = () => {
                                 medicine: match.medicine,
                                 providerName: match.provider.name,
                                 order: match.quantityToOrder,
-                              })}
-                            >
+                              })}>
                               {match.medicine.name +
                                 " (" +
                                 match.provider.name +
