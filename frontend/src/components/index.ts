@@ -5,3 +5,4 @@ export { default as Sidebar } from "./SideBar";
 export { default as Searchbar } from "./Searchbar";
 export { default as AddForm } from "./AddForm";
 export { default as ToastNotification } from "./ToastNotification";
+export { default as Header } from "./Header";

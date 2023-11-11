@@ -4,10 +4,10 @@ import { TbBasketCancel } from "react-icons/tb";
 import { MoonLoader } from "react-spinners";
 import { styled } from "styled-components";
 import { api } from "../../api";
-import { ConfirmationDialog } from "../../components";
+import { ConfirmationDialog, Header } from "../../components";
 import { useNotification } from "../../hooks";
 import { MedicineFromProvider } from "../../models";
-import { appearFromLeft, appear } from "../../styles/animations";
+import { appear } from "../../styles/animations";
 
 // Converted map from request response from /provider/provide to common JS object
 type MatchMedicine = {
@@ -37,10 +37,6 @@ const StyledPurchase = styled.div`
   input[type="checkbox"] {
     width: 1.125rem;
     height: 1.125rem;
-  }
-
-  .shadow {
-    box-shadow: 0 1px 10px black;
   }
 
   .checkbox {
@@ -155,23 +151,12 @@ const StyledPurchase = styled.div`
       font-size: 6rem;
     }
   }
+`;
 
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    padding: 0 2rem;
-    margin: 0 -2rem 1rem;
-    top: 0;
-    z-index: 2;
-    background: white;
-    transition: box-shadow 250ms;
-
-    h1 {
-      animation: ${appearFromLeft} 500ms both;
-    }
-  }
+const StyledHeader = styled(Header)`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
   .buttons {
     button {
@@ -210,21 +195,9 @@ const Purchase = () => {
 
   const { pushNotification } = useNotification();
 
-  const addShadowOnHeaderOnScroll = () => {
-    const container = document.querySelector(".right") as HTMLDivElement;
-    container.addEventListener("scroll", () => {
-      const header = document.querySelector("header");
-      if (header) {
-        header.classList.toggle("shadow", container.scrollTop >= 10);
-      }
-    });
-  };
-
   useEffect(() => {
     getMedicinesMatches()
       .then((matchingMedicines) => {
-        addShadowOnHeaderOnScroll();
-
         setMatchedMedicines(matchingMedicines);
         setProviderDatas(
           matchingMedicines.map((med) => ({
@@ -338,24 +311,23 @@ const Purchase = () => {
 
   return (
     <>
+      <StyledHeader headerTitle="Achats 🛒">
+        <div className="buttons">
+          <button
+            onClick={() => {
+              if (selectedRowIndices.length === 0) {
+                pushNotification(
+                  "Sélectionner des lignes pour passer une commande!"
+                );
+              } else {
+                setShowConfirmation(true);
+              }
+            }}>
+            Commander
+          </button>
+        </div>
+      </StyledHeader>
       <StyledPurchase>
-        <header>
-          <h1>Achats 🛒</h1>
-          <div className="buttons">
-            <button
-              onClick={() => {
-                if (selectedRowIndices.length === 0) {
-                  pushNotification(
-                    "Sélectionner des lignes pour passer une commande!"
-                  );
-                } else {
-                  setShowConfirmation(true);
-                }
-              }}>
-              Commander
-            </button>
-          </div>
-        </header>
         {pending ? (
           <div className="pending">
             <MoonLoader color="#90B77D" loading={pending} size={45} />
@@ -392,6 +364,148 @@ const Purchase = () => {
                   <div className="header-item">Depuis fournisseur</div>
                   <div className="header-item">Fournisseur</div>
                 </>
+                {matchedMedicines.map((medicine, i) => (
+                  <React.Fragment key={i}>
+                    <div
+                      className={[
+                        "checkbox",
+                        "name",
+                        i % 2 == 0 ? "even" : "odd",
+                      ].join(" ")}>
+                      <input
+                        type="checkbox"
+                        id={medicine.name}
+                        checked={selectedRowIndices.includes(i)}
+                        onChange={(e) => {
+                          if (e.currentTarget.checked) {
+                            setselectedRowIndices((indices) => [...indices, i]);
+                          } else {
+                            setselectedRowIndices((indices) =>
+                              indices.filter((index) => i !== index)
+                            );
+                          }
+                        }}
+                      />
+                      <label htmlFor={medicine.name}>{medicine.name}</label>
+                    </div>
+                    <input
+                      className={i % 2 == 0 ? "even" : "odd"}
+                      type="number"
+                      key={providerDatas[i].order}
+                      defaultValue={providerDatas[i].order}
+                      min={0}
+                      max={providerDatas[i].available}
+                      onChange={orderInputValueOnChange}
+                    />
+                    <div className={i % 2 == 0 ? "even" : "odd"}>
+                      {medicine.providerMedicines.length == 1 ? (
+                        <div
+                          data-selected={selectedRowIndices.includes(i)}
+                          className="medicine-name"
+                          data-medicine={JSON.stringify(
+                            medicine.providerMedicines[0].medicine
+                          )}>
+                          {medicine.providerMedicines[0].medicine.name}
+                        </div>
+                      ) : (
+                        <select
+                          data-selected={selectedRowIndices.includes(i)}
+                          name={medicine.name}
+                          id={medicine.name}
+                          onChange={(e) => selectedMedicineOnChange(i, e)}>
+                          {medicine.providerMedicines.map((match, i) => (
+                            <option
+                              key={i}
+                              value={JSON.stringify({
+                                medicine: match.medicine,
+                                providerName: match.provider.name,
+                                order: match.quantityToOrder,
+                              })}>
+                              {match.medicine.name +
+                                " (" +
+                                match.provider.name +
+                                ")"}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                    <div className={i % 2 == 0 ? "even" : "odd"}>
+                      {providerDatas[i].name}
+                    </div>
+                  </React.Fragment>
+                ))}
+                {matchedMedicines.map((medicine, i) => (
+                  <React.Fragment key={i}>
+                    <div
+                      className={[
+                        "checkbox",
+                        "name",
+                        i % 2 == 0 ? "even" : "odd",
+                      ].join(" ")}>
+                      <input
+                        type="checkbox"
+                        id={medicine.name}
+                        checked={selectedRowIndices.includes(i)}
+                        onChange={(e) => {
+                          if (e.currentTarget.checked) {
+                            setselectedRowIndices((indices) => [...indices, i]);
+                          } else {
+                            setselectedRowIndices((indices) =>
+                              indices.filter((index) => i !== index)
+                            );
+                          }
+                        }}
+                      />
+                      <label htmlFor={medicine.name}>{medicine.name}</label>
+                    </div>
+                    <input
+                      className={i % 2 == 0 ? "even" : "odd"}
+                      type="number"
+                      key={providerDatas[i].order}
+                      defaultValue={providerDatas[i].order}
+                      min={0}
+                      max={providerDatas[i].available}
+                      onChange={orderInputValueOnChange}
+                    />
+                    <div className={i % 2 == 0 ? "even" : "odd"}>
+                      {medicine.providerMedicines.length == 1 ? (
+                        <div
+                          data-selected={selectedRowIndices.includes(i)}
+                          className="medicine-name"
+                          data-medicine={JSON.stringify(
+                            medicine.providerMedicines[0].medicine
+                          )}>
+                          {medicine.providerMedicines[0].medicine.name}
+                        </div>
+                      ) : (
+                        <select
+                          data-selected={selectedRowIndices.includes(i)}
+                          name={medicine.name}
+                          id={medicine.name}
+                          onChange={(e) => selectedMedicineOnChange(i, e)}>
+                          {medicine.providerMedicines.map((match, i) => (
+                            <option
+                              key={i}
+                              value={JSON.stringify({
+                                medicine: match.medicine,
+                                providerName: match.provider.name,
+                                order: match.quantityToOrder,
+                              })}>
+                              {match.medicine.name +
+                                " (" +
+                                match.provider.name +
+                                ")"}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                    <div className={i % 2 == 0 ? "even" : "odd"}>
+                      {providerDatas[i].name}
+                    </div>
+                  </React.Fragment>
+                ))}
                 {matchedMedicines.map((medicine, i) => (
                   <React.Fragment key={i}>
                     <div

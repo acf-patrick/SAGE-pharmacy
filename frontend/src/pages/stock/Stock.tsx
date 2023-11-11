@@ -6,18 +6,19 @@ import { FiEdit } from "react-icons/fi";
 import { MdSelectAll } from "react-icons/md";
 import { TbBasketCancel } from "react-icons/tb";
 import { MoonLoader } from "react-spinners";
-import { keyframes, styled } from "styled-components";
+import { styled } from "styled-components";
 import { api } from "../../api";
 import {
   AddForm,
   ConfirmationDialog,
+  Header,
   Pagination,
   Searchbar,
   UpdateForm,
 } from "../../components";
 import { useNotification } from "../../hooks";
 import { Medicine } from "../../models";
-import { appear } from "../../styles/animations";
+import { appear, appearFromLeft } from "../../styles/animations";
 import { Table } from "./components";
 
 type PageQueryResponse = {
@@ -26,29 +27,10 @@ type PageQueryResponse = {
   page: number;
 };
 
-const slide = keyframes`
-  from {
-    transform: translateX(-1rem);
-    opacity: 0;
-  } to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-`;
-
-const StyledStock = styled.div`
-  padding: 0 3rem;
+const StyledHeader = styled(Header)`
   display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  position: relative;
-
-  .pending {
-    position: absolute;
-    top: 50vh;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
+  justify-content: space-between;
+  align-items: center;
 
   .add-btn {
     background-color: ${({ theme }) => theme.colors.buttons.add};
@@ -86,50 +68,51 @@ const StyledStock = styled.div`
     }
   }
 
-  header {
+  button {
+    border: none;
+    height: 2.5rem;
+    padding: 0.5rem 1rem;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 250ms;
+    font-weight: bold;
 
-    button {
-      border: none;
-      height: 2.5rem;
-      padding: 0.5rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      border-radius: 5px;
-      transition: background-color 250ms;
-      font-weight: bold;
-
-      * {
-        color: white;
-      }
-
-      svg {
-        font-size: 1.25rem;
-      }
+    * {
+      color: white;
     }
 
-    h1 {
-      margin-right: 1rem;
+    svg {
+      font-size: 1.25rem;
     }
+  }
 
-    h1,
-    .buttons {
-      animation: 500ms ease-out both ${slide};
-    }
+  & > div {
+    display: flex;
+    gap: 2rem;
+  }
 
-    & > div {
-      display: flex;
-      gap: 2rem;
-    }
+  .buttons {
+    animation: 500ms ease-out both ${appearFromLeft};
+    display: flex;
+    gap: 1rem;
+  }
+`;
 
-    .buttons {
-      display: flex;
-      gap: 1rem;
-    }
+const StyledStock = styled.div`
+  padding: 0 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  position: relative;
+
+  .pending {
+    position: absolute;
+    top: 50vh;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 
   h2 {
@@ -243,86 +226,83 @@ export default function Stock() {
 
   return (
     <>
-      <StyledStock>
-        <header>
-          <h1>Stock 📦</h1>
-          <div className="right">
-            <Searchbar
-              onFieldChange={(field) => setSearchField(field as any)}
-              onKeywordChange={(keyword) => {
-                setCurrentPage(0);
-                setSearchKeyWord(keyword);
-              }}
-              fields={[
-                {
-                  name: "Nom",
-                  value: "name",
-                },
-                {
-                  name: "Prix d'achat",
-                  value: "costPrice",
-                },
-                {
-                  name: "Prix de vente",
-                  value: "sellingPrice",
-                },
-                {
-                  name: "Quantité",
-                  value: "quantity",
-                },
-                {
-                  name: "Emplacement",
-                  value: "location",
-                },
-                {
-                  name: "DCI",
-                  value: "dci",
-                },
-                {
-                  name: "Stock Min",
-                  value: "min",
-                },
-                {
-                  name: "Stock Max",
-                  value: "max",
-                },
-              ]}
-            />
-            <div className="buttons">
-              <button
-                className="select-all-btn"
-                onClick={() =>
-                  toggleAllRows(selectedRows.length != medicines.length)
-                }
-              >
-                <MdSelectAll />
-                <span>
-                  {selectedRows.length == medicines.length ? "Desel." : "Sel."}{" "}
-                  Tout
-                </span>
-              </button>
-              <button className="add-btn" onClick={() => setShowAddForm(true)}>
-                <CgFileAdd />
-                <span>Ajouter</span>
-              </button>
-              {selectedRows.length > 0 && (
-                <>
-                  <button className="edit-btn" onClick={updateRows}>
-                    <FiEdit />
-                    <span>Modifier</span>
-                  </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => setShowConfirmation(true)}
-                  >
-                    <AiOutlineDelete />
-                    <span>Supprimer</span>
-                  </button>
-                </>
-              )}
-            </div>
+      <StyledHeader headerTitle="Stock 📦">
+        <div>
+          <Searchbar
+            onFieldChange={(field) => setSearchField(field as any)}
+            onKeywordChange={(keyword) => {
+              setCurrentPage(0);
+              setSearchKeyWord(keyword);
+            }}
+            fields={[
+              {
+                name: "Nom",
+                value: "name",
+              },
+              {
+                name: "Prix d'achat",
+                value: "costPrice",
+              },
+              {
+                name: "Prix de vente",
+                value: "sellingPrice",
+              },
+              {
+                name: "Quantité",
+                value: "quantity",
+              },
+              {
+                name: "Emplacement",
+                value: "location",
+              },
+              {
+                name: "DCI",
+                value: "dci",
+              },
+              {
+                name: "Stock Min",
+                value: "min",
+              },
+              {
+                name: "Stock Max",
+                value: "max",
+              },
+            ]}
+          />
+          <div className="buttons">
+            <button
+              className="select-all-btn"
+              onClick={() =>
+                toggleAllRows(selectedRows.length != medicines.length)
+              }>
+              <MdSelectAll />
+              <span>
+                {selectedRows.length == medicines.length ? "Desel." : "Sel."}{" "}
+                Tout
+              </span>
+            </button>
+            <button className="add-btn" onClick={() => setShowAddForm(true)}>
+              <CgFileAdd />
+              <span>Ajouter</span>
+            </button>
+            {selectedRows.length > 0 && (
+              <>
+                <button className="edit-btn" onClick={updateRows}>
+                  <FiEdit />
+                  <span>Modifier</span>
+                </button>
+                <button
+                  className="delete-btn"
+                  onClick={() => setShowConfirmation(true)}>
+                  <AiOutlineDelete />
+                  <span>Supprimer</span>
+                </button>
+              </>
+            )}
           </div>
-        </header>
+        </div>
+      </StyledHeader>
+      <StyledStock>
         <>
           {pending ? (
             <div className="pending">
