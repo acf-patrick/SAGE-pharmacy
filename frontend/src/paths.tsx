@@ -9,7 +9,7 @@ export const paths = [
     icon: <AiTwotoneContainer />,
   },
   {
-    to: "/achat",
+    to: "/purchase",
     name: "Achat",
     icon: <SlBasket />,
   },

@@ -51,9 +51,9 @@ const StyledPurchase = styled.div`
 
   .pending {
     position: absolute;
-    top: 50vh;
+    top: 25vh;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
   }
 
   .table {
@@ -330,7 +330,7 @@ const Purchase = () => {
       <StyledPurchase>
         {pending ? (
           <div className="pending">
-            <MoonLoader color="#90B77D" loading={pending} size={45} />
+            <MoonLoader color="#90B77D" loading={pending} size={64}  />
           </div>
         ) : (
           <>
@@ -364,148 +364,6 @@ const Purchase = () => {
                   <div className="header-item">Depuis fournisseur</div>
                   <div className="header-item">Fournisseur</div>
                 </>
-                {matchedMedicines.map((medicine, i) => (
-                  <React.Fragment key={i}>
-                    <div
-                      className={[
-                        "checkbox",
-                        "name",
-                        i % 2 == 0 ? "even" : "odd",
-                      ].join(" ")}>
-                      <input
-                        type="checkbox"
-                        id={medicine.name}
-                        checked={selectedRowIndices.includes(i)}
-                        onChange={(e) => {
-                          if (e.currentTarget.checked) {
-                            setselectedRowIndices((indices) => [...indices, i]);
-                          } else {
-                            setselectedRowIndices((indices) =>
-                              indices.filter((index) => i !== index)
-                            );
-                          }
-                        }}
-                      />
-                      <label htmlFor={medicine.name}>{medicine.name}</label>
-                    </div>
-                    <input
-                      className={i % 2 == 0 ? "even" : "odd"}
-                      type="number"
-                      key={providerDatas[i].order}
-                      defaultValue={providerDatas[i].order}
-                      min={0}
-                      max={providerDatas[i].available}
-                      onChange={orderInputValueOnChange}
-                    />
-                    <div className={i % 2 == 0 ? "even" : "odd"}>
-                      {medicine.providerMedicines.length == 1 ? (
-                        <div
-                          data-selected={selectedRowIndices.includes(i)}
-                          className="medicine-name"
-                          data-medicine={JSON.stringify(
-                            medicine.providerMedicines[0].medicine
-                          )}>
-                          {medicine.providerMedicines[0].medicine.name}
-                        </div>
-                      ) : (
-                        <select
-                          data-selected={selectedRowIndices.includes(i)}
-                          name={medicine.name}
-                          id={medicine.name}
-                          onChange={(e) => selectedMedicineOnChange(i, e)}>
-                          {medicine.providerMedicines.map((match, i) => (
-                            <option
-                              key={i}
-                              value={JSON.stringify({
-                                medicine: match.medicine,
-                                providerName: match.provider.name,
-                                order: match.quantityToOrder,
-                              })}>
-                              {match.medicine.name +
-                                " (" +
-                                match.provider.name +
-                                ")"}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </div>
-                    <div className={i % 2 == 0 ? "even" : "odd"}>
-                      {providerDatas[i].name}
-                    </div>
-                  </React.Fragment>
-                ))}
-                {matchedMedicines.map((medicine, i) => (
-                  <React.Fragment key={i}>
-                    <div
-                      className={[
-                        "checkbox",
-                        "name",
-                        i % 2 == 0 ? "even" : "odd",
-                      ].join(" ")}>
-                      <input
-                        type="checkbox"
-                        id={medicine.name}
-                        checked={selectedRowIndices.includes(i)}
-                        onChange={(e) => {
-                          if (e.currentTarget.checked) {
-                            setselectedRowIndices((indices) => [...indices, i]);
-                          } else {
-                            setselectedRowIndices((indices) =>
-                              indices.filter((index) => i !== index)
-                            );
-                          }
-                        }}
-                      />
-                      <label htmlFor={medicine.name}>{medicine.name}</label>
-                    </div>
-                    <input
-                      className={i % 2 == 0 ? "even" : "odd"}
-                      type="number"
-                      key={providerDatas[i].order}
-                      defaultValue={providerDatas[i].order}
-                      min={0}
-                      max={providerDatas[i].available}
-                      onChange={orderInputValueOnChange}
-                    />
-                    <div className={i % 2 == 0 ? "even" : "odd"}>
-                      {medicine.providerMedicines.length == 1 ? (
-                        <div
-                          data-selected={selectedRowIndices.includes(i)}
-                          className="medicine-name"
-                          data-medicine={JSON.stringify(
-                            medicine.providerMedicines[0].medicine
-                          )}>
-                          {medicine.providerMedicines[0].medicine.name}
-                        </div>
-                      ) : (
-                        <select
-                          data-selected={selectedRowIndices.includes(i)}
-                          name={medicine.name}
-                          id={medicine.name}
-                          onChange={(e) => selectedMedicineOnChange(i, e)}>
-                          {medicine.providerMedicines.map((match, i) => (
-                            <option
-                              key={i}
-                              value={JSON.stringify({
-                                medicine: match.medicine,
-                                providerName: match.provider.name,
-                                order: match.quantityToOrder,
-                              })}>
-                              {match.medicine.name +
-                                " (" +
-                                match.provider.name +
-                                ")"}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </div>
-                    <div className={i % 2 == 0 ? "even" : "odd"}>
-                      {providerDatas[i].name}
-                    </div>
-                  </React.Fragment>
-                ))}
                 {matchedMedicines.map((medicine, i) => (
                   <React.Fragment key={i}>
                     <div

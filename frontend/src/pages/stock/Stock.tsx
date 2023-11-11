@@ -110,9 +110,9 @@ const StyledStock = styled.div`
 
   .pending {
     position: absolute;
-    top: 50vh;
+    top: 25vh;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
   }
 
   h2 {
@@ -306,7 +306,7 @@ export default function Stock() {
         <>
           {pending ? (
             <div className="pending">
-              <MoonLoader color="#90B77D" loading={pending} size={45} />
+              <MoonLoader color="#90B77D" loading={pending} size={64} />
             </div>
           ) : (
             <>
