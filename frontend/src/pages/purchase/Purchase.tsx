@@ -23,6 +23,7 @@ type ValueFromSelectBox = {
   medicine: MedicineFromProvider;
   providerName: string;
   order: number;
+  id: string;
 };
 
 type Order = {
@@ -186,12 +187,13 @@ const Purchase = () => {
   const [matchedMedicines, setMatchedMedicines] = useState<MatchMedicine[]>([]);
   const [selectedRowIndices, setselectedRowIndices] = useState<number[]>([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [_, setOrder] = useState<Order[]>([]);
+  const [order, setOrder] = useState<Order[]>([]);
   const [pending, setPending] = useState(true);
 
   const [currentProviders, setCurrentProviders] = useState<string[]>([]);
   const [currentMedicines, setCurrentMedicines] = useState<
     {
+      id: string;
       order: number;
       available: number;
       unitPriceWithTax: number;
@@ -213,10 +215,11 @@ const Purchase = () => {
         setCurrentMedicines(
           matchingMedicines.map((med) => {
             const medicine = med.providerMedicines[0];
-            const { quantity, priceWithTax, priceWithoutTax } =
+            const { quantity, priceWithTax, priceWithoutTax, id } =
               medicine.medicine;
 
             return {
+              id,
               order: medicine.quantityToOrder,
               available: quantity,
               unitPriceWithoutTax: priceWithoutTax * quantity,
@@ -228,6 +231,10 @@ const Purchase = () => {
       .catch((err) => console.error(err))
       .finally(() => setPending(false));
   }, []);
+
+  useEffect(() => {
+    console.log(order);
+  }, [order]);
 
   // Get all matched near-low quantity medicines
   const getMedicinesMatches = async () => {
@@ -255,49 +262,15 @@ const Purchase = () => {
 
   // Get current data set up by the user and create a purchase list (set "order" state)
   const orderMedicines = () => {
-    const selects = document.querySelectorAll("select");
-    const medicinesNamesDiv = document.querySelectorAll(".medicine-name");
-    const medicinesToOrder: Order[] = [];
-
-    for (let select of selects) {
-      if (select.getAttribute("data-selected") !== "true") {
-        continue;
-      }
-
-      const prev = select.parentElement!
-        .previousElementSibling! as HTMLInputElement;
-      const value: ValueFromSelectBox = JSON.parse(select.value);
-
-      const quantity = parseInt(prev.value);
-      if (quantity) {
-        medicinesToOrder.push({
-          medicineId: value.medicine.id,
-          quantityToOrder: parseInt(prev.value),
-        });
-      }
-    }
-
-    for (let div of medicinesNamesDiv) {
-      if (div.getAttribute("data-selected") !== "true") {
-        continue;
-      }
-
-      const prev = div.parentElement!
-        .previousElementSibling! as HTMLInputElement;
-      const medicine: MedicineFromProvider = JSON.parse(
-        div.getAttribute("data-medicine")!
-      )!;
-
-      const quantity = parseInt(prev.value);
-      if (quantity) {
-        medicinesToOrder.push({
+    setOrder(
+      selectedRowIndices.map((i) => {
+        const medicine = currentMedicines[i];
+        return {
           medicineId: medicine.id,
-          quantityToOrder: quantity,
-        });
-      }
-    }
-
-    setOrder(medicinesToOrder);
+          quantityToOrder: medicine.order,
+        };
+      })
+    );
   };
 
   const selectedMedicineOnChange = (
@@ -306,7 +279,7 @@ const Purchase = () => {
   ) => {
     const obj: ValueFromSelectBox = JSON.parse(event.currentTarget.value);
 
-    const { medicine, providerName, order } = obj;
+    const { medicine, providerName, order, id } = obj;
 
     setCurrentProviders((list) => {
       list[medicineIndex] = providerName;
@@ -318,6 +291,7 @@ const Purchase = () => {
       row.order = order;
       row.unitPriceWithTax = medicine.priceWithTax;
       row.unitPriceWithoutTax = medicine.priceWithoutTax;
+      row.id = id;
 
       return [...medicines];
     });
@@ -340,7 +314,7 @@ const Purchase = () => {
     setCurrentMedicines((rows) => {
       const row = rows[medicineIndex];
       row.order = order;
-      return [...rows]
+      return [...rows];
     });
   };
 
@@ -429,17 +403,11 @@ const Purchase = () => {
                     {/* medicine name from provider */}
                     <div className={i % 2 == 0 ? "even" : "odd"}>
                       {medicine.providerMedicines.length == 1 ? (
-                        <div
-                          data-selected={selectedRowIndices.includes(i)}
-                          className="medicine-name"
-                          data-medicine={JSON.stringify(
-                            medicine.providerMedicines[0].medicine
-                          )}>
+                        <div className="medicine-name">
                           {medicine.providerMedicines[0].medicine.name}
                         </div>
                       ) : (
                         <select
-                          data-selected={selectedRowIndices.includes(i)}
                           name={medicine.name}
                           id={medicine.name}
                           onChange={(e) => selectedMedicineOnChange(i, e)}>
@@ -447,6 +415,7 @@ const Purchase = () => {
                             <option
                               key={i}
                               value={JSON.stringify({
+                                id: match.medicine.id,
                                 medicine: match.medicine,
                                 providerName: match.provider.name,
                                 order: match.quantityToOrder,
@@ -465,7 +434,7 @@ const Purchase = () => {
                       className={i % 2 == 0 ? "even" : "odd"}
                       type="number"
                       key={currentMedicines[i].order}
-                      defaultValue={currentMedicines[i].order}
+                      value={currentMedicines[i].order}
                       min={0}
                       max={currentMedicines[i].available}
                       onChange={(e) => orderInputValueOnChange(i, e)}
