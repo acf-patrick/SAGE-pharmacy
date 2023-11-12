@@ -4,7 +4,7 @@ import { TbBasketCancel } from "react-icons/tb";
 import { MoonLoader } from "react-spinners";
 import { styled } from "styled-components";
 import { api } from "../../api";
-import { ConfirmationDialog } from "../../components";
+import { ConfirmationDialog, Header } from "../../components";
 import { useNotification } from "../../hooks";
 import { MedicineFromProvider } from "../../models";
 import { appear } from "../../styles/animations";
@@ -51,13 +51,14 @@ const StyledPurchase = styled.div`
 
   .pending {
     position: absolute;
-    top: 50vh;
+    top: 25vh;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
   }
 
-  .container {
+  .table {
     display: grid;
+    animation: ${appear} 500ms 500ms both;
     grid-template-columns: 1fr 0.5fr repeat(2, 1fr);
     grid-auto-rows: 50px;
     border: solid 1px black;
@@ -150,13 +151,12 @@ const StyledPurchase = styled.div`
       font-size: 6rem;
     }
   }
+`;
 
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    animation: ${appear} 500ms both;
-  }
+const StyledHeader = styled(Header)`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
   .buttons {
     button {
@@ -182,7 +182,7 @@ const Purchase = () => {
   const [matchedMedicines, setMatchedMedicines] = useState<MatchMedicine[]>([]);
   const [selectedRowIndices, setselectedRowIndices] = useState<number[]>([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [order, setOrder] = useState<Order[]>([]);
+  const [_, setOrder] = useState<Order[]>([]);
   const [pending, setPending] = useState(true);
 
   const [providerDatas, setProviderDatas] = useState<
@@ -194,10 +194,6 @@ const Purchase = () => {
   >([]);
 
   const { pushNotification } = useNotification();
-
-  useEffect(() => {
-    console.log(order);
-  }, [order]);
 
   useEffect(() => {
     getMedicinesMatches()
@@ -315,33 +311,31 @@ const Purchase = () => {
 
   return (
     <>
-      <StyledPurchase>
-        <div className="header">
-          <h1>Achats</h1>
-          <div className="buttons">
-            <button
-              onClick={() => {
-                if (selectedRowIndices.length === 0) {
-                  pushNotification(
-                    "Sélectionner des lignes pour passer une commande!"
-                  );
-                } else {
-                  setShowConfirmation(true);
-                }
-              }}
-            >
-              Commander
-            </button>
-          </div>
+      <StyledHeader headerTitle="Achats 🛒">
+        <div className="buttons">
+          <button
+            onClick={() => {
+              if (selectedRowIndices.length === 0) {
+                pushNotification(
+                  "Sélectionner des lignes pour passer une commande!"
+                );
+              } else {
+                setShowConfirmation(true);
+              }
+            }}>
+            Commander
+          </button>
         </div>
+      </StyledHeader>
+      <StyledPurchase>
         {pending ? (
           <div className="pending">
-            <MoonLoader color="#90B77D" loading={pending} size={45} />
+            <MoonLoader color="#90B77D" loading={pending} size={64}  />
           </div>
         ) : (
           <>
             {matchedMedicines.length > 0 ? (
-              <div className="container">
+              <div className="table">
                 <>
                   <div className="header-item">
                     <input
@@ -377,8 +371,7 @@ const Purchase = () => {
                         "checkbox",
                         "name",
                         i % 2 == 0 ? "even" : "odd",
-                      ].join(" ")}
-                    >
+                      ].join(" ")}>
                       <input
                         type="checkbox"
                         id={medicine.name}
@@ -411,8 +404,7 @@ const Purchase = () => {
                           className="medicine-name"
                           data-medicine={JSON.stringify(
                             medicine.providerMedicines[0].medicine
-                          )}
-                        >
+                          )}>
                           {medicine.providerMedicines[0].medicine.name}
                         </div>
                       ) : (
@@ -420,8 +412,7 @@ const Purchase = () => {
                           data-selected={selectedRowIndices.includes(i)}
                           name={medicine.name}
                           id={medicine.name}
-                          onChange={(e) => selectedMedicineOnChange(i, e)}
-                        >
+                          onChange={(e) => selectedMedicineOnChange(i, e)}>
                           {medicine.providerMedicines.map((match, i) => (
                             <option
                               key={i}
@@ -429,8 +420,7 @@ const Purchase = () => {
                                 medicine: match.medicine,
                                 providerName: match.provider.name,
                                 order: match.quantityToOrder,
-                              })}
-                            >
+                              })}>
                               {match.medicine.name +
                                 " (" +
                                 match.provider.name +

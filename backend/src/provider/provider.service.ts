@@ -68,8 +68,8 @@ export class ProviderService {
     });
   }
 
-  // return matching medicines for name list
-  async getMatchingMedicinesForNameList(
+  // return matching medicines for given medicine names
+  async getMatchingMedicinesForList(
     names: string[],
   ): Promise<Record<string, MedicineMapRecord[]>> {
     const map = new Map<string, MedicineMapRecord[]>();

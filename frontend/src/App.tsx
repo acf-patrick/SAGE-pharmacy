@@ -15,6 +15,11 @@ const StyledContainer = styled.div`
   height: 100vh;
   display: grid;
   grid-template-columns: 280px calc(100vw - 280px);
+
+  .right {
+    max-height: 100vh;
+    overflow-y: auto;
+  }
 `;
 
 function App() {

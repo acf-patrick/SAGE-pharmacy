@@ -6,18 +6,19 @@ import { FiEdit } from "react-icons/fi";
 import { MdSelectAll } from "react-icons/md";
 import { TbBasketCancel } from "react-icons/tb";
 import { MoonLoader } from "react-spinners";
-import { keyframes, styled } from "styled-components";
+import { styled } from "styled-components";
 import { api } from "../../api";
 import {
   AddForm,
   ConfirmationDialog,
+  Header,
   Pagination,
   Searchbar,
   UpdateForm,
 } from "../../components";
 import { useNotification } from "../../hooks";
 import { Medicine } from "../../models";
-import { appear } from "../../styles/animations";
+import { appear, appearFromLeft } from "../../styles/animations";
 import { Table } from "./components";
 
 type PageQueryResponse = {
@@ -26,13 +27,77 @@ type PageQueryResponse = {
   page: number;
 };
 
-const slide = keyframes`
-  from {
-    transform: translateX(-1rem);
-    opacity: 0;
-  } to {
-    transform: translateX(0);
-    opacity: 1;
+const StyledHeader = styled(Header)`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .add-btn {
+    background-color: ${({ theme }) => theme.colors.buttons.add};
+
+    &:hover {
+      background-color: ${({ theme }) =>
+        lighten(0.1, theme.colors.buttons.add)};
+    }
+  }
+
+  .edit-btn {
+    background-color: ${({ theme }) => theme.colors.buttons.edit};
+
+    &:hover {
+      background-color: ${({ theme }) =>
+        lighten(0.1, theme.colors.buttons.edit)};
+    }
+  }
+
+  .delete-btn {
+    background-color: ${({ theme }) => theme.colors.buttons.delete};
+
+    &:hover {
+      background-color: ${({ theme }) =>
+        lighten(0.1, theme.colors.buttons.delete)};
+    }
+  }
+
+  .select-all-btn {
+    background-color: ${({ theme }) => theme.colors.selectAllBackground};
+
+    &:hover {
+      background-color: ${({ theme }) =>
+        lighten(0.1, theme.colors.selectAllBackground)};
+    }
+  }
+
+  button {
+    border: none;
+    height: 2.5rem;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 250ms;
+    font-weight: bold;
+
+    * {
+      color: white;
+    }
+
+    svg {
+      font-size: 1.25rem;
+    }
+  }
+
+  & > div {
+    display: flex;
+    gap: 2rem;
+  }
+
+  .buttons {
+    animation: 500ms ease-out both ${appearFromLeft};
+    display: flex;
+    gap: 1rem;
   }
 `;
 
@@ -45,93 +110,9 @@ const StyledStock = styled.div`
 
   .pending {
     position: absolute;
-    top: 50vh;
+    top: 25vh;
     left: 50%;
-    transform: translate(-50%, -50%);
-  }
-
-  .add-button {
-    background-color: ${({ theme }) => theme.colors.buttons.add};
-
-    &:hover {
-      background-color: ${({ theme }) =>
-        lighten(0.1, theme.colors.buttons.add)};
-    }
-  }
-
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    .select-all-button {
-      background-color: ${({ theme }) => theme.colors.selectAllBackground};
-
-      &:hover {
-        background-color: ${({ theme }) =>
-          lighten(0.1, theme.colors.selectAllBackground)};
-      }
-    }
-
-    button {
-      border: none;
-      height: 2.5rem;
-      padding: 0.5rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      border-radius: 5px;
-      transition: background-color 250ms;
-      font-weight: bold;
-
-      * {
-        color: white;
-      }
-
-      svg {
-        font-size: 1.25rem;
-      }
-    }
-
-    h1 {
-      margin-right: 1rem;
-    }
-
-    h1,
-    .buttons {
-      animation: 500ms ease-out both ${slide};
-    }
-
-    & > div {
-      display: flex;
-      gap: 2rem;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 1rem;
-
-      button {
-        &:first-of-type {
-          background-color: ${({ theme }) => theme.colors.buttons.edit};
-
-          &:hover {
-            background-color: ${({ theme }) =>
-              lighten(0.1, theme.colors.buttons.edit)};
-          }
-        }
-
-        &:last-of-type {
-          background-color: ${({ theme }) => theme.colors.buttons.delete};
-
-          &:hover {
-            background-color: ${({ theme }) =>
-              lighten(0.1, theme.colors.buttons.delete)};
-          }
-        }
-      }
-    }
+    transform: translateX(-50%);
   }
 
   h2 {
@@ -245,85 +226,87 @@ export default function Stock() {
 
   return (
     <>
-      <StyledStock>
-        <div className="header">
-          <h1>Stock</h1>
-          <div className="right">
+      <StyledHeader headerTitle="Stock 📦">
+        <div>
+          <Searchbar
+            onFieldChange={(field) => setSearchField(field as any)}
+            onKeywordChange={(keyword) => {
+              setCurrentPage(0);
+              setSearchKeyWord(keyword);
+            }}
+            fields={[
+              {
+                name: "Nom",
+                value: "name",
+              },
+              {
+                name: "Prix d'achat",
+                value: "costPrice",
+              },
+              {
+                name: "Prix de vente",
+                value: "sellingPrice",
+              },
+              {
+                name: "Quantité",
+                value: "quantity",
+              },
+              {
+                name: "Emplacement",
+                value: "location",
+              },
+              {
+                name: "DCI",
+                value: "dci",
+              },
+              {
+                name: "Stock Min",
+                value: "min",
+              },
+              {
+                name: "Stock Max",
+                value: "max",
+              },
+            ]}
+          />
+          <div className="buttons">
             <button
-              className="select-all-button"
+              className="select-all-btn"
               onClick={() =>
                 toggleAllRows(selectedRows.length != medicines.length)
-              }
-            >
+              }>
               <MdSelectAll />
               <span>
                 {selectedRows.length == medicines.length ? "Desel." : "Sel."}{" "}
                 Tout
               </span>
             </button>
-            <button className="add-button" onClick={() => setShowAddForm(true)}>
+            <button className="add-btn" onClick={() => setShowAddForm(true)}>
               <CgFileAdd />
               <span>Ajouter</span>
             </button>
-            <Searchbar
-              onFieldChange={(field) => setSearchField(field as any)}
-              onKeywordChange={(keyword) => {
-                setCurrentPage(0);
-                setSearchKeyWord(keyword);
-              }}
-              fields={[
-                {
-                  name: "Nom",
-                  value: "name",
-                },
-                {
-                  name: "Prix d'achat",
-                  value: "costPrice",
-                },
-                {
-                  name: "Prix de vente",
-                  value: "sellingPrice",
-                },
-                {
-                  name: "Quantité",
-                  value: "quantity",
-                },
-                {
-                  name: "Emplacement",
-                  value: "location",
-                },
-                {
-                  name: "DCI",
-                  value: "dci",
-                },
-                {
-                  name: "Stock Min",
-                  value: "min",
-                },
-                {
-                  name: "Stock Max",
-                  value: "max",
-                },
-              ]}
-            />
             {selectedRows.length > 0 && (
-              <div className="buttons">
-                <button onClick={updateRows}>
+              <>
+                <button className="edit-btn" onClick={updateRows}>
                   <FiEdit />
                   <span>Modifier</span>
                 </button>
-                <button onClick={() => setShowConfirmation(true)}>
+                <button
+                  className="delete-btn"
+                  onClick={() => setShowConfirmation(true)}>
                   <AiOutlineDelete />
                   <span>Supprimer</span>
                 </button>
-              </div>
+              </>
             )}
           </div>
         </div>
+      </StyledHeader>
+      <StyledStock>
         <>
           {pending ? (
             <div className="pending">
-              <MoonLoader color="#90B77D" loading={pending} size={45} />
+              <MoonLoader color="#90B77D" loading={pending} size={64} />
             </div>
           ) : (
             <>
