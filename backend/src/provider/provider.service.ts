@@ -28,6 +28,24 @@ export class ProviderService {
     });
   }
 
+  async getOwner(medicineId: string) {
+    const providers = await this.prisma.provider.findMany({
+      where: {
+        medicines: {
+          some: {
+            id: medicineId,
+          },
+        },
+      },
+    });
+
+    if (providers.length === 0) {
+      return null;
+    }
+
+    return providers[0];
+  }
+
   getOne(id: string) {
     return this.prisma.provider.findUnique({
       where: {

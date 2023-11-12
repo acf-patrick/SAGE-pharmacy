@@ -8,6 +8,7 @@ import { ConfirmationDialog, Header } from "../../components";
 import { useNotification } from "../../hooks";
 import { MedicineFromProvider } from "../../models";
 import { appear } from "../../styles/animations";
+import { useNavigate } from "react-router-dom";
 
 // Converted map from request response from /provider/provide to common JS object
 type MatchMedicine = {
@@ -187,7 +188,6 @@ const Purchase = () => {
   const [matchedMedicines, setMatchedMedicines] = useState<MatchMedicine[]>([]);
   const [selectedRowIndices, setselectedRowIndices] = useState<number[]>([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [order, setOrder] = useState<Order[]>([]);
   const [pending, setPending] = useState(true);
 
   const [currentProviders, setCurrentProviders] = useState<string[]>([]);
@@ -202,6 +202,7 @@ const Purchase = () => {
   >([]);
 
   const { pushNotification } = useNotification();
+  const navigate = useNavigate();
 
   useEffect(() => {
     getMedicinesMatches()
@@ -232,10 +233,6 @@ const Purchase = () => {
       .finally(() => setPending(false));
   }, []);
 
-  useEffect(() => {
-    console.log(order);
-  }, [order]);
-
   // Get all matched near-low quantity medicines
   const getMedicinesMatches = async () => {
     const res = await api.get("/provider/provide");
@@ -257,20 +254,25 @@ const Purchase = () => {
       });
     }
 
-    return matches;
+    return matches.sort((a, b) => (a.name < b.name ? -1 : 1));
   };
 
   // Get current data set up by the user and create a purchase list (set "order" state)
   const orderMedicines = () => {
-    setOrder(
-      selectedRowIndices.map((i) => {
-        const medicine = currentMedicines[i];
-        return {
-          medicineId: medicine.id,
-          quantityToOrder: medicine.order,
-        };
+    const orders = selectedRowIndices.map((i) => {
+      const medicine = currentMedicines[i];
+      return {
+        medicineId: medicine.id,
+        quantityToOrder: medicine.order,
+      };
+    });
+
+    api
+      .post("/order", {
+        orders,
       })
-    );
+      .then(() => navigate("/purchase/summary"))
+      .catch((err) => console.error(err));
   };
 
   const selectedMedicineOnChange = (
@@ -326,7 +328,7 @@ const Purchase = () => {
             onClick={() => {
               if (selectedRowIndices.length === 0) {
                 pushNotification(
-                  "Sélectionner des lignes pour passer une commande!"
+                  "Sélectionner des lignes pour créer les bons de commande!"
                 );
               } else {
                 setShowConfirmation(true);
