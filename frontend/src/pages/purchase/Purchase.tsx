@@ -39,6 +39,10 @@ const StyledPurchase = styled.div`
     height: 1.125rem;
   }
 
+  .unbold {
+    font-weight: normal !important;
+  }
+
   .checkbox {
     display: flex;
     gap: 0.5rem;
@@ -59,7 +63,7 @@ const StyledPurchase = styled.div`
   .table {
     display: grid;
     animation: ${appear} 500ms 500ms both;
-    grid-template-columns: 1fr 0.5fr repeat(2, 1fr);
+    grid-template-columns: 0.75fr 1fr 0.5fr 1fr 0.5fr 0.5fr;
     grid-auto-rows: 50px;
     border: solid 1px black;
     width: fit-content;
@@ -185,11 +189,13 @@ const Purchase = () => {
   const [_, setOrder] = useState<Order[]>([]);
   const [pending, setPending] = useState(true);
 
-  const [providerDatas, setProviderDatas] = useState<
+  const [currentProviders, setCurrentProviders] = useState<string[]>([]);
+  const [currentMedicines, setCurrentMedicines] = useState<
     {
-      name: string;
-      order: number; // Number of medicine to order
+      order: number;
       available: number;
+      unitPriceWithTax: number;
+      unitPriceWithoutTax: number;
     }[]
   >([]);
 
@@ -199,12 +205,24 @@ const Purchase = () => {
     getMedicinesMatches()
       .then((matchingMedicines) => {
         setMatchedMedicines(matchingMedicines);
-        setProviderDatas(
-          matchingMedicines.map((med) => ({
-            name: med.providerMedicines[0].provider.name,
-            order: med.providerMedicines[0].quantityToOrder,
-            available: med.providerMedicines[0].medicine.quantity,
-          }))
+        setCurrentProviders(
+          matchingMedicines.map(
+            (medicine) => medicine.providerMedicines[0].provider.name
+          )
+        );
+        setCurrentMedicines(
+          matchingMedicines.map((med) => {
+            const medicine = med.providerMedicines[0];
+            const { quantity, priceWithTax, priceWithoutTax } =
+              medicine.medicine;
+
+            return {
+              order: medicine.quantityToOrder,
+              available: quantity,
+              unitPriceWithoutTax: priceWithoutTax * quantity,
+              unitPriceWithTax: priceWithTax * quantity,
+            };
+          })
         );
       })
       .catch((err) => console.error(err))
@@ -290,23 +308,40 @@ const Purchase = () => {
 
     const { medicine, providerName, order } = obj;
 
-    setProviderDatas((providerDatas) => {
-      providerDatas[medicineIndex].name = providerName;
-      providerDatas[medicineIndex].available = medicine.quantity;
-      providerDatas[medicineIndex].order = order;
+    setCurrentProviders((list) => {
+      list[medicineIndex] = providerName;
+      return [...list];
+    });
 
-      return [...providerDatas];
+    setCurrentMedicines((medicines) => {
+      const row = medicines[medicineIndex];
+      row.order = order;
+      row.unitPriceWithTax = medicine.priceWithTax;
+      row.unitPriceWithoutTax = medicine.priceWithoutTax;
+
+      return [...medicines];
     });
   };
 
-  const orderInputValueOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const orderInputValueOnChange = (
+    medicineIndex: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const defaultValue = e.currentTarget.defaultValue;
     const maxValue = e.currentTarget.max;
     if (isNaN(parseInt(e.currentTarget.value))) {
       e.currentTarget.value = defaultValue;
     }
-    if (parseInt(e.currentTarget.value) > parseInt(maxValue))
+    if (parseInt(e.currentTarget.value) > parseInt(maxValue)) {
       e.currentTarget.value = maxValue;
+    }
+
+    const order = parseInt(e.currentTarget.value);
+    setCurrentMedicines((rows) => {
+      const row = rows[medicineIndex];
+      row.order = order;
+      return [...rows]
+    });
   };
 
   return (
@@ -330,7 +365,7 @@ const Purchase = () => {
       <StyledPurchase>
         {pending ? (
           <div className="pending">
-            <MoonLoader color="#90B77D" loading={pending} size={64}  />
+            <MoonLoader color="#90B77D" loading={pending} size={64} />
           </div>
         ) : (
           <>
@@ -360,12 +395,15 @@ const Purchase = () => {
                     />
                     <span>En rupture</span>
                   </div>
-                  <div className="header-item">A commander</div>
                   <div className="header-item">Depuis fournisseur</div>
+                  <div className="header-item">A commander</div>
                   <div className="header-item">Fournisseur</div>
+                  <div className="header-item">Total TTC</div>
+                  <div className="header-item">Total HT</div>
                 </>
                 {matchedMedicines.map((medicine, i) => (
                   <React.Fragment key={i}>
+                    {/* medicine name in stock */}
                     <div
                       className={[
                         "checkbox",
@@ -388,15 +426,7 @@ const Purchase = () => {
                       />
                       <label htmlFor={medicine.name}>{medicine.name}</label>
                     </div>
-                    <input
-                      className={i % 2 == 0 ? "even" : "odd"}
-                      type="number"
-                      key={providerDatas[i].order}
-                      defaultValue={providerDatas[i].order}
-                      min={0}
-                      max={providerDatas[i].available}
-                      onChange={orderInputValueOnChange}
-                    />
+                    {/* medicine name from provider */}
                     <div className={i % 2 == 0 ? "even" : "odd"}>
                       {medicine.providerMedicines.length == 1 ? (
                         <div
@@ -430,8 +460,29 @@ const Purchase = () => {
                         </select>
                       )}
                     </div>
+                    {/* quantity to purchase */}
+                    <input
+                      className={i % 2 == 0 ? "even" : "odd"}
+                      type="number"
+                      key={currentMedicines[i].order}
+                      defaultValue={currentMedicines[i].order}
+                      min={0}
+                      max={currentMedicines[i].available}
+                      onChange={(e) => orderInputValueOnChange(i, e)}
+                    />
+                    {/* provider's name */}
                     <div className={i % 2 == 0 ? "even" : "odd"}>
-                      {providerDatas[i].name}
+                      {currentProviders[i]}
+                    </div>
+                    {/* price with taxes */}
+                    <div className={"unbold " + (i % 2 == 0 ? "even" : "odd")}>
+                      {currentMedicines[i].order *
+                        currentMedicines[i].unitPriceWithTax}
+                    </div>
+                    {/* price without taxes */}
+                    <div className={"unbold " + (i % 2 == 0 ? "even" : "odd")}>
+                      {currentMedicines[i].order *
+                        currentMedicines[i].unitPriceWithoutTax}
                     </div>
                   </React.Fragment>
                 ))}
