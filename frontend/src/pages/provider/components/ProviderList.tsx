@@ -9,11 +9,20 @@ const StyledHeader = styled.div`
   flex-direction: column;
   gap: 2rem;
   align-items: center;
+  background-color: ${({ theme }) => theme.colors.secondary};
+  border-radius: 5px 5px 0 0;
 
   input {
     width: 360px;
     padding: 10px 5px;
     font-size: 1rem;
+    border-radius: 5px;
+    border: none;
+    padding-left: 1rem;
+
+    &:focus {
+      outline: none;
+    }
   }
 
   p {
