@@ -11,17 +11,23 @@ import { AuthService } from './auth.service';
 import { SignupUserDto } from './dto/SignupUser.dto';
 import { UserRole } from '@prisma/client';
 import { SigninUserDto } from './dto/SigninUser.dto';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { SigninReturnDto } from './dto/SigninReturn.dto';
 import { Request } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { AccessTokenGuard } from './guards/access-token.guard';
 
 @Controller('api/auth')
 @ApiTags('🔐 Authentication')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('/signup')
+  @Post('signup')
   @ApiOperation({ summary: 'Register a new user' })
   async signup(@Body() user: SignupUserDto) {
     if (
@@ -36,7 +42,7 @@ export class AuthController {
     return 'User registered';
   }
 
-  @Post('/signin')
+  @Post('signin')
   @ApiOperation({
     description: 'Generate acces token and refresh token for valid credentials',
     summary: 'Sign in user',
@@ -58,7 +64,16 @@ export class AuthController {
     };
   }
 
-  @Get('/refresh-tokens')
+  @Get('valid-token')
+  @ApiOperation({ summary: 'Checks if token is still valid' })
+  @ApiOkResponse({ description: 'Valid access token' })
+  @ApiForbiddenResponse({ description: 'Expired access token' })
+  @UseGuards(AccessTokenGuard)
+  isTokenValid() {
+    return 'valid token';
+  }
+
+  @Get('refresh-tokens')
   @UseGuards(RefreshTokenGuard)
   @ApiOperation({ summary: 'Refresh access tokens' })
   async refreshTokens(@Req() req: Request) {

@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import { Order, Provider, Purchase, Stock } from "./pages";
+import { Login, Order, Provider, Purchase, Stock } from "./pages";
 import { providersLoader, providerLoader } from "./pages/provider";
 import {
   ProviderList,
@@ -43,5 +43,9 @@ export const router = createBrowserRouter([
         ],
       },
     ],
+  },
+  {
+    path: "/login",
+    element: <Login />,
   },
 ]);

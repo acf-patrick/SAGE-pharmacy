@@ -1,9 +1,9 @@
-import { Outlet } from "react-router-dom";
-import styled, { ThemeProvider } from "styled-components";
-import { GlobalStyles } from "./styles/globalStyles.ts";
-import { theme } from "./styles/theme";
+import { Outlet, useNavigate } from "react-router-dom";
 import { NotificationProvider } from "./contexts/provider";
 import { Sidebar, ToastNotification } from "./components";
+import { styled } from "styled-components";
+import { useEffect } from "react";
+import { api } from "./api";
 
 if (import.meta.env.PROD) {
   document.addEventListener("contextmenu", (e) => e.preventDefault());
@@ -23,19 +23,27 @@ const StyledContainer = styled.div`
 `;
 
 function App() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem("access-token");
+    if (accessToken) {
+      api.get("/auth/valid-token").catch(() => navigate("/login"));
+    } else {
+      navigate("/login");
+    }
+  }, []);
+
   return (
-    <ThemeProvider theme={theme}>
-      <GlobalStyles />
-      <StyledContainer>
-        <Sidebar />
-        <div className="right">
-          <NotificationProvider>
-            <Outlet />
-            <ToastNotification />
-          </NotificationProvider>
-        </div>
-      </StyledContainer>
-    </ThemeProvider>
+    <StyledContainer>
+      <Sidebar />
+      <div className="right">
+        <NotificationProvider>
+          <Outlet />
+          <ToastNotification />
+        </NotificationProvider>
+      </div>
+    </StyledContainer>
   );
 }
 
