@@ -49,7 +49,7 @@ model OrderMedicine {
   id                     String               @id @default(uuid())
   medicine               MedicineFromProvider @relation(fields: [medicineFromProviderId], references: [id])
   quantity               Int
-  medicineFromProviderId String
+  medicineFromProviderId String               @unique
   Order                  Order?               @relation(fields: [orderId], references: [id])
   orderId                String?
 }

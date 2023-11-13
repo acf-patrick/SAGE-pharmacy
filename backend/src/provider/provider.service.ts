@@ -28,6 +28,17 @@ export class ProviderService {
     });
   }
 
+  async hasMedicineBeenOrdered(id: string) {
+    console.log(id);
+    const record = await this.prisma.orderMedicine.findUnique({
+      where: {
+        medicineFromProviderId: id,
+      },
+    });
+
+    return record ? true : false;
+  }
+
   async getOwner(medicineId: string) {
     const providers = await this.prisma.provider.findMany({
       where: {
@@ -77,13 +88,22 @@ export class ProviderService {
         name.toLowerCase().includes(medicine.toLowerCase()),
     );
 
-    return this.prisma.medicineFromProvider.findMany({
+    const medicines = await this.prisma.medicineFromProvider.findMany({
       where: {
         name: {
           in: names,
         },
       },
     });
+
+    const records = [];
+    for (let medicine of medicines) {
+      const ordered = await this.hasMedicineBeenOrdered(medicine.id);
+      if (!ordered) {
+        records.push(medicine);
+      }
+    }
+    return records;
   }
 
   // return matching medicines for given medicine names
