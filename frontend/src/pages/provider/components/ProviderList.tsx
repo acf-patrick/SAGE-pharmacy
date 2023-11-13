@@ -83,6 +83,7 @@ const StyledContainer = styled.div`
     list-style: none;
     max-height: 60vh;
     overflow-y: auto;
+    margin-bottom: 2rem;
   }
 `;
 

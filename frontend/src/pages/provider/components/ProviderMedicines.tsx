@@ -16,6 +16,7 @@ const StyledList = styled.div`
   animation: ${appear} both 500ms;
   overflow: auto;
   height: 80vh;
+  margin-bottom: 1rem;
 
   table {
     border-collapse: collapse;
