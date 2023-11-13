@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrdersDto } from './dto/CreateOrders.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -7,6 +7,14 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 @ApiTags('Order 🛍️')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
+
+  @Get('count')
+  @ApiOperation({
+    summary: 'Returns orders count',
+  })
+  getOrderCount() {
+    return this.orderService.getOrderCount();
+  }
 
   @Post()
   @ApiOperation({

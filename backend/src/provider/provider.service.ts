@@ -29,7 +29,7 @@ export class ProviderService {
     });
   }
 
-  async hasMedicineBeenOrdered(id: string) {
+  async hasMedicineFromProviderBeenOrdered(id: string) {
     const record = await this.prisma.orderMedicine.findUnique({
       where: {
         medicineFromProviderId: id,
@@ -97,7 +97,9 @@ export class ProviderService {
 
     const records: typeof medicines = [];
     for (let medicine of medicines) {
-      const ordered = await this.hasMedicineBeenOrdered(medicine.id);
+      const ordered = await this.hasMedicineFromProviderBeenOrdered(
+        medicine.id,
+      );
       if (!ordered) {
         records.push(medicine);
       }
@@ -105,14 +107,31 @@ export class ProviderService {
     return records;
   }
 
-  getMatchingMedicines(name: string) {
-    return this.prisma.medicineFromProvider.findMany({
+  async getMatchingMedicines(name: string) {
+    const medicine = await this.prisma.medicine.findUnique({
+      where: { name },
+    });
+
+    const medicinesFromProvider =
+      await this.prisma.medicineFromProvider.findMany({
+        where: {
+          matchingMedicine: {
+            name,
+          },
+        },
+      });
+
+    const orders = await this.prisma.orderMedicine.count({
       where: {
-        matchingMedicine: {
-          name,
+        medicine: {
+          id: {
+            in: medicinesFromProvider.map((medicine) => medicine.id),
+          },
         },
       },
     });
+
+    return orders === 0 ? medicinesFromProvider : [];
   }
 
   // return matching medicines for given medicine names

@@ -1,7 +1,7 @@
 import { lighten } from "polished";
 import { Link, useLocation } from "react-router-dom";
 import { styled } from "styled-components";
-import { paths } from "../paths";
+import paths from "../paths";
 
 const StyledSideBar = styled.div`
   max-width: 280px;
@@ -84,11 +84,12 @@ export default function SideBar() {
       </div>
       <nav>
         <ul>
-          {paths.map((path) => (
-            <li key={path.name}>
+          {paths.map((path, i) => (
+            <li key={i}>
               <Link
                 to={path.to}
-                className={location.pathname.includes(path.to) ? "active" : ""}>
+                className={location.pathname.includes(path.to) ? "active" : ""}
+              >
                 <span>
                   {path.icon}
                   {path.name}

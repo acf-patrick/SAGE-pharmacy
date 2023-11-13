@@ -10,6 +10,10 @@ export class OrderService {
     private prisma: PrismaService,
   ) {}
 
+  getOrderCount() {
+    return this.prisma.order.count();
+  }
+
   async clearOrders() {
     await this.prisma.order.deleteMany();
     await this.prisma.orderMedicine.deleteMany();

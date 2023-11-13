@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 // Converted map from request response from /provider/provide to common JS object
 type MatchMedicine = {
   name: string;
+  stockMin?: number;
   providerMedicines: {
     medicine: MedicineFromProvider;
     provider: { name: string };
@@ -25,11 +26,6 @@ type ValueFromSelectBox = {
   providerName: string;
   order: number;
   id: string;
-};
-
-type Order = {
-  medicineId: string;
-  quantityToOrder: number;
 };
 
 const StyledPurchase = styled.div`
@@ -248,8 +244,12 @@ const Purchase = () => {
     const matches: MatchMedicine[] = [];
 
     for (let name of Object.keys(data)) {
+      const res = await api.get(`/stock?name=${name}`);
+      const min = res.data.data[0].min;
+
       matches.push({
         name,
+        stockMin: min,
         providerMedicines: data[name],
       });
     }
@@ -271,7 +271,7 @@ const Purchase = () => {
       .post("/order", {
         orders,
       })
-      .then(() => navigate("/purchase/summary"))
+      .then(() => navigate("/order"))
       .catch((err) => console.error(err));
   };
 
@@ -333,7 +333,8 @@ const Purchase = () => {
               } else {
                 setShowConfirmation(true);
               }
-            }}>
+            }}
+          >
             Commander
           </button>
         </div>
@@ -385,7 +386,8 @@ const Purchase = () => {
                         "checkbox",
                         "name",
                         i % 2 == 0 ? "even" : "odd",
-                      ].join(" ")}>
+                      ].join(" ")}
+                    >
                       <input
                         type="checkbox"
                         id={medicine.name}
@@ -412,7 +414,8 @@ const Purchase = () => {
                         <select
                           name={medicine.name}
                           id={medicine.name}
-                          onChange={(e) => selectedMedicineOnChange(i, e)}>
+                          onChange={(e) => selectedMedicineOnChange(i, e)}
+                        >
                           {medicine.providerMedicines.map((match, i) => (
                             <option
                               key={i}
@@ -421,7 +424,8 @@ const Purchase = () => {
                                 medicine: match.medicine,
                                 providerName: match.provider.name,
                                 order: match.quantityToOrder,
-                              })}>
+                              })}
+                            >
                               {match.medicine.name +
                                 " (" +
                                 match.provider.name +
@@ -437,7 +441,7 @@ const Purchase = () => {
                       type="number"
                       key={currentMedicines[i].order}
                       value={currentMedicines[i].order}
-                      min={0}
+                      min={medicine.stockMin}
                       max={currentMedicines[i].available}
                       onChange={(e) => orderInputValueOnChange(i, e)}
                     />

@@ -1,8 +1,9 @@
 import { AiTwotoneContainer } from "react-icons/ai";
-import { SlBasket } from "react-icons/sl";
+import { BiPurchaseTag } from "react-icons/bi";
 import { PiFactoryBold } from "react-icons/pi";
+import { SlBasket } from "react-icons/sl";
 
-export const paths = [
+const paths = [
   {
     to: "/stock",
     name: "Stock",
@@ -14,8 +15,15 @@ export const paths = [
     icon: <SlBasket />,
   },
   {
+    to: "/order",
+    name: "Commande",
+    icon: <BiPurchaseTag />,
+  },
+  {
     to: "/provider",
     name: "Fournisseur",
     icon: <PiFactoryBold />,
   },
 ];
+
+export default paths;
