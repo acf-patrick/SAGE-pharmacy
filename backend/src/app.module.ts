@@ -8,6 +8,7 @@ import { ProviderModule } from './provider/provider.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { OrderModule } from './order/order.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { OrderModule } from './order/order.module';
       rootPath: join(__dirname, '..', 'client'),
     }),
     OrderModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
