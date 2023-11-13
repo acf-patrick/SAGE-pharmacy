@@ -8,6 +8,7 @@ import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { SignupUserDto } from './dto/SignupUser.dto';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +19,7 @@ export class AuthService {
     private jwt: JwtService,
   ) {}
 
-  private generateAccessToken(name: string) {
+  generateAccessToken(name: string) {
     return this.jwt.sign(
       {
         name,
@@ -29,7 +30,7 @@ export class AuthService {
     );
   }
 
-  private generateRefreshToken(name: string) {
+  generateRefreshToken(name: string) {
     return this.jwt.sign(
       {
         name,
@@ -42,24 +43,44 @@ export class AuthService {
   }
 
   // Register user and returns the ID
-  async register(name: string, password: string) {
+  async register(user: SignupUserDto) {
     try {
-      await this.userService.getUserByName(name);
-      throw new ConflictException(`Username '${name}' has already been taken`);
+      await this.userService.getUserByName(user.name);
     } catch {
       const salt = await bcrypt.genSalt();
-      const hashed = await bcrypt.hash(password, salt);
-      const { id } = await this.prisma.user.create({
-        data: {
-          username: name,
-          password: hashed,
-        },
-        select: {
-          id: true,
-        },
-      });
+      const hashed = await bcrypt.hash(user.password, salt);
+      let id: string;
+
+      if (user.role) {
+        const record = await this.prisma.user.create({
+          data: {
+            username: user.name,
+            password: hashed,
+            role: user.role,
+          },
+          select: {
+            id: true,
+          },
+        });
+        id = record.id;
+      } else {
+        const record = await this.prisma.user.create({
+          data: {
+            username: user.name,
+            password: hashed,
+          },
+          select: {
+            id: true,
+          },
+        });
+        id = record.id;
+      }
       return id;
     }
+
+    throw new ConflictException(
+      `Username '${user.name}' has already been taken`,
+    );
   }
 
   // Returns new access-token and user-id with valid credentials, otherwise returns unauthorized exception

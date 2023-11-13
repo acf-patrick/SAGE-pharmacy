@@ -24,7 +24,7 @@ import {
 import { UpdateMedicineDto } from './dto/UpdateMedicine.dto';
 import { CreateMedicineDto } from './dto/CreateMedicine.dto';
 
-@ApiTags('Stock 📦')
+@ApiTags('📦 Stock')
 @Controller('api/stock')
 export class StockController {
   constructor(private readonly stockService: StockService) {}

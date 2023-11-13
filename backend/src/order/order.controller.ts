@@ -4,7 +4,7 @@ import { CreateOrdersDto } from './dto/CreateOrders.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @Controller('api/order')
-@ApiTags('Order 🛍️')
+@ApiTags('🛍️ Order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 

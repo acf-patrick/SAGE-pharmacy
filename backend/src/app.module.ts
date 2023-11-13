@@ -15,7 +15,9 @@ import { AuthModule } from './auth/auth.module';
   imports: [
     PrismaModule,
     StockModule,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     ProviderModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'client'),

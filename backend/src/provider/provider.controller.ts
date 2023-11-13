@@ -17,7 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { MatchMedicinesDTO } from './dto/MatchMedicines.dto';
 
-@ApiTags('Provider 🏭')
+@ApiTags('🏭 Provider')
 @Controller('api/provider')
 export class ProviderController {
   constructor(
