@@ -48,6 +48,12 @@ export class OrderController {
       throw new NotFoundException('Order not found');
     }
 
+    if (order.status === 'ORDERED' && status !== 'ORDERED' && !order.isValid) {
+      throw new BadRequestException(
+        `Trying to update ORDERED order with invalid status`,
+      );
+    }
+
     if (
       (status === 'FINISHED' && order.status !== 'RECEIVED') ||
       (status === 'RECEIVED' && order.status !== 'PENDING') ||
