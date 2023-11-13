@@ -7,6 +7,7 @@ import { StockModule } from '../stock/stock.module';
 @Module({
   controllers: [ProviderController],
   providers: [ProviderService],
+  exports: [ProviderService],
   imports: [PrismaModule, StockModule],
 })
 export class ProviderModule {}

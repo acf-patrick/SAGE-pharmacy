@@ -25,20 +25,38 @@ model Medicine {
 }
 
 model MedicineFromProvider {
-  id              String    @id @default(uuid())
+  id              String          @id @default(uuid())
   name            String
   priceWithTax    Int
   priceWithoutTax Int
   quantity        Int
   dci             String
-  Provider        Provider? @relation(fields: [providerId], references: [id])
-  providerId      String?
-  expirationDate  DateTime  @db.Date
+  Provider        Provider        @relation(fields: [providerId], references: [id])
+  providerId      String
+  expirationDate  DateTime        @db.Date
+  OrderMedicine   OrderMedicine[]
 }
 
 model Provider {
   id        String                 @id @default(uuid())
-  name      String
+  name      String                 @unique
   medicines MedicineFromProvider[]
   min       Int // Minimal value of purchase
+  Order     Order[]
+}
+
+model OrderMedicine {
+  id                     String               @id @default(uuid())
+  medicine               MedicineFromProvider @relation(fields: [medicineFromProviderId], references: [id])
+  quantity               Int
+  medicineFromProviderId String
+  Order                  Order?               @relation(fields: [orderId], references: [id])
+  orderId                String?
+}
+
+model Order {
+  id             String          @id @default(uuid())
+  provider       Provider        @relation(fields: [providerName], references: [name])
+  providerName   String          @unique
+  medicineOrders OrderMedicine[]
 }

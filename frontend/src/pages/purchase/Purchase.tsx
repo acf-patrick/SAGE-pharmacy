@@ -8,6 +8,7 @@ import { ConfirmationDialog, Header } from "../../components";
 import { useNotification } from "../../hooks";
 import { MedicineFromProvider } from "../../models";
 import { appear } from "../../styles/animations";
+import { useNavigate } from "react-router-dom";
 
 // Converted map from request response from /provider/provide to common JS object
 type MatchMedicine = {
@@ -23,6 +24,7 @@ type ValueFromSelectBox = {
   medicine: MedicineFromProvider;
   providerName: string;
   order: number;
+  id: string;
 };
 
 type Order = {
@@ -37,6 +39,10 @@ const StyledPurchase = styled.div`
   input[type="checkbox"] {
     width: 1.125rem;
     height: 1.125rem;
+  }
+
+  .unbold {
+    font-weight: normal !important;
   }
 
   .checkbox {
@@ -59,7 +65,7 @@ const StyledPurchase = styled.div`
   .table {
     display: grid;
     animation: ${appear} 500ms 500ms both;
-    grid-template-columns: 1fr 0.5fr repeat(2, 1fr);
+    grid-template-columns: 0.75fr 1fr 0.5fr 1fr 0.5fr 0.5fr;
     grid-auto-rows: 50px;
     border: solid 1px black;
     width: fit-content;
@@ -182,29 +188,45 @@ const Purchase = () => {
   const [matchedMedicines, setMatchedMedicines] = useState<MatchMedicine[]>([]);
   const [selectedRowIndices, setselectedRowIndices] = useState<number[]>([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [_, setOrder] = useState<Order[]>([]);
   const [pending, setPending] = useState(true);
 
-  const [providerDatas, setProviderDatas] = useState<
+  const [currentProviders, setCurrentProviders] = useState<string[]>([]);
+  const [currentMedicines, setCurrentMedicines] = useState<
     {
-      name: string;
-      order: number; // Number of medicine to order
+      id: string;
+      order: number;
       available: number;
+      unitPriceWithTax: number;
+      unitPriceWithoutTax: number;
     }[]
   >([]);
 
   const { pushNotification } = useNotification();
+  const navigate = useNavigate();
 
   useEffect(() => {
     getMedicinesMatches()
       .then((matchingMedicines) => {
         setMatchedMedicines(matchingMedicines);
-        setProviderDatas(
-          matchingMedicines.map((med) => ({
-            name: med.providerMedicines[0].provider.name,
-            order: med.providerMedicines[0].quantityToOrder,
-            available: med.providerMedicines[0].medicine.quantity,
-          }))
+        setCurrentProviders(
+          matchingMedicines.map(
+            (medicine) => medicine.providerMedicines[0].provider.name
+          )
+        );
+        setCurrentMedicines(
+          matchingMedicines.map((med) => {
+            const medicine = med.providerMedicines[0];
+            const { quantity, priceWithTax, priceWithoutTax, id } =
+              medicine.medicine;
+
+            return {
+              id,
+              order: medicine.quantityToOrder,
+              available: quantity,
+              unitPriceWithoutTax: priceWithoutTax * quantity,
+              unitPriceWithTax: priceWithTax * quantity,
+            };
+          })
         );
       })
       .catch((err) => console.error(err))
@@ -232,54 +254,25 @@ const Purchase = () => {
       });
     }
 
-    return matches;
+    return matches.sort((a, b) => (a.name < b.name ? -1 : 1));
   };
 
   // Get current data set up by the user and create a purchase list (set "order" state)
   const orderMedicines = () => {
-    const selects = document.querySelectorAll("select");
-    const medicinesNamesDiv = document.querySelectorAll(".medicine-name");
-    const medicinesToOrder: Order[] = [];
+    const orders = selectedRowIndices.map((i) => {
+      const medicine = currentMedicines[i];
+      return {
+        medicineId: medicine.id,
+        quantityToOrder: medicine.order,
+      };
+    });
 
-    for (let select of selects) {
-      if (select.getAttribute("data-selected") !== "true") {
-        continue;
-      }
-
-      const prev = select.parentElement!
-        .previousElementSibling! as HTMLInputElement;
-      const value: ValueFromSelectBox = JSON.parse(select.value);
-
-      const quantity = parseInt(prev.value);
-      if (quantity) {
-        medicinesToOrder.push({
-          medicineId: value.medicine.id,
-          quantityToOrder: parseInt(prev.value),
-        });
-      }
-    }
-
-    for (let div of medicinesNamesDiv) {
-      if (div.getAttribute("data-selected") !== "true") {
-        continue;
-      }
-
-      const prev = div.parentElement!
-        .previousElementSibling! as HTMLInputElement;
-      const medicine: MedicineFromProvider = JSON.parse(
-        div.getAttribute("data-medicine")!
-      )!;
-
-      const quantity = parseInt(prev.value);
-      if (quantity) {
-        medicinesToOrder.push({
-          medicineId: medicine.id,
-          quantityToOrder: quantity,
-        });
-      }
-    }
-
-    setOrder(medicinesToOrder);
+    api
+      .post("/order", {
+        orders,
+      })
+      .then(() => navigate("/purchase/summary"))
+      .catch((err) => console.error(err));
   };
 
   const selectedMedicineOnChange = (
@@ -288,25 +281,43 @@ const Purchase = () => {
   ) => {
     const obj: ValueFromSelectBox = JSON.parse(event.currentTarget.value);
 
-    const { medicine, providerName, order } = obj;
+    const { medicine, providerName, order, id } = obj;
 
-    setProviderDatas((providerDatas) => {
-      providerDatas[medicineIndex].name = providerName;
-      providerDatas[medicineIndex].available = medicine.quantity;
-      providerDatas[medicineIndex].order = order;
+    setCurrentProviders((list) => {
+      list[medicineIndex] = providerName;
+      return [...list];
+    });
 
-      return [...providerDatas];
+    setCurrentMedicines((medicines) => {
+      const row = medicines[medicineIndex];
+      row.order = order;
+      row.unitPriceWithTax = medicine.priceWithTax;
+      row.unitPriceWithoutTax = medicine.priceWithoutTax;
+      row.id = id;
+
+      return [...medicines];
     });
   };
 
-  const orderInputValueOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const orderInputValueOnChange = (
+    medicineIndex: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const defaultValue = e.currentTarget.defaultValue;
     const maxValue = e.currentTarget.max;
     if (isNaN(parseInt(e.currentTarget.value))) {
       e.currentTarget.value = defaultValue;
     }
-    if (parseInt(e.currentTarget.value) > parseInt(maxValue))
+    if (parseInt(e.currentTarget.value) > parseInt(maxValue)) {
       e.currentTarget.value = maxValue;
+    }
+
+    const order = parseInt(e.currentTarget.value);
+    setCurrentMedicines((rows) => {
+      const row = rows[medicineIndex];
+      row.order = order;
+      return [...rows];
+    });
   };
 
   return (
@@ -317,7 +328,7 @@ const Purchase = () => {
             onClick={() => {
               if (selectedRowIndices.length === 0) {
                 pushNotification(
-                  "Sélectionner des lignes pour passer une commande!"
+                  "Sélectionner des lignes pour créer les bons de commande!"
                 );
               } else {
                 setShowConfirmation(true);
@@ -330,7 +341,7 @@ const Purchase = () => {
       <StyledPurchase>
         {pending ? (
           <div className="pending">
-            <MoonLoader color="#90B77D" loading={pending} size={64}  />
+            <MoonLoader color="#90B77D" loading={pending} size={64} />
           </div>
         ) : (
           <>
@@ -360,12 +371,15 @@ const Purchase = () => {
                     />
                     <span>En rupture</span>
                   </div>
-                  <div className="header-item">A commander</div>
                   <div className="header-item">Depuis fournisseur</div>
+                  <div className="header-item">A commander</div>
                   <div className="header-item">Fournisseur</div>
+                  <div className="header-item">Total TTC</div>
+                  <div className="header-item">Total HT</div>
                 </>
                 {matchedMedicines.map((medicine, i) => (
                   <React.Fragment key={i}>
+                    {/* medicine name in stock */}
                     <div
                       className={[
                         "checkbox",
@@ -388,28 +402,14 @@ const Purchase = () => {
                       />
                       <label htmlFor={medicine.name}>{medicine.name}</label>
                     </div>
-                    <input
-                      className={i % 2 == 0 ? "even" : "odd"}
-                      type="number"
-                      key={providerDatas[i].order}
-                      defaultValue={providerDatas[i].order}
-                      min={0}
-                      max={providerDatas[i].available}
-                      onChange={orderInputValueOnChange}
-                    />
+                    {/* medicine name from provider */}
                     <div className={i % 2 == 0 ? "even" : "odd"}>
                       {medicine.providerMedicines.length == 1 ? (
-                        <div
-                          data-selected={selectedRowIndices.includes(i)}
-                          className="medicine-name"
-                          data-medicine={JSON.stringify(
-                            medicine.providerMedicines[0].medicine
-                          )}>
+                        <div className="medicine-name">
                           {medicine.providerMedicines[0].medicine.name}
                         </div>
                       ) : (
                         <select
-                          data-selected={selectedRowIndices.includes(i)}
                           name={medicine.name}
                           id={medicine.name}
                           onChange={(e) => selectedMedicineOnChange(i, e)}>
@@ -417,6 +417,7 @@ const Purchase = () => {
                             <option
                               key={i}
                               value={JSON.stringify({
+                                id: match.medicine.id,
                                 medicine: match.medicine,
                                 providerName: match.provider.name,
                                 order: match.quantityToOrder,
@@ -430,8 +431,29 @@ const Purchase = () => {
                         </select>
                       )}
                     </div>
+                    {/* quantity to purchase */}
+                    <input
+                      className={i % 2 == 0 ? "even" : "odd"}
+                      type="number"
+                      key={currentMedicines[i].order}
+                      value={currentMedicines[i].order}
+                      min={0}
+                      max={currentMedicines[i].available}
+                      onChange={(e) => orderInputValueOnChange(i, e)}
+                    />
+                    {/* provider's name */}
                     <div className={i % 2 == 0 ? "even" : "odd"}>
-                      {providerDatas[i].name}
+                      {currentProviders[i]}
+                    </div>
+                    {/* price with taxes */}
+                    <div className={"unbold " + (i % 2 == 0 ? "even" : "odd")}>
+                      {currentMedicines[i].order *
+                        currentMedicines[i].unitPriceWithTax}
+                    </div>
+                    {/* price without taxes */}
+                    <div className={"unbold " + (i % 2 == 0 ? "even" : "odd")}>
+                      {currentMedicines[i].order *
+                        currentMedicines[i].unitPriceWithoutTax}
                     </div>
                   </React.Fragment>
                 ))}
