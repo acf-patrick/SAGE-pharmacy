@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrdersDto } from './dto/CreateOrders.dto';
 import { ProviderService } from 'src/provider/provider.service';
+import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
@@ -12,6 +13,83 @@ export class OrderService {
 
   getOrderCount() {
     return this.prisma.order.count();
+  }
+
+  async verifyOrdersValidity() {
+    const orders = await this.getAllOrders();
+    for (let order of orders) {
+      if (
+        order.status === 'ORDERED' &&
+        order.totalPriceWithTax < order.minPurchase
+      ) {
+        await this.prisma.order.update({
+          where: {
+            providerName: order.providerName,
+          },
+          data: {
+            isValid: false,
+          },
+        });
+      }
+    }
+  }
+
+  setOrderStatus(orderId: string, status: OrderStatus) {
+    return this.prisma.order.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        status,
+      },
+    });
+  }
+
+  async getAllOrders() {
+    const records = await this.prisma.order.findMany({
+      include: {
+        provider: true,
+        medicineOrders: true,
+      },
+    });
+
+    const orders: {
+      providerName: string;
+      minPurchase: number;
+      isValid: boolean;
+      status: OrderStatus;
+      totalPriceWithTax: number;
+      totalPriceWithoutTax: number;
+    }[] = [];
+
+    for (let record of records) {
+      const order = {
+        providerName: record.provider.name,
+        minPurchase: record.provider.min,
+        status: record.status,
+        totalPriceWithoutTax: 0,
+        totalPriceWithTax: 0,
+        isValid: record.isValid,
+      };
+
+      // Compute prices
+      for (let medicineOrder of record.medicineOrders) {
+        const medicineFromProvider =
+          await this.prisma.medicineFromProvider.findUnique({
+            where: {
+              id: medicineOrder.medicineFromProviderId,
+            },
+          });
+        order.totalPriceWithTax +=
+          medicineOrder.quantity * medicineFromProvider.priceWithTax;
+        order.totalPriceWithoutTax +=
+          medicineOrder.quantity * medicineFromProvider.priceWithoutTax;
+      }
+
+      orders.push(order);
+    }
+
+    return orders;
   }
 
   async clearOrders() {
@@ -53,6 +131,7 @@ export class OrderService {
       });
 
       if (record) {
+        // existing order, push new medicine to order
         await this.prisma.orderMedicine.createMany({
           data: medicines.map((medicine) => ({
             medicineFromProviderId: medicine.medicineId,
@@ -61,6 +140,7 @@ export class OrderService {
           })),
         });
       } else {
+        // create new order
         await this.prisma.order.create({
           data: {
             providerName,
@@ -77,6 +157,8 @@ export class OrderService {
           },
         });
       }
+
+      await this.verifyOrdersValidity();
     }
   }
 }
