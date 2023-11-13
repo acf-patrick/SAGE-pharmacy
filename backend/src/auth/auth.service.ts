@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -18,6 +19,25 @@ export class AuthService {
     private prisma: PrismaService,
     private jwt: JwtService,
   ) {}
+
+  refreshTokens(refreshToken: string) {
+    try {
+      const { name: username } = this.jwt.verify(refreshToken, {
+        secret: this.configService.get<string>('REFRESH_SECRET'),
+      });
+
+      refreshToken = this.generateRefreshToken(username);
+      const accessToken = this.generateAccessToken(username);
+
+      return {
+        accessToken,
+        refreshToken,
+      };
+    } catch (e) {
+      console.error(e);
+      throw new BadRequestException('Invalid token provided');
+    }
+  }
 
   generateAccessToken(name: string) {
     return this.jwt.sign(

@@ -1,10 +1,20 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupUserDto } from './dto/SignupUser.dto';
 import { UserRole } from '@prisma/client';
 import { SigninUserDto } from './dto/SigninUser.dto';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SigninReturnDto } from './dto/SigninReturn.dto';
+import { Request } from 'express';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
 
 @Controller('api/auth')
 @ApiTags('🔐 Authentication')
@@ -46,5 +56,14 @@ export class AuthController {
       accesToken,
       refreshToken,
     };
+  }
+
+  @Get('/refresh-tokens')
+  @UseGuards(RefreshTokenGuard)
+  @ApiOperation({ summary: 'Refresh access tokens' })
+  async refreshTokens(@Req() req: Request) {
+    const user = req.user!;
+    const refreshToken: string = user['refreshToken'];
+    return this.authService.refreshTokens(refreshToken);
   }
 }
