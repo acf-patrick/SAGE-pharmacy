@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MedicineFromProvider } from '@prisma/client';
 import { StockService } from 'src/stock/stock.service';
+import { cpSync } from 'fs';
 
 // Utility type used for stock medicine and provider's medicine matching
 type MedicineMapRecord = {
@@ -75,8 +76,7 @@ export class ProviderService {
     });
   }
 
-  // temporary matching technique
-  async getMatchingMedicines(name: string) {
+  async getMatchingMedicinesByName(name: string) {
     const medicineNames = (await this.getMedicineNames()).map(
       ({ name }) => name,
     );
@@ -95,7 +95,7 @@ export class ProviderService {
       },
     });
 
-    const records = [];
+    const records: typeof medicines = [];
     for (let medicine of medicines) {
       const ordered = await this.hasMedicineBeenOrdered(medicine.id);
       if (!ordered) {
@@ -103,6 +103,16 @@ export class ProviderService {
       }
     }
     return records;
+  }
+
+  getMatchingMedicines(name: string) {
+    return this.prisma.medicineFromProvider.findMany({
+      where: {
+        matchingMedicine: {
+          name,
+        },
+      },
+    });
   }
 
   // return matching medicines for given medicine names

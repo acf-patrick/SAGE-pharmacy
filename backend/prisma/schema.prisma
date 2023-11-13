@@ -11,30 +11,33 @@ datasource db {
 }
 
 model Medicine {
-  id             String   @id @default(uuid())
-  name           String   @unique
-  sellingPrice   Int
-  costPrice      Int
-  quantity       Int
-  location       String
-  dci            String
-  isTaxed        Boolean  @default(true)
-  min            Int
-  max            Int
-  expirationDate DateTime @db.Date
+  id                   String                 @id @default(uuid())
+  name                 String                 @unique
+  sellingPrice         Int
+  costPrice            Int
+  quantity             Int
+  location             String
+  dci                  String
+  isTaxed              Boolean                @default(true)
+  min                  Int
+  max                  Int
+  expirationDate       DateTime               @db.Date
+  MedicineFromProvider MedicineFromProvider[]
 }
 
 model MedicineFromProvider {
-  id              String          @id @default(uuid())
-  name            String
-  priceWithTax    Int
-  priceWithoutTax Int
-  quantity        Int
-  dci             String
-  Provider        Provider        @relation(fields: [providerId], references: [id])
-  providerId      String
-  expirationDate  DateTime        @db.Date
-  OrderMedicine   OrderMedicine[]
+  id               String          @id @default(uuid())
+  name             String
+  priceWithTax     Int
+  priceWithoutTax  Int
+  quantity         Int
+  dci              String
+  Provider         Provider        @relation(fields: [providerId], references: [id])
+  providerId       String
+  expirationDate   DateTime        @db.Date
+  OrderMedicine    OrderMedicine[]
+  matchingMedicine Medicine?       @relation(fields: [medicineId], references: [id])
+  medicineId       String?
 }
 
 model Provider {
