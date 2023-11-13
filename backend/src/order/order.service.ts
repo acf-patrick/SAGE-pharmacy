@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrdersDto } from './dto/CreateOrders.dto';
 import { ProviderService } from 'src/provider/provider.service';
+import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
@@ -12,6 +13,59 @@ export class OrderService {
 
   getOrderCount() {
     return this.prisma.order.count();
+  }
+
+  setOrderStatus(orderId: string, status: OrderStatus) {
+    return this.prisma.order.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        status,
+      },
+    });
+  }
+
+  async getAllOrders() {
+    const records = await this.prisma.order.findMany({
+      select: {
+        provider: true,
+        medicineOrders: true,
+      },
+    });
+
+    const orders: {
+      providerName: string;
+      minPurchase: number;
+      totalPriceWithTax: number;
+      totalPriceWithoutTax: number;
+    }[] = [];
+
+    for (let record of records) {
+      const order = {
+        providerName: record.provider.name,
+        minPurchase: record.provider.min,
+        totalPriceWithoutTax: 0,
+        totalPriceWithTax: 0,
+      };
+
+      for (let medicineOrder of record.medicineOrders) {
+        const medicineFromProvider =
+          await this.prisma.medicineFromProvider.findUnique({
+            where: {
+              id: medicineOrder.medicineFromProviderId,
+            },
+          });
+        order.totalPriceWithTax =
+          medicineOrder.quantity * medicineFromProvider.priceWithTax;
+        order.totalPriceWithoutTax =
+          medicineOrder.quantity * medicineFromProvider.priceWithoutTax;
+      }
+
+      orders.push(order);
+    }
+
+    return orders;
   }
 
   async clearOrders() {
