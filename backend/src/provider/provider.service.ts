@@ -29,7 +29,6 @@ export class ProviderService {
   }
 
   async hasMedicineBeenOrdered(id: string) {
-    console.log(id);
     const record = await this.prisma.orderMedicine.findUnique({
       where: {
         medicineFromProviderId: id,

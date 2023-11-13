@@ -42,21 +42,37 @@ export class OrderService {
     }
 
     for (let [providerName, medicines] of orders) {
-      await this.prisma.order.create({
-        data: {
+      const record = await this.prisma.order.findUnique({
+        where: {
           providerName,
-          medicineOrders: {
-            create: medicines.map((medicine) => ({
-              quantity: medicine.quantity,
-              medicine: {
-                connect: {
-                  id: medicine.medicineId,
-                },
-              },
-            })),
-          },
         },
       });
+
+      if (record) {
+        await this.prisma.orderMedicine.createMany({
+          data: medicines.map((medicine) => ({
+            medicineFromProviderId: medicine.medicineId,
+            quantity: medicine.quantity,
+            orderId: record.id,
+          })),
+        });
+      } else {
+        await this.prisma.order.create({
+          data: {
+            providerName,
+            medicineOrders: {
+              create: medicines.map((medicine) => ({
+                quantity: medicine.quantity,
+                medicine: {
+                  connect: {
+                    id: medicine.medicineId,
+                  },
+                },
+              })),
+            },
+          },
+        });
+      }
     }
   }
 }
