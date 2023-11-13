@@ -66,7 +66,7 @@ const StyledPurchase = styled.div`
     border: solid 1px black;
     width: fit-content;
     border-radius: 5px;
-    max-height: ${({ theme }) => theme.size.purchaseHeight};
+    max-height: ${({ theme }) => theme.sizes.purchaseHeight};
     overflow-y: auto;
     width: 100%;
 
