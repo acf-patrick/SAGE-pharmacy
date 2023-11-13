@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrdersDto } from './dto/CreateOrders.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
 @Controller('api/order')
 @ApiTags('🛍️ Order')
+@UseGuards(new AccessTokenGuard())
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
