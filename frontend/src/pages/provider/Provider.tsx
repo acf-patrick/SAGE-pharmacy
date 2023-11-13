@@ -8,32 +8,30 @@ const StyledContainer = styled.div`
   padding: 0 2rem;
 `;
 
-const StyledProvider = styled.div`
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+const StyledHeader = styled(Header)`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
-    button {
-      margin-right: 2rem;
-      height: 3rem;
-      padding: 5px 25px;
-      background-color: ${({ theme }) => theme.colors.buttons.add};
-      color: white;
-      font-weight: 600;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+  button {
+    margin-right: 2rem;
+    height: 3rem;
+    padding: 5px 25px;
+    background-color: ${({ theme }) => theme.colors.buttons.add};
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 
-      &:hover {
-        background-color: ${({ theme }) =>
-          lighten(0.1, theme.colors.buttons.add)};
-      }
+    &:hover {
+      background-color: ${({ theme }) =>
+        lighten(0.1, theme.colors.buttons.add)};
     }
+  }
 
-    input {
-      display: none;
-    }
+  input {
+    display: none;
   }
 `;
 
@@ -47,23 +45,23 @@ export default function Provider() {
     if (!e.currentTarget!.files) return;
     const file = e.currentTarget!.files[0];
     const schema: any = {
-      "Nom": {
+      Nom: {
         type: String,
         prop: "name",
       },
-      "PHT": {
+      PHT: {
         type: Number,
         prop: "priceWithoutTax",
       },
-      "PTTC": {
+      PTTC: {
         type: Number,
         prop: "priceWithTax",
       },
-      "DCI": {
+      DCI: {
         type: String,
         prop: "dci",
       },
-      "Expiration": {
+      Expiration: {
         type: Date,
         prop: "expirationDate",
       },
@@ -72,9 +70,8 @@ export default function Provider() {
   };
 
   return (
-    <StyledProvider>
-      <div className="header">
-        <Header headerTitle="Fournisseurs 🏭" />
+    <>
+      <StyledHeader headerTitle="Fournisseurs 🏭">
         <button onClick={triggerFileInput}>Importer</button>
         <input
           onChange={importXlsxFile}
@@ -83,10 +80,10 @@ export default function Provider() {
           id="xlsx-file"
           accept=".xlsx"
         />
-      </div>
+      </StyledHeader>
       <StyledContainer>
         <Outlet />
       </StyledContainer>
-    </StyledProvider>
+    </>
   );
 }
