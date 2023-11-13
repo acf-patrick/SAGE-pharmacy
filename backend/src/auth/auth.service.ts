@@ -6,13 +6,40 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private configService: ConfigService,
     private userService: UserService,
     private prisma: PrismaService,
+    private jwt: JwtService,
   ) {}
+
+  private generateAccessToken(name: string) {
+    return this.jwt.sign(
+      {
+        name,
+      },
+      {
+        expiresIn: '15m',
+      },
+    );
+  }
+
+  private generateRefreshToken(name: string) {
+    return this.jwt.sign(
+      {
+        name,
+      },
+      {
+        expiresIn: '1d',
+        secret: this.configService.get<string>('REFRESH_SECRET'),
+      },
+    );
+  }
 
   // Register user and returns the ID
   async register(name: string, password: string) {
@@ -35,13 +62,18 @@ export class AuthService {
     }
   }
 
-  // Returns new access-token and refresh-token with valid credentials, otherwise returns unauthorized exception
+  // Returns new access-token and user-id with valid credentials, otherwise returns unauthorized exception
   async login(name: string, password: string) {
     try {
       const user = await this.userService.getUserByName(name);
 
       const correct = await bcrypt.compare(password, user.password);
       if (correct) {
+        const token = this.generateAccessToken(name);
+        return {
+          token,
+          id: user.id,
+        };
       } else {
         throw new UnauthorizedException('Invalid username or password');
       }
