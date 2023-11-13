@@ -17,5 +17,8 @@
     "start": "cd backend && yarn start:prod",
     "postinstall": "cd frontend && yarn && cd ../backend && yarn",
     "deploy": "git checkout preview && git merge main && git push origin HEAD && git checkout main"
+  },
+  "dependencies": {
+    "read-excel-file": "^5.7.1"
   }
 }
