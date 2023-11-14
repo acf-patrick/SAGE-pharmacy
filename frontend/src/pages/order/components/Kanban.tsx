@@ -1,6 +1,27 @@
 import { styled } from "styled-components";
 import { KanbanItemStatus } from "../Order";
 import { GoMoveToEnd } from "react-icons/go";
+import { BsCheckLg } from "react-icons/bs";
+import { RxCross2 } from "react-icons/rx";
+import { MdEdit } from "react-icons/md";
+
+export type KanbanItem = {
+  title: string;
+  color: string;
+  status: KanbanItemStatus;
+  isValid: boolean;
+  buttons: {
+    text: string;
+    action: () => void | undefined;
+  }[];
+};
+
+type KanbanProps = {
+  title: string;
+  items: KanbanItem[];
+  moveItems?: () => void;
+  moveItem: (indexOfItemtoMove: number) => void;
+};
 
 const StyledDiv = styled.div`
   .header {
@@ -59,45 +80,26 @@ const StyledKanban = styled.div<{ $size: number }>`
   }
 `;
 
-export type KanbanItem = {
-  title: string;
-  color: string;
-  status: KanbanItemStatus;
-  isValid: boolean;
-  buttons: {
-    text: string;
-    action: () => void | undefined;
-  }[];
-};
-
-type KanbanProps = {
-  title: string;
-  items: KanbanItem[];
-  moveItems?: () => void;
-};
-
 const StyledKanbanItemDiv = styled.div<{
   $isValid: boolean;
   $status: KanbanItemStatus;
 }>`
   width: 95%;
-  min-height: 100px;
+  min-height: 150px;
   box-shadow: 0 1px 5px #8080807b;
   margin: 0 auto;
   border-radius: 5px;
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
   flex-direction: column;
-  background-color: ${({ $isValid, $status }) =>
-    $isValid
-      ? "#45b74589"
-      : $status == KanbanItemStatus.ORDERED
-      ? "#4747dbaa"
-      : "red"};
+  background-color: white;
   cursor: pointer;
   transition: transform 250ms, box-shadow 250ms;
-  k &:first-of-type {
+  position: relative;
+  overflow: hidden;
+
+  &:first-of-type {
     margin-top: 2rem;
   }
 
@@ -110,6 +112,32 @@ const StyledKanbanItemDiv = styled.div<{
     margin-top: 1rem;
   }
 
+  .ticket {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: ${({ theme, $isValid }) =>
+      $isValid ? theme.colors.kanban.ready : theme.colors.kanban.notReady};
+    width: 45%;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    color: white;
+
+    &::after {
+      display: block;
+      position: absolute;
+      right: -20px;
+      content: "";
+      width: 30px;
+      height: 30px;
+      background-color: white;
+      transform: rotate(45deg);
+    }
+  }
+
   h1 {
     font-size: 1.2rem;
   }
@@ -120,51 +148,59 @@ const StyledKanbanItemDiv = styled.div<{
     width: 100%;
     gap: 0.5rem;
     padding-right: 1rem;
+    font-size: 1.25rem;
+    position: absolute;
+    bottom: 0.5rem;
 
-    button {
-      padding: 4px 8px;
-      border: none;
-      color: white;
-      font-weight: 600;
-      border-radius: 3px;
-      cursor: pointer;
-      transition: transform 250ms, box-shadow 250ms;
+    svg {
+      transition: transform 250ms;
 
       &:hover {
         transform: translateY(-0.25rem);
-        box-shadow: 0 3px 5px #8080807b;
       }
 
       &:first-of-type {
-        background-color: green;
+        fill: green;
       }
 
       &:nth-of-type(2) {
-        background-color: red;
+        * {
+          fill: red;
+        }
       }
       &:last-of-type {
-        background-color: orange;
+        fill: orange;
       }
     }
   }
 `;
 
-function KanbanItemComponent({ title, status, isValid, buttons }: KanbanItem) {
+function KanbanItemComponent({
+  item,
+  moveItem,
+}: {
+  item: KanbanItem;
+  moveItem: (i: number) => void;
+}) {
   return (
-    <StyledKanbanItemDiv $isValid={isValid} $status={status}>
-      <h1>{title}</h1>
+    <StyledKanbanItemDiv $isValid={item.isValid} $status={item.status}>
+      <div className="ticket">{!item.isValid ? "Pas prêt" : "Prêt"}</div>
+      <h1>{item.title}</h1>
       <div className="buttons">
-        {buttons.map((button, i) => (
-          <button key={i} onClick={button.action}>
-            {button.text}
-          </button>
-        ))}
+        <BsCheckLg onClick={moveItem} />
+        <RxCross2 onClick={() => {}} />
+        <MdEdit onClick={() => {}} />
       </div>
     </StyledKanbanItemDiv>
   );
 }
 
-export default function Kanban({ title, items, moveItems }: KanbanProps) {
+export default function Kanban({
+  title,
+  items,
+  moveItems,
+  moveItem,
+}: KanbanProps) {
   return (
     <StyledDiv>
       <div className="header">
@@ -178,7 +214,11 @@ export default function Kanban({ title, items, moveItems }: KanbanProps) {
       </div>
       <StyledKanban $size={items.length}>
         {items.map((item, i) => (
-          <KanbanItemComponent key={i} {...item} />
+          <KanbanItemComponent
+            key={i}
+            item={item}
+            moveItem={() => moveItem(i)}
+          />
         ))}
       </StyledKanban>
     </StyledDiv>

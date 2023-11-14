@@ -177,6 +177,14 @@ export default function Order() {
             setOrderedOrders(orderedOrders.filter((order) => !order.isValid));
             setPendingOrders([...pendingOrders, ...tmp]);
           }}
+          moveItem={(index: number) => {
+            const orderToMove = orderedOrders[index];
+            if (orderToMove.isValid) {
+              const tmp = orderedOrders.filter((order, i) => i != index);
+              setOrderedOrders(tmp);
+              setPendingOrders([...pendingOrders, orderToMove]);
+            }
+          }}
         />
         <Kanban
           items={pendingOrders}
@@ -188,6 +196,14 @@ export default function Order() {
             });
             setPendingOrders([]);
             setReceivedOrders([...receivedOrders, ...tmp]);
+          }}
+          moveItem={(index: number) => {
+            const orderToMove = pendingOrders[index];
+            if (orderToMove.isValid) {
+              const tmp = pendingOrders.filter((order, i) => i != index);
+              setPendingOrders(tmp);
+              setReceivedOrders([...receivedOrders, orderToMove]);
+            }
           }}
         />
         <Kanban
@@ -201,8 +217,16 @@ export default function Order() {
             setReceivedOrders([]);
             setFinishedOrders([...finishedOrders, ...tmp]);
           }}
+          moveItem={(index: number) => {
+            const orderToMove = receivedOrders[index];
+            if (orderToMove.isValid) {
+              const tmp = receivedOrders.filter((order, i) => i != index);
+              setReceivedOrders(tmp);
+              setFinishedOrders([...finishedOrders, orderToMove]);
+            }
+          }}
         />
-        <Kanban items={finishedOrders} title="Terminé" />
+        <Kanban items={finishedOrders} title="Terminé" moveItem={() => {}} />
       </StyledContainer>
     </>
   );

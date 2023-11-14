@@ -20,6 +20,11 @@ export const theme = {
     nearExpiration: "orange",
     lowAndNearExpiration: "orange",
     selectAllBackground: "purple",
+    kanban: {
+      notReady: "#2398F1",
+      ready: "#50AD54",
+      incomplete: "#e01c1c"
+    }
   },
   size: {
     modalWidth: "400px",
