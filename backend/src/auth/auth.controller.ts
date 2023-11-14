@@ -51,7 +51,7 @@ export class AuthController {
     type: SigninReturnDto,
   })
   async signin(@Body() user: SigninUserDto) {
-    const { token: accesToken, id } = await this.authService.login(
+    const { token: accessToken, id } = await this.authService.login(
       user.name,
       user.password,
     );
@@ -59,7 +59,7 @@ export class AuthController {
     const refreshToken = this.authService.generateRefreshToken(user.name);
     return {
       id,
-      accesToken,
+      accessToken,
       refreshToken,
     };
   }

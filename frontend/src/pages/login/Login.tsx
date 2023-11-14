@@ -4,6 +4,7 @@ import { appear, appearFromLeft } from "../../styles/animations";
 import { useState } from "react";
 import { api } from "../../api";
 import { useNavigate } from "react-router-dom";
+import { BiSolidLockOpen } from "react-icons/bi";
 import { AiOutlineLoading } from "react-icons/ai";
 
 const StyledContainer = styled.div`
@@ -98,14 +99,19 @@ const StyledButton = styled.button`
   color: white;
   padding: 1rem 2rem;
   cursor: pointer;
-  width: 140px;
+  width: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.5rem;
 
   &:disabled {
     background: ${({ theme }) => lighten(0.5, theme.colors.quaternary)};
+  }
+
+  & > svg {
+    fill: white;
+    font-size: 1.25rem;
   }
 
   .spinner {
@@ -133,8 +139,8 @@ export default function Login() {
 
   const formOnSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     setPending(true);
-
     e.preventDefault();
+
     const form = e.currentTarget;
     api
       .post("/auth/signin", {
@@ -143,6 +149,7 @@ export default function Login() {
       })
       .then((res) => {
         const { accessToken, refreshToken } = res.data;
+        console.log(res.data)
         localStorage.setItem("access-token", accessToken);
         localStorage.setItem("refresh-token", refreshToken);
         navigate("/");
@@ -206,6 +213,7 @@ export default function Login() {
             )}
             <div className="button">
               <StyledButton>
+                <BiSolidLockOpen />
                 <span>Se Connecter</span>
                 {pending && (
                   <span className="spinner">
