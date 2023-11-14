@@ -140,7 +140,7 @@ export class ProviderService {
   ): Promise<Record<string, MedicineMapRecord[]>> {
     const map = new Map<string, MedicineMapRecord[]>();
 
-    for (let name of names) {
+    const matchName = async (name: string) => {
       let medicines = await this.getMatchingMedicines(name);
       if (medicines.length > 0) {
         const record: MedicineMapRecord[] = [];
@@ -166,7 +166,9 @@ export class ProviderService {
         }
         map.set(name, record);
       }
-    }
+    };
+
+    await Promise.allSettled(names.map((name) => matchName(name)));
 
     if (map.size === 0) {
       throw new NotFoundException(

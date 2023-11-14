@@ -1,9 +1,8 @@
 import { lighten } from "polished";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import readXlsxFile from "read-excel-file";
 import styled from "styled-components";
 import { Header } from "../../components";
-import { useEffect } from "react";
 
 const StyledContainer = styled.div`
   padding: 0 2rem;

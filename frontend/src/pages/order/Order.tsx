@@ -69,7 +69,7 @@ export default function Order() {
               status: order.status,
             });
           } else if (order.status == KanbanItemStatusObject.FINISHED) {
-            receivedList.push({
+            finishedList.push({
               title: order.providerName + order.createdAt,
               id: order.id,
               isValid: order.isValid,
@@ -254,13 +254,6 @@ export default function Order() {
               .catch((err) => {
                 console.error(err);
               });
-
-            // const orderToMove = receivedOrders[index];
-            // if (orderToMove.isValid) {
-            //   const tmp = receivedOrders.filter((_order, i) => i != index);
-            //   setReceivedOrders(tmp);
-            //   setFinishedOrders([...finishedOrders, orderToMove]);
-            // }
           }}
           deleteItem={(index: number) => {
             const orderToMove = receivedOrders[index];
