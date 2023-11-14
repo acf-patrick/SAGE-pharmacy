@@ -80,6 +80,7 @@ model Order {
   id             String          @id @default(uuid())
   provider       Provider        @relation(fields: [providerName], references: [name])
   providerName   String          @unique
+  createdAt      DateTime        @default(now())
   isValid        Boolean         @default(true)
   status         OrderStatus     @default(ORDERED)
   medicineOrders OrderMedicine[]

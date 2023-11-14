@@ -74,7 +74,7 @@ export class OrderController {
   @Get()
   @ApiOperation({ summary: 'Returns all orders' })
   @ApiOkResponse({ type: AllOrders })
-  async getOrders() {
+  getOrders() {
     return this.orderService.getAllOrders();
   }
 

@@ -60,6 +60,8 @@ export class OrderService {
       status: OrderStatus;
       totalPriceWithTax: number;
       totalPriceWithoutTax: number;
+      createdAt: Date;
+      id: string;
     }[] = [];
 
     for (let record of records) {
@@ -70,6 +72,8 @@ export class OrderService {
         totalPriceWithoutTax: 0,
         totalPriceWithTax: 0,
         isValid: record.isValid,
+        createdAt: record.createdAt,
+        id: record.id,
       };
 
       // Compute prices
