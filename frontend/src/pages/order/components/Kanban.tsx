@@ -1,23 +1,17 @@
-import { styled } from "styled-components";
-import { KanbanItemStatus } from "../Order";
-import { GoMoveToEnd } from "react-icons/go";
 import { BsCheckLg } from "react-icons/bs";
-import { RxCross2 } from "react-icons/rx";
+import { GoMoveToEnd } from "react-icons/go";
 import { MdEdit } from "react-icons/md";
-
-export type KanbanItem = {
-  id: string;
-  title: string;
-  status: KanbanItemStatus;
-  isValid: boolean;
-};
+import { RxCross2 } from "react-icons/rx";
+import { styled } from "styled-components";
+import { KanbanItemStatus, KanbanItemStatusObject, Order } from "../Order";
 
 type KanbanProps = {
   title: string;
-  items: KanbanItem[];
+  orders: Order[];
   moveItems?: () => void;
   moveItem?: (indexOfItemToMove: number) => void;
   deleteItem?: (indexOfItemToDelete: number) => void;
+  onOrderSelect: (order: Order) => void;
 };
 
 const StyledDiv = styled.div`
@@ -149,46 +143,50 @@ const StyledKanbanItemDiv = styled.div<{
     position: absolute;
     bottom: 0.5rem;
 
+    .validate {
+      fill: green;
+    }
+
+    .delete {
+      * {
+        fill: red;
+      }
+    }
+    .edit {
+      fill: orange;
+    }
+
     svg {
       transition: transform 250ms;
 
       &:hover {
         transform: translateY(-0.25rem);
       }
-
-      &:first-of-type {
-        fill: green;
-      }
-
-      &:nth-of-type(2) {
-        * {
-          fill: red;
-        }
-      }
-      &:last-of-type {
-        fill: orange;
-      }
     }
   }
 `;
 
 function KanbanItemComponent({
-  item,
+  order,
   moveItem,
   deleteItem,
+  onOrderSelect,
 }: {
-  item: KanbanItem;
+  order: Order;
   moveItem: (i: number) => void;
   deleteItem: (i: number) => void;
+  onOrderSelect: (order: Order) => void;
 }) {
   return (
-    <StyledKanbanItemDiv $isValid={item.isValid} $status={item.status}>
-      <div className="ticket">{!item.isValid ? "Pas prêt" : "Prêt"}</div>
-      <h1>{item.title}</h1>
+    <StyledKanbanItemDiv $isValid={order.isValid} $status={order.status}>
+      <div className="ticket">{!order.isValid ? "Pas prêt" : "Prêt"}</div>
+      <h1>{order.providerName + "_" + order.createdAt}</h1>
       <div className="buttons">
-        <BsCheckLg onClick={moveItem} />
-        <RxCross2 onClick={deleteItem} />
-        <MdEdit onClick={() => {}} />
+        {order.status != KanbanItemStatusObject.FINISHED ? (
+          <BsCheckLg className="validate" onClick={moveItem} />
+        ) : null}
+        <RxCross2 className="delete" onClick={deleteItem} />
+        <MdEdit className="edit" onClick={() => onOrderSelect(order)} />
       </div>
     </StyledKanbanItemDiv>
   );
@@ -196,10 +194,11 @@ function KanbanItemComponent({
 
 export default function Kanban({
   title,
-  items,
+  orders,
   moveItems,
   moveItem,
   deleteItem,
+  onOrderSelect,
 }: KanbanProps) {
   return (
     <StyledDiv>
@@ -212,13 +211,14 @@ export default function Kanban({
           />
         ) : null}
       </div>
-      <StyledKanban $size={items.length}>
-        {items.map((item, i) => (
+      <StyledKanban $size={orders.length}>
+        {orders.map((order, i) => (
           <KanbanItemComponent
             key={i}
-            item={item}
+            order={order}
             moveItem={() => (moveItem ? moveItem(i) : {})}
             deleteItem={() => (deleteItem ? deleteItem(i) : {})}
+            onOrderSelect={onOrderSelect}
           />
         ))}
       </StyledKanban>

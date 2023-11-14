@@ -1,18 +1,31 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { styled } from "styled-components";
-import { Header } from "../../components";
-import Kanban, { KanbanItem } from "./components/Kanban";
 import { api } from "../../api";
+import { Header } from "../../components";
+import { MedicineFromProvider, Provider } from "../../models";
+import EditModal from "./components/EditModal";
+import Kanban from "./components/Kanban";
 
-type Order = {
+// export type OrderMedicine = {
+//   id: string;
+//   medicine: MedicineFromProvider;
+//   quantity: number;
+//   medicineFromProviderId: string;
+//   order: Order;
+//   orderId: string;
+// };
+
+export type Order = {
   id: string;
-  isValid: boolean;
+  provider: Provider;
   providerName: string;
-  minPurchase: number;
-  status: KanbanItemStatus;
-  totalPriceWithTax: number;
-  totamPriceWithoutTax: number;
   createdAt: string;
+  isValid: boolean;
+  status: KanbanItemStatus;
+  minPurchase: number;
+  totalPriceWithTax: number;
+  totalPriceWithoutTax: number;
+  orderMedicines: MedicineFromProvider[];
 };
 
 const StyledContainer = styled.div`
@@ -34,7 +47,7 @@ export const KanbanItemStatusObject = {
 
 export type KanbanItemStatus = typeof status;
 
-export default function Order() {
+export default function OrderComponent() {
   useEffect(() => {
     // Supposed to fetch data here
     api
@@ -42,39 +55,26 @@ export default function Order() {
       .then((res) => {
         const data = res.data;
 
-        const orderedList: KanbanItem[] = [];
-        const pendingList: KanbanItem[] = [];
-        const receivedList: KanbanItem[] = [];
-        const finishedList: KanbanItem[] = [];
+        const orderedList: Order[] = [];
+        const pendingList: Order[] = [];
+        const receivedList: Order[] = [];
+        const finishedList: Order[] = [];
         data.forEach((order: Order) => {
-          if (order.status == KanbanItemStatusObject.ORDERED) {
-            orderedList.push({
-              title: order.providerName + order.createdAt,
-              id: order.id,
-              isValid: order.isValid,
-              status: order.status,
-            });
-          } else if (order.status == KanbanItemStatusObject.PENDING) {
-            pendingList.push({
-              title: order.providerName + order.createdAt,
-              id: order.id,
-              isValid: order.isValid,
-              status: order.status,
-            });
-          } else if (order.status == KanbanItemStatusObject.RECEIVED) {
-            receivedList.push({
-              title: order.providerName + order.createdAt,
-              id: order.id,
-              isValid: order.isValid,
-              status: order.status,
-            });
-          } else if (order.status == KanbanItemStatusObject.FINISHED) {
-            finishedList.push({
-              title: order.providerName + order.createdAt,
-              id: order.id,
-              isValid: order.isValid,
-              status: order.status,
-            });
+          switch (order.status) {
+            case KanbanItemStatusObject.ORDERED:
+              orderedList.push(order);
+              break;
+            case KanbanItemStatusObject.PENDING:
+              pendingList.push(order);
+              break;
+            case KanbanItemStatusObject.RECEIVED:
+              receivedList.push(order);
+              break;
+            case KanbanItemStatusObject.FINISHED:
+              finishedList.push(order);
+              break;
+            default:
+              break;
           }
         });
 
@@ -88,17 +88,24 @@ export default function Order() {
       });
   }, []);
 
-  const [orderedOrders, setOrderedOrders] = useState<KanbanItem[]>([]);
-  const [pendingOrders, setPendingOrders] = useState<KanbanItem[]>([]);
-  const [receivedOrders, setReceivedOrders] = useState<KanbanItem[]>([]);
-  const [finishedOrders, setFinishedOrders] = useState<KanbanItem[]>([]);
+  const [orderedOrders, setOrderedOrders] = useState<Order[]>([]);
+  const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
+  const [receivedOrders, setReceivedOrders] = useState<Order[]>([]);
+  const [finishedOrders, setFinishedOrders] = useState<Order[]>([]);
+
+  const [currentOrderSelected, setCurrentOrderSelected] =
+    useState<Order | null>(null);
+
+  useEffect(() => {
+    console.log(currentOrderSelected);
+  }, [currentOrderSelected]);
 
   return (
     <>
       <Header headerTitle="Commandes 📋"></Header>
       <StyledContainer>
         <Kanban
-          items={orderedOrders}
+          orders={orderedOrders}
           title="Commandes"
           moveItems={() => {
             orderedOrders.forEach((order) => {
@@ -154,9 +161,10 @@ export default function Order() {
                 console.error(err);
               });
           }}
+          onOrderSelect={setCurrentOrderSelected}
         />
         <Kanban
-          items={pendingOrders}
+          orders={pendingOrders}
           title="En Cours"
           moveItems={() =>
             pendingOrders.forEach((order) => {
@@ -213,9 +221,10 @@ export default function Order() {
                 console.error(err);
               });
           }}
+          onOrderSelect={setCurrentOrderSelected}
         />
         <Kanban
-          items={receivedOrders}
+          orders={receivedOrders}
           title="Reception"
           moveItems={() => {
             receivedOrders.forEach((order) => {
@@ -271,9 +280,10 @@ export default function Order() {
                 console.error(err);
               });
           }}
+          onOrderSelect={setCurrentOrderSelected}
         />
         <Kanban
-          items={finishedOrders}
+          orders={finishedOrders}
           title="Terminé"
           deleteItem={(index: number) => {
             const orderToMove = finishedOrders[index];
@@ -291,8 +301,16 @@ export default function Order() {
                 console.error(err);
               });
           }}
+          onOrderSelect={setCurrentOrderSelected}
         />
       </StyledContainer>
+      {currentOrderSelected ? (
+        <EditModal
+          order={currentOrderSelected}
+          onClose={() => setCurrentOrderSelected(null)}
+          onValidate={() => setCurrentOrderSelected(null)}
+        />
+      ) : null}
     </>
   );
 }

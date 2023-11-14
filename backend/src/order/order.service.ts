@@ -6,7 +6,7 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrdersDto } from './dto/CreateOrders.dto';
 import { ProviderService } from 'src/provider/provider.service';
-import { OrderStatus } from '@prisma/client';
+import { MedicineFromProvider, OrderMedicine, OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
@@ -92,6 +92,7 @@ export class OrderService {
       totalPriceWithoutTax: number;
       createdAt: Date;
       id: string;
+      orderMedicines: MedicineFromProvider[];
     }[] = [];
 
     for (let record of records) {
@@ -104,6 +105,7 @@ export class OrderService {
         isValid: record.isValid,
         createdAt: record.createdAt,
         id: record.id,
+        orderMedicines: []
       };
 
       // Compute prices
@@ -119,6 +121,17 @@ export class OrderService {
         order.totalPriceWithoutTax +=
           medicineOrder.quantity * medicineFromProvider.priceWithoutTax;
       }
+
+      const medicinesFromProviderInOrder: MedicineFromProvider[]  = [];
+      for (let orderMedicine of record.medicineOrders) {
+        const medicine = await this.prisma.medicineFromProvider.findUnique({
+          where: {
+            id: orderMedicine.medicineFromProviderId
+          }
+        })
+        medicinesFromProviderInOrder.push(medicine);
+      }
+      order.orderMedicines = medicinesFromProviderInOrder;
 
       orders.push(order);
     }
