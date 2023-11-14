@@ -151,7 +151,7 @@ export default function Order() {
   const navigate = useNavigate();
   useEffect(() => {
     // Supposed to fetch data here
-    api.get("/valid-token").catch((err) => {
+    api.get("/auth/valid-token").catch((err) => {
       if (err.response.status === 401) {
         navigate("/login");
       }

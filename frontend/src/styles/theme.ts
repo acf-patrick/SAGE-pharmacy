@@ -20,17 +20,14 @@ export const theme = {
     nearExpiration: "orange",
     lowAndNearExpiration: "orange",
     selectAllBackground: "purple",
-    error: "red",
-    login: {
-      background: "#e1e1e1",
-    },
+    error: "red"
   },
   sizes: {
     modalWidth: "400px",
     modalHeight: "250px",
     purchaseHeight: "85vh",
     login: {
-      width: "520px"
+      width: "480px"
     }
   },
   error: {

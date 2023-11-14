@@ -1,6 +1,6 @@
 import { lighten } from "polished";
 import styled, { keyframes } from "styled-components";
-import { appearFromLeft } from "../../styles/animations";
+import { appear, appearFromLeft } from "../../styles/animations";
 import { useState } from "react";
 import { api } from "../../api";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +11,9 @@ const StyledContainer = styled.div`
   place-items: center;
   width: 100vw;
   height: 100vh;
-  background: ${({ theme }) => theme.colors.login.background};
+  background: url(/images/login-bg.png);
+  background-size: cover;
+  background-repeat: no-repeat;
 `;
 
 const rotate = keyframes`
@@ -26,6 +28,7 @@ const StyledForm = styled.form`
   width: 100%;
   max-width: ${({ theme }) => theme.sizes.login.width};
   box-shadow: 0 1px 5px #0000004a;
+  animation: ${appear} 1s both;
 
   .error {
     all: unset;
@@ -170,6 +173,7 @@ export default function Login() {
               </div>
               <div>
                 <input
+                  onChange={() => setError(false)}
                   type="text"
                   id="username"
                   name="username"
@@ -186,6 +190,7 @@ export default function Login() {
               </div>
               <div>
                 <input
+                  onChange={() => setError(false)}
                   type="password"
                   id="password"
                   name="password"
