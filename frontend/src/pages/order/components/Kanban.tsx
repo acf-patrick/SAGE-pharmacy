@@ -6,21 +6,18 @@ import { RxCross2 } from "react-icons/rx";
 import { MdEdit } from "react-icons/md";
 
 export type KanbanItem = {
+  id: string;
   title: string;
-  color: string;
   status: KanbanItemStatus;
   isValid: boolean;
-  buttons: {
-    text: string;
-    action: () => void | undefined;
-  }[];
 };
 
 type KanbanProps = {
   title: string;
   items: KanbanItem[];
   moveItems?: () => void;
-  moveItem: (indexOfItemtoMove: number) => void;
+  moveItem?: (indexOfItemToMove: number) => void;
+  deleteItem?: (indexOfItemToDelete: number) => void;
 };
 
 const StyledDiv = styled.div`
@@ -139,7 +136,7 @@ const StyledKanbanItemDiv = styled.div<{
   }
 
   h1 {
-    font-size: 1.2rem;
+    font-size: 13px;
   }
 
   .buttons {
@@ -178,9 +175,11 @@ const StyledKanbanItemDiv = styled.div<{
 function KanbanItemComponent({
   item,
   moveItem,
+  deleteItem,
 }: {
   item: KanbanItem;
   moveItem: (i: number) => void;
+  deleteItem: (i: number) => void;
 }) {
   return (
     <StyledKanbanItemDiv $isValid={item.isValid} $status={item.status}>
@@ -188,7 +187,7 @@ function KanbanItemComponent({
       <h1>{item.title}</h1>
       <div className="buttons">
         <BsCheckLg onClick={moveItem} />
-        <RxCross2 onClick={() => {}} />
+        <RxCross2 onClick={deleteItem} />
         <MdEdit onClick={() => {}} />
       </div>
     </StyledKanbanItemDiv>
@@ -200,6 +199,7 @@ export default function Kanban({
   items,
   moveItems,
   moveItem,
+  deleteItem,
 }: KanbanProps) {
   return (
     <StyledDiv>
@@ -217,7 +217,8 @@ export default function Kanban({
           <KanbanItemComponent
             key={i}
             item={item}
-            moveItem={() => moveItem(i)}
+            moveItem={() => (moveItem ? moveItem(i) : {})}
+            deleteItem={() => (deleteItem ? deleteItem(i) : {})}
           />
         ))}
       </StyledKanban>
