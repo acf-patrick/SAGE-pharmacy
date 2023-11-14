@@ -240,25 +240,63 @@ export default function Order() {
           }}
           moveItem={(index: number) => {
             const orderToMove = receivedOrders[index];
-            if (orderToMove.isValid) {
-              const tmp = receivedOrders.filter((_order, i) => i != index);
-              setReceivedOrders(tmp);
-              setFinishedOrders([...finishedOrders, orderToMove]);
-            }
+            api
+              .patch("/order/" + orderToMove.id, {
+                status: KanbanItemStatusObject.FINISHED,
+              })
+              .then(() => {
+                if (orderToMove.isValid) {
+                  const tmp = receivedOrders.filter((_order, i) => i != index);
+                  setReceivedOrders(tmp);
+                  setFinishedOrders([...finishedOrders, orderToMove]);
+                }
+              })
+              .catch((err) => {
+                console.error(err);
+              });
+
+            // const orderToMove = receivedOrders[index];
+            // if (orderToMove.isValid) {
+            //   const tmp = receivedOrders.filter((_order, i) => i != index);
+            //   setReceivedOrders(tmp);
+            //   setFinishedOrders([...finishedOrders, orderToMove]);
+            // }
           }}
           deleteItem={(index: number) => {
-            const removedItem = receivedOrders[index];
-            setReceivedOrders(receivedOrders.filter((_order, i) => i != index));
-            setPendingOrders([...pendingOrders, removedItem]);
+            const orderToMove = receivedOrders[index];
+            api
+              .patch("/order/" + orderToMove.id, {
+                status: KanbanItemStatusObject.PENDING,
+              })
+              .then(() => {
+                setReceivedOrders(
+                  receivedOrders.filter((_order, i) => i != index)
+                );
+                setPendingOrders([...pendingOrders, orderToMove]);
+              })
+              .catch((err) => {
+                console.error(err);
+              });
           }}
         />
         <Kanban
           items={finishedOrders}
           title="Terminé"
           deleteItem={(index: number) => {
-            const removedItem = finishedOrders[index];
-            setFinishedOrders(finishedOrders.filter((_order, i) => i != index));
-            setReceivedOrders([...receivedOrders, removedItem]);
+            const orderToMove = finishedOrders[index];
+            api
+              .patch("/order/" + orderToMove.id, {
+                status: KanbanItemStatusObject.RECEIVED,
+              })
+              .then(() => {
+                setFinishedOrders(
+                  finishedOrders.filter((_order, i) => i != index)
+                );
+                setReceivedOrders([...receivedOrders, orderToMove]);
+              })
+              .catch((err) => {
+                console.error(err);
+              });
           }}
         />
       </StyledContainer>
