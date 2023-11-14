@@ -33,38 +33,15 @@ export class OrderController {
     @Param('id') id: string,
     @Body() { status }: SetStatusDto,
   ) {
-    if (
-      ![
-        OrderStatus.ORDERED,
-        OrderStatus.PENDING,
-        OrderStatus.RECEIVED,
-        OrderStatus.FINISHED,
-      ].includes(status)
-    ) {
+    const statusList = [
+      OrderStatus.ORDERED,
+      OrderStatus.PENDING,
+      OrderStatus.RECEIVED,
+      OrderStatus.FINISHED,
+    ];
+
+    if (!statusList.includes(status)) {
       throw new BadRequestException('Invalid status value provided');
-    }
-
-    const order = await this.prisma.order.findUnique({
-      where: { id },
-    });
-    if (!order) {
-      throw new NotFoundException('Order not found');
-    }
-
-    if (order.status === 'ORDERED' && status !== 'ORDERED' && !order.isValid) {
-      throw new BadRequestException(
-        `Trying to update ORDERED order with invalid status`,
-      );
-    }
-
-    if (
-      (status === 'FINISHED' && order.status !== 'RECEIVED') ||
-      (status === 'RECEIVED' && order.status !== 'PENDING') ||
-      (status === 'PENDING' && order.status !== 'ORDERED')
-    ) {
-      throw new BadRequestException(
-        `Invalid status provided. Order has status : ${order.status}`,
-      );
     }
 
     await this.orderService.setOrderStatus(id, status);
