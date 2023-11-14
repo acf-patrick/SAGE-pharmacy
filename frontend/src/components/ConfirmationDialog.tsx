@@ -43,8 +43,8 @@ const StyledModal = styled.div`
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: ${({ theme }) => theme.colors.modalBackground};
-    height: ${({ theme }) => theme.size.modalHeight};
-    width: ${({ theme }) => theme.size.modalWidth};
+    height: ${({ theme }) => theme.sizes.modalHeight};
+    width: ${({ theme }) => theme.sizes.modalWidth};
     border-radius: 5px;
     display: flex;
     flex-direction: column;

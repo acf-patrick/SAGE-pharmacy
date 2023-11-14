@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { styled } from "styled-components";
 import { Header } from "../../components";
 import Kanban, { KanbanItem } from "./components/Kanban";
+import { api } from "../../api";
+import { useNavigate } from "react-router-dom";
 
 const StyledContainer = styled.div`
   display: flex;
@@ -145,6 +147,16 @@ const data: KanbanItem[] = [
 
 export default function Order() {
   const [orders, setOrders] = useState<KanbanItem[]>(data);
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    // Supposed to fetch data here
+    api.get("/auth/valid-token").catch((err) => {
+      if (err.response.status === 401) {
+        navigate("/login");
+      }
+    });
+  }, []);
 
   const [orderedOrders, setOrderedOrders] = useState<KanbanItem[]>(
     orders.filter((item) => item.status == KanbanItemStatus.ORDERED)

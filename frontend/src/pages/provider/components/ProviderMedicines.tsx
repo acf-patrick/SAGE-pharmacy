@@ -1,9 +1,9 @@
-import { useLoaderData } from "react-router-dom";
-import { MedicineFromProvider, Provider } from "../../../models";
-import styled from "styled-components";
-import { useEffect, useState } from "react";
-import { api } from "../../../api";
 import { darken, lighten } from "polished";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import styled from "styled-components";
+import { api } from "../../../api";
+import { Provider } from "../../../models";
 import { appear } from "../../../styles/animations";
 
 const StyledTitle = styled.h2`
@@ -196,16 +196,22 @@ const StyledList = styled.div`
 `;
 
 export default function ProviderMedicines() {
-  const provider = useLoaderData() as Provider;
-  const [providerMedicines, setProviderMedicines] = useState<
-    MedicineFromProvider[]
-  >([]);
+  const { id: providerId } = useParams();
+  const [provider, setProvider] = useState<Provider | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    api.get("provider/" + provider.id).then((response) => {
-      const provider: Provider = response.data;
-      setProviderMedicines(provider.medicines);
-    });
+    api
+      .get("provider/" + providerId)
+      .then((res) => {
+        setProvider(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+        if (err.response.status === 401) {
+          navigate("/login");
+        }
+      });
   }, []);
 
   const dateToLocaleFormat = (date: string) => {
@@ -219,7 +225,7 @@ export default function ProviderMedicines() {
     return s;
   };
 
-  return (
+  return provider ? (
     <>
       <StyledTitle>{provider.name}</StyledTitle>
       <StyledList>
@@ -236,7 +242,7 @@ export default function ProviderMedicines() {
             </tr>
           </thead>
           <tbody>
-            {providerMedicines.map((medicine) => (
+            {provider.medicines.map((medicine) => (
               <tr key={medicine.id}>
                 <td>{medicine.name}</td>
                 <td>{medicine.priceWithoutTax}</td>
@@ -255,5 +261,5 @@ export default function ProviderMedicines() {
         </table>
       </StyledList>
     </>
-  );
+  ) : null;
 }

@@ -1,7 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import { Order, Provider, Purchase, Stock } from "./pages";
-import { providersLoader, providerLoader } from "./pages/provider";
+import { Login, Order, Provider, Purchase, Stock } from "./pages";
 import {
   ProviderList,
   ProviderMedicines,
@@ -31,17 +30,19 @@ export const router = createBrowserRouter([
         children: [
           {
             path: "",
-            loader: providersLoader,
             element: <ProviderList />,
           },
           {
             path: ":id",
             element: <ProviderMedicines />,
-            loader: providerLoader,
             errorElement: <ProviderNotFound />,
           },
         ],
       },
     ],
+  },
+  {
+    path: "/login",
+    element: <Login />,
   },
 ]);

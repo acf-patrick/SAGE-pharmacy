@@ -1,9 +1,7 @@
 import { Outlet } from "react-router-dom";
-import styled, { ThemeProvider } from "styled-components";
-import { GlobalStyles } from "./styles/globalStyles.ts";
-import { theme } from "./styles/theme";
 import { NotificationProvider } from "./contexts/provider";
 import { Sidebar, ToastNotification } from "./components";
+import { styled } from "styled-components";
 
 if (import.meta.env.PROD) {
   document.addEventListener("contextmenu", (e) => e.preventDefault());
@@ -24,18 +22,15 @@ const StyledContainer = styled.div`
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <GlobalStyles />
-      <StyledContainer>
-        <Sidebar />
-        <div className="right">
-          <NotificationProvider>
-            <Outlet />
-            <ToastNotification />
-          </NotificationProvider>
-        </div>
-      </StyledContainer>
-    </ThemeProvider>
+    <StyledContainer>
+      <Sidebar />
+      <div className="right">
+        <NotificationProvider>
+          <Outlet />
+          <ToastNotification />
+        </NotificationProvider>
+      </div>
+    </StyledContainer>
   );
 }
 
