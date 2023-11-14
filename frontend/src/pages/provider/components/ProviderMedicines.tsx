@@ -6,8 +6,30 @@ import { api } from "../../../api";
 import { Provider } from "../../../models";
 import { appear } from "../../../styles/animations";
 
-const StyledTitle = styled.h2`
-  color: ${({ theme }) => theme.colors.tertiary};
+const StyledTitle = styled.div`
+  display: flex;
+  justify-content: space-between;
+
+  h1 {
+    color: ${({ theme }) => theme.colors.tertiary};
+    font-size: 2rem;
+  }
+
+  button {
+    cursor: pointer;
+    height: 3rem;
+    padding: 5px 20px;
+    border: none;
+    background-color: ${({ theme }) => theme.colors.tertiary};
+    color: white;
+    font-weight: 600;
+    border-radius: 5px;
+    transition: background-color 250ms;
+
+    &:hover {
+      background-color: ${({ theme }) => lighten(0.1, theme.colors.tertiary)};
+    }
+  }
 `;
 
 const StyledList = styled.div`
@@ -198,8 +220,18 @@ const StyledList = styled.div`
 export default function ProviderMedicines() {
   const { id: providerId } = useParams();
   const [provider, setProvider] = useState<Provider | null>(null);
+  const [medicineNames, setMedicineNames] = useState<string[]>([]);
+  const [correspondances, setCorrespondances] = useState<string[]>([]);
 
   useEffect(() => {
+    api
+      .get("/stock/medicine-names")
+      .then((res) => {
+        const names: string[] = res.data.names;
+        setMedicineNames(names);
+      })
+      .catch((err) => console.error(err));
+
     api
       .get("provider/" + providerId)
       .then((res) => {
@@ -207,6 +239,16 @@ export default function ProviderMedicines() {
       })
       .catch((err) => console.error(err));
   }, []);
+
+  useEffect(() => {
+    // Get all current correspondances
+    // const tmp: string[] = [];
+    // console.log(provider);
+    // provider.medicines.forEach((medicine) => {
+    //   tmp.push(medicine.matchingMedicine.name);
+    // });
+    // setCorrespondances(tmp);
+  }, [provider]);
 
   const dateToLocaleFormat = (date: string) => {
     let s = new Date(date).toLocaleDateString("fr-FR", {
@@ -219,9 +261,43 @@ export default function ProviderMedicines() {
     return s;
   };
 
+  const isThereCorrespondancesChanges = () => {
+    const selects = document.querySelectorAll("select");
+    selects.forEach((select) => {
+      const el = select as HTMLSelectElement;
+      if (!correspondances.includes(el.value)) return false;
+    });
+    return true;
+  };
+
+  const updateCorrespondances = () => {
+    const correspondancesToChange: {
+      id: string;
+      name: string;
+    }[] = [];
+
+    const selects = document.querySelectorAll("select");
+    selects.forEach((select) => {
+      const el = select as HTMLSelectElement;
+      correspondancesToChange.push({
+        id: select.getAttribute("data-medicine-id"),
+        name: el.value,
+      });
+    });
+
+    api.post("/provider", {
+      matches: correspondancesToChange,
+    });
+  };
+
   return provider ? (
     <>
-      <StyledTitle>{provider.name}</StyledTitle>
+      <StyledTitle>
+        <h1>{provider.name}</h1>
+        {isThereCorrespondancesChanges ? (
+          <button onClick={updateCorrespondances}>Enregistrer Modif.</button>
+        ) : null}
+      </StyledTitle>
       <StyledList>
         <table>
           <thead>
@@ -245,8 +321,16 @@ export default function ProviderMedicines() {
                 <td>{medicine.dci}</td>
                 <td>{dateToLocaleFormat(medicine.expirationDate)}</td>
                 <td>
-                  <select disabled name="correspondance" id="correspondance">
-                    <option value="">Aucun</option>
+                  <select
+                    name="correspondance"
+                    id="correspondance"
+                    defaultValue={medicine.matchingMedicine.name}
+                    data-medicine-id={medicine.id}
+                  >
+                    <option value="none">Aucun</option>
+                    {medicineNames.map((name) => (
+                      <option value={name}>{name}</option>
+                    ))}
                   </select>
                 </td>
               </tr>
