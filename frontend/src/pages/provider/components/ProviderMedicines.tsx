@@ -3,8 +3,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { api } from "../../../api";
+import { ConfirmationDialog } from "../../../components";
 import { Provider } from "../../../models";
 import { appear } from "../../../styles/animations";
+import { theme } from "../../../styles/theme";
 
 const StyledTitle = styled.div`
   display: flex;
@@ -15,8 +17,13 @@ const StyledTitle = styled.div`
     font-size: 2rem;
   }
 
-  button {
+  .appear {
+    transform: translateY(0);
+    opacity: 1;
     cursor: pointer;
+  }
+
+  button {
     height: 3rem;
     padding: 5px 20px;
     border: none;
@@ -24,7 +31,10 @@ const StyledTitle = styled.div`
     color: white;
     font-weight: 600;
     border-radius: 5px;
-    transition: background-color 250ms;
+    transform: translateY(-1rem);
+    opacity: 0;
+    transition: all 250ms;
+    cursor: default;
 
     &:hover {
       background-color: ${({ theme }) => lighten(0.1, theme.colors.tertiary)};
@@ -222,6 +232,8 @@ export default function ProviderMedicines() {
   const [provider, setProvider] = useState<Provider | null>(null);
   const [medicineNames, setMedicineNames] = useState<string[]>([]);
   const [correspondances, setCorrespondances] = useState<string[]>([]);
+  const [changedCorrespondances, setChangedCorrespondances] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   useEffect(() => {
     api
@@ -240,16 +252,6 @@ export default function ProviderMedicines() {
       .catch((err) => console.error(err));
   }, []);
 
-  useEffect(() => {
-    // Get all current correspondances
-    // const tmp: string[] = [];
-    // console.log(provider);
-    // provider.medicines.forEach((medicine) => {
-    //   tmp.push(medicine.matchingMedicine.name);
-    // });
-    // setCorrespondances(tmp);
-  }, [provider]);
-
   const dateToLocaleFormat = (date: string) => {
     let s = new Date(date).toLocaleDateString("fr-FR", {
       day: "numeric",
@@ -263,12 +265,21 @@ export default function ProviderMedicines() {
 
   const isThereCorrespondancesChanges = () => {
     const selects = document.querySelectorAll("select");
-    selects.forEach((select) => {
-      const el = select as HTMLSelectElement;
-      if (!correspondances.includes(el.value)) return false;
-    });
-    return true;
+    for (let i = 0; i < selects.length; i++) {
+      if (selects[i].value != correspondances[i]) return true;
+    }
+    return false;
   };
+
+  useEffect(() => {
+    if (provider) {
+      const tmp: string[] = [];
+      provider.medicines.forEach((medicine) => {
+        tmp.push(medicine.matchingMedicine.name);
+      });
+      setCorrespondances(tmp);
+    }
+  }, [provider]);
 
   const updateCorrespondances = () => {
     const correspondancesToChange: {
@@ -285,18 +296,29 @@ export default function ProviderMedicines() {
       });
     });
 
-    api.post("/provider", {
-      matches: correspondancesToChange,
-    });
+    api
+      .post("/provider/medicine/update-matches", {
+        matches: correspondancesToChange,
+      })
+      .catch((err) => console.error(err))
+      .finally(() => location.reload());
+  };
+
+  const handleChanges = () => {
+    setChangedCorrespondances(isThereCorrespondancesChanges);
   };
 
   return provider ? (
     <>
       <StyledTitle>
         <h1>{provider.name}</h1>
-        {isThereCorrespondancesChanges ? (
-          <button onClick={updateCorrespondances}>Enregistrer Modif.</button>
-        ) : null}
+        <button
+          disabled={!changedCorrespondances}
+          className={changedCorrespondances ? "appear" : ""}
+          onClick={() => setShowConfirmation(true)}
+        >
+          Enregistrer Modif.
+        </button>
       </StyledTitle>
       <StyledList>
         <table>
@@ -326,10 +348,13 @@ export default function ProviderMedicines() {
                     id="correspondance"
                     defaultValue={medicine.matchingMedicine.name}
                     data-medicine-id={medicine.id}
+                    onChange={handleChanges}
                   >
                     <option value="none">Aucun</option>
                     {medicineNames.map((name) => (
-                      <option value={name}>{name}</option>
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
                     ))}
                   </select>
                 </td>
@@ -338,6 +363,19 @@ export default function ProviderMedicines() {
           </tbody>
         </table>
       </StyledList>
+      {showConfirmation ? (
+        <ConfirmationDialog
+          title="Enregistrer Modification"
+          action={updateCorrespondances}
+          cancel={{ buttonColor: theme.colors.cancelButton, text: "Annuler" }}
+          confirm={{
+            buttonColor: theme.colors.acceptButton,
+            text: "Enregistrer",
+          }}
+          message="Voulez-vous enregistrer les changements?"
+          onClose={() => setShowConfirmation(false)}
+        />
+      ) : null}
     </>
   ) : null;
 }
