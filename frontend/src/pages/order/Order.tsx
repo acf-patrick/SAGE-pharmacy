@@ -1,9 +1,19 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { styled } from "styled-components";
 import { Header } from "../../components";
 import Kanban, { KanbanItem } from "./components/Kanban";
 import { api } from "../../api";
-import { useNavigate } from "react-router-dom";
+
+type Order = {
+  id: string;
+  isValid: boolean;
+  providerName: string;
+  minPurchase: number;
+  status: KanbanItemStatus;
+  totalPriceWithTax: number;
+  totamPriceWithoutTax: number;
+  createdAt: string;
+};
 
 const StyledContainer = styled.div`
   display: flex;
@@ -15,161 +25,73 @@ const StyledContainer = styled.div`
   padding-bottom: 2rem;
 `;
 
-export enum KanbanItemStatus {
-  ORDERED,
-  PENDING,
-  RECEIVED,
-  FINISHED,
-}
+export const KanbanItemStatusObject = {
+  ORDERED: "ORDERED",
+  PENDING: "PENDING",
+  RECEIVED: "RECEIVED",
+  FINISHED: "FINISHED",
+} as const;
 
-const data: KanbanItem[] = [
-  {
-    title: "COPHARMA_" + new Date().toLocaleString().split(" ")[0],
-    color: "green",
-    status: KanbanItemStatus.ORDERED,
-    isValid: true,
-    buttons: [
-      {
-        text: "Valider",
-        action: () => {},
-      },
-      {
-        text: "Annuler",
-        action: () => {},
-      },
-      {
-        text: "Editer",
-        action: () => {},
-      },
-    ],
-  },
-  {
-    title: "MEDICARE_" + new Date().toLocaleString().split(" ")[0],
-    color: "green",
-    status: KanbanItemStatus.ORDERED,
-    isValid: false,
-    buttons: [
-      {
-        text: "Valider",
-        action: () => {},
-      },
-      {
-        text: "Annuler",
-        action: () => {},
-      },
-      {
-        text: "Editer",
-        action: () => {},
-      },
-    ],
-  },
-  {
-    title: "MEDICARE_" + new Date().toLocaleString().split(" ")[0],
-    color: "green",
-    status: KanbanItemStatus.PENDING,
-    isValid: true,
-    buttons: [
-      {
-        text: "Valider",
-        action: () => {},
-      },
-      {
-        text: "Annuler",
-        action: () => {},
-      },
-      {
-        text: "Editer",
-        action: () => {},
-      },
-    ],
-  },
-  {
-    title: "MEDICARE_" + new Date().toLocaleString().split(" ")[0],
-    color: "green",
-    status: KanbanItemStatus.RECEIVED,
-    isValid: true,
-    buttons: [
-      {
-        text: "Valider",
-        action: () => {},
-      },
-      {
-        text: "Annuler",
-        action: () => {},
-      },
-      {
-        text: "Editer",
-        action: () => {},
-      },
-    ],
-  },
-  {
-    title: "MEDICARE_" + new Date().toLocaleString().split(" ")[0],
-    color: "green",
-    status: KanbanItemStatus.RECEIVED,
-    isValid: true,
-    buttons: [
-      {
-        text: "Valider",
-        action: () => {},
-      },
-      {
-        text: "Annuler",
-        action: () => {},
-      },
-      {
-        text: "Editer",
-        action: () => {},
-      },
-    ],
-  },
-  {
-    title: "MEDICARE_" + new Date().toLocaleString().split(" ")[0],
-    color: "green",
-    status: KanbanItemStatus.FINISHED,
-    isValid: true,
-    buttons: [
-      {
-        text: "Valider",
-        action: () => {},
-      },
-      {
-        text: "Annuler",
-        action: () => {},
-      },
-      {
-        text: "Editer",
-        action: () => {},
-      },
-    ],
-  },
-];
+export type KanbanItemStatus = typeof status;
 
 export default function Order() {
-  const [orders, _setOrders] = useState<KanbanItem[]>(data);
-
-  const navigate = useNavigate();
   useEffect(() => {
     // Supposed to fetch data here
-    api.get("/auth/valid-token").catch((err) => {
-      if (err.response.status === 401) {
-        navigate("/login");
-      }
-    });
+    api
+      .get("/order")
+      .then((res) => {
+        const data = res.data;
+
+        const orderedList: KanbanItem[] = [];
+        const pendingList: KanbanItem[] = [];
+        const receivedList: KanbanItem[] = [];
+        const finishedList: KanbanItem[] = [];
+        data.forEach((order: Order) => {
+          if (order.status == KanbanItemStatusObject.ORDERED) {
+            orderedList.push({
+              title: order.providerName + order.createdAt,
+              id: order.id,
+              isValid: order.isValid,
+              status: order.status,
+            });
+          } else if (order.status == KanbanItemStatusObject.PENDING) {
+            pendingList.push({
+              title: order.providerName + order.createdAt,
+              id: order.id,
+              isValid: order.isValid,
+              status: order.status,
+            });
+          } else if (order.status == KanbanItemStatusObject.RECEIVED) {
+            receivedList.push({
+              title: order.providerName + order.createdAt,
+              id: order.id,
+              isValid: order.isValid,
+              status: order.status,
+            });
+          } else if (order.status == KanbanItemStatusObject.FINISHED) {
+            receivedList.push({
+              title: order.providerName + order.createdAt,
+              id: order.id,
+              isValid: order.isValid,
+              status: order.status,
+            });
+          }
+        });
+
+        setOrderedOrders(orderedList);
+        setPendingOrders(pendingList);
+        setReceivedOrders(receivedList);
+        setFinishedOrders(finishedList);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, []);
 
-  const [orderedOrders, setOrderedOrders] = useState<KanbanItem[]>(
-    orders.filter((item) => item.status == KanbanItemStatus.ORDERED)
-  );
-  const [pendingOrders, setPendingOrders] = useState<KanbanItem[]>(
-    orders.filter((item) => item.status == KanbanItemStatus.PENDING)
-  );
-  const [receivedOrders, setReceivedOrders] = useState<KanbanItem[]>(
-    orders.filter((item) => item.status == KanbanItemStatus.RECEIVED)
-  );
-  const [finishedOrders, setFinishedOrders] = useState<KanbanItem[]>(
-    orders.filter((item) => item.status == KanbanItemStatus.FINISHED)
-  );
+  const [orderedOrders, setOrderedOrders] = useState<KanbanItem[]>([]);
+  const [pendingOrders, setPendingOrders] = useState<KanbanItem[]>([]);
+  const [receivedOrders, setReceivedOrders] = useState<KanbanItem[]>([]);
+  const [finishedOrders, setFinishedOrders] = useState<KanbanItem[]>([]);
 
   return (
     <>
@@ -179,55 +101,142 @@ export default function Order() {
           items={orderedOrders}
           title="Commandes"
           moveItems={() => {
-            const tmp = orderedOrders
-              .filter((order) => order.isValid)
-              .map((order) => {
-                order.status = KanbanItemStatus.PENDING;
-                order.isValid = true;
-                return order;
-              });
-            setOrderedOrders(orderedOrders.filter((order) => !order.isValid));
-            setPendingOrders([...pendingOrders, ...tmp]);
+            orderedOrders.forEach((order) => {
+              api
+                .patch("/order/" + order.id, {
+                  status: KanbanItemStatusObject.PENDING,
+                })
+                .then(() => {
+                  const tmp = orderedOrders
+                    .filter((order) => order.isValid)
+                    .map((order) => {
+                      order.status = KanbanItemStatusObject.PENDING;
+                      order.isValid = true;
+                      return order;
+                    });
+                  setOrderedOrders(
+                    orderedOrders.filter((order) => !order.isValid)
+                  );
+                  setPendingOrders([...pendingOrders, ...tmp]);
+                })
+                .catch((err) => {
+                  console.error(err);
+                });
+            });
           }}
           moveItem={(index: number) => {
             const orderToMove = orderedOrders[index];
-            if (orderToMove.isValid) {
-              const tmp = orderedOrders.filter((_, i) => i != index);
-              setOrderedOrders(tmp);
-              setPendingOrders([...pendingOrders, orderToMove]);
-            }
+            api
+              .patch("/order/" + orderToMove.id, {
+                status: KanbanItemStatusObject.PENDING,
+              })
+              .then(() => {
+                if (orderToMove.isValid) {
+                  const tmp = orderedOrders.filter((_order, i) => i != index);
+                  setOrderedOrders(tmp);
+                  setPendingOrders([...pendingOrders, orderToMove]);
+                }
+              })
+              .catch((err) => {
+                console.error(err);
+              });
+          }}
+          deleteItem={(index: number) => {
+            const orderToMove = orderedOrders[index];
+            api
+              .delete("/order/" + orderToMove)
+              .then(() => {
+                setOrderedOrders(
+                  orderedOrders.filter((_order, i) => i != index)
+                );
+              })
+              .catch((err) => {
+                console.error(err);
+              });
           }}
         />
         <Kanban
           items={pendingOrders}
           title="En Cours"
-          moveItems={() => {
-            const tmp = pendingOrders;
-            tmp.forEach((order) => {
-              order.status = KanbanItemStatus.RECEIVED;
-            });
-            setPendingOrders([]);
-            setReceivedOrders([...receivedOrders, ...tmp]);
-          }}
+          moveItems={() =>
+            pendingOrders.forEach((order) => {
+              api
+                .patch("/order/" + order.id, {
+                  status: KanbanItemStatusObject.RECEIVED,
+                })
+                .then(() => {
+                  const tmp = pendingOrders.map((order) => {
+                    order.status = KanbanItemStatusObject.RECEIVED;
+                    order.isValid = true;
+                    return order;
+                  });
+                  setPendingOrders(
+                    pendingOrders.filter((order) => !order.isValid)
+                  );
+                  setReceivedOrders([...receivedOrders, ...tmp]);
+                })
+                .catch((err) => {
+                  console.error(err);
+                });
+            })
+          }
           moveItem={(index: number) => {
             const orderToMove = pendingOrders[index];
-            if (orderToMove.isValid) {
-              const tmp = pendingOrders.filter((_, i) => i != index);
-              setPendingOrders(tmp);
-              setReceivedOrders([...receivedOrders, orderToMove]);
-            }
+            api
+              .patch("/order/" + orderToMove.id, {
+                status: KanbanItemStatusObject.RECEIVED,
+              })
+              .then(() => {
+                if (orderToMove.isValid) {
+                  const tmp = pendingOrders.filter((_order, i) => i != index);
+                  setPendingOrders(tmp);
+                  setReceivedOrders([...receivedOrders, orderToMove]);
+                }
+              })
+              .catch((err) => {
+                console.error(err);
+              });
+          }}
+          deleteItem={(index: number) => {
+            const orderToMove = pendingOrders[index];
+            api
+              .patch("/order/" + orderToMove.id, {
+                status: KanbanItemStatusObject.ORDERED,
+              })
+              .then(() => {
+                setPendingOrders(
+                  pendingOrders.filter((_order, i) => i != index)
+                );
+                setOrderedOrders([...orderedOrders, orderToMove]);
+              })
+              .catch((err) => {
+                console.error(err);
+              });
           }}
         />
         <Kanban
           items={receivedOrders}
           title="Reception"
           moveItems={() => {
-            const tmp = receivedOrders;
-            tmp.forEach((order) => {
-              order.status = KanbanItemStatus.FINISHED;
+            receivedOrders.forEach((order) => {
+              api
+                .patch("/order/" + order.id, {
+                  status: KanbanItemStatusObject.FINISHED,
+                })
+                .then(() => {
+                  const tmp = receivedOrders.map((order) => {
+                    order.status = KanbanItemStatusObject.FINISHED;
+                    return order;
+                  });
+                  setReceivedOrders(
+                    receivedOrders.filter((order) => !order.isValid)
+                  );
+                  setFinishedOrders([...finishedOrders, ...tmp]);
+                })
+                .catch((err) => {
+                  console.error(err);
+                });
             });
-            setReceivedOrders([]);
-            setFinishedOrders([...finishedOrders, ...tmp]);
           }}
           moveItem={(index: number) => {
             const orderToMove = receivedOrders[index];
@@ -237,8 +246,21 @@ export default function Order() {
               setFinishedOrders([...finishedOrders, orderToMove]);
             }
           }}
+          deleteItem={(index: number) => {
+            const removedItem = receivedOrders[index];
+            setReceivedOrders(receivedOrders.filter((_order, i) => i != index));
+            setPendingOrders([...pendingOrders, removedItem]);
+          }}
         />
-        <Kanban items={finishedOrders} title="Terminé" moveItem={() => {}} />
+        <Kanban
+          items={finishedOrders}
+          title="Terminé"
+          deleteItem={(index: number) => {
+            const removedItem = finishedOrders[index];
+            setFinishedOrders(finishedOrders.filter((_order, i) => i != index));
+            setReceivedOrders([...receivedOrders, removedItem]);
+          }}
+        />
       </StyledContainer>
     </>
   );

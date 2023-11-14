@@ -69,6 +69,10 @@ api.interceptors.response.use(
       }
     }
 
+    if (error.response?.status === 401) {
+      location.href = "/login";
+    }
+
     return Promise.reject(error);
   }
 );

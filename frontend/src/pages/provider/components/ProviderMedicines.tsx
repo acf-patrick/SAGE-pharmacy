@@ -1,6 +1,6 @@
 import { darken, lighten } from "polished";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { api } from "../../../api";
 import { Provider } from "../../../models";
@@ -198,7 +198,6 @@ const StyledList = styled.div`
 export default function ProviderMedicines() {
   const { id: providerId } = useParams();
   const [provider, setProvider] = useState<Provider | null>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     api
@@ -206,12 +205,7 @@ export default function ProviderMedicines() {
       .then((res) => {
         setProvider(res.data);
       })
-      .catch((err) => {
-        console.error(err);
-        if (err.response.status === 401) {
-          navigate("/login");
-        }
-      });
+      .catch((err) => console.error(err));
   }, []);
 
   const dateToLocaleFormat = (date: string) => {

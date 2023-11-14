@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  Injectable,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrdersDto } from './dto/CreateOrders.dto';
 import { ProviderService } from 'src/provider/provider.service';
@@ -34,7 +38,33 @@ export class OrderService {
     }
   }
 
-  setOrderStatus(orderId: string, status: OrderStatus) {
+  async setOrderStatus(orderId: string, status: OrderStatus) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`No matching order with ID ${orderId}`);
+    }
+
+    const statusList = [
+      OrderStatus.ORDERED,
+      OrderStatus.PENDING,
+      OrderStatus.RECEIVED,
+      OrderStatus.FINISHED,
+    ];
+
+    const index = statusList.indexOf(order.status);
+    const incomingIndex = statusList.indexOf(status);
+    if (
+      (index === 0 && status !== 'PENDING') ||
+      (incomingIndex !== index - 1 && incomingIndex !== index + 1)
+    ) {
+      throw new BadRequestException(
+        `Invalid status provided. Order has status ${order.status}`,
+      );
+    }
+
     return this.prisma.order.update({
       where: {
         id: orderId,
@@ -60,6 +90,8 @@ export class OrderService {
       status: OrderStatus;
       totalPriceWithTax: number;
       totalPriceWithoutTax: number;
+      createdAt: Date;
+      id: string;
     }[] = [];
 
     for (let record of records) {
@@ -70,6 +102,8 @@ export class OrderService {
         totalPriceWithoutTax: 0,
         totalPriceWithTax: 0,
         isValid: record.isValid,
+        createdAt: record.createdAt,
+        id: record.id,
       };
 
       // Compute prices
