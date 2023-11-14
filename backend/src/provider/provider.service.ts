@@ -20,6 +20,28 @@ export class ProviderService {
     private stockService: StockService,
   ) {}
 
+  updateMatches(
+    matches: {
+      id: string;
+      name: string;
+    }[],
+  ) {
+    return Promise.allSettled(
+      matches.map(async ({ id, name }) =>
+        this.prisma.medicineFromProvider.update({
+          where: { id },
+          data: {
+            matchingMedicine: {
+              connect: {
+                name,
+              },
+            },
+          },
+        }),
+      ),
+    );
+  }
+
   // Returns all providers with their medicines
   getAll() {
     return this.prisma.provider.findMany({
@@ -63,7 +85,11 @@ export class ProviderService {
         id,
       },
       include: {
-        medicines: true,
+        medicines: {
+          include: {
+            matchingMedicine: true,
+          },
+        },
       },
     });
   }
