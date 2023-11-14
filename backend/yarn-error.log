@@ -1,5 +1,5 @@
 Arguments: 
-  C:\Program Files\nodejs\node.exe C:\Users\0743\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js
+  C:\Program Files\nodejs\node.exe C:\Users\0743\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add argon2
 
 PATH: 
   C:\Users\0743\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\0743\bin;C:\ProgramData\Miniconda3;C:\ProgramData\Miniconda3\Library\mingw-w64\bin;C:\ProgramData\Miniconda3\Library\usr\bin;C:\ProgramData\Miniconda3\Library\bin;C:\ProgramData\Miniconda3\Scripts;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files\Microsoft SQL Server\120\Tools\Binn;C:\Program Files\Common Files\Autodesk Shared;C:\Program Files\dotnet;C:\Program Files\PCL 1.8.1\bin;C:\Program Files\FME;C:\Program Files\Point Grey Research\Ladybug\bin64;C:\Program Files\Microsoft SQL Server\150\Tools\Binn;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn;C:\Program Files\Git\cmd;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit;C:\Program Files\nodejs;C:\Users\0743\AppData\Local\Microsoft\WindowsApps;C:\Users\0743\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\0743\AppData\Roaming\npm;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl
@@ -14,7 +14,7 @@ Platform:
   win32 x64
 
 Trace: 
-  Error: EPERM: operation not permitted, unlink 'D:\FIT_Apprenti_Vague_006\pharmacy\backend\node_modules\prisma\engines\aebc046ce8b88ebbcb45efe31cbe7d06fd6abc0a\query_engine-windows.dll.node'
+  Error: EPERM: operation not permitted, unlink 'D:\FIT_Apprenti_Vague_006\pharmacy\backend\node_modules\bcrypt\lib\binding\napi-v3\bcrypt_lib.node'
 
 npm manifest: 
   {

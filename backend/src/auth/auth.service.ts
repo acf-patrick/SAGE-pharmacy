@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
-import * as bcrypt from 'bcrypt';
+import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { SignupUserDto } from './dto/SignupUser.dto';
@@ -67,8 +67,7 @@ export class AuthService {
     try {
       await this.userService.getUserByName(user.name);
     } catch {
-      const salt = await bcrypt.genSalt();
-      const hashed = await bcrypt.hash(user.password, salt);
+      const hashed = await argon.hash(user.password);
       let id: string;
 
       if (user.role) {
@@ -108,7 +107,7 @@ export class AuthService {
     try {
       const user = await this.userService.getUserByName(name);
 
-      const correct = await bcrypt.compare(password, user.password);
+      const correct = await argon.verify(user.password, password);
       if (correct) {
         const token = this.generateAccessToken(name);
         return {

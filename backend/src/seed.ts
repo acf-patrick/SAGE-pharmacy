@@ -1,11 +1,10 @@
 import { PrismaClient } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import * as argon from 'argon2';
 
 const prisma = new PrismaClient();
 
 async function createMockUser() {
-  const salt = await bcrypt.genSalt();
-  const hashed = await bcrypt.hash('admin', salt);
+  const hashed = await argon.hash('admin');
 
   const user = await prisma.user.create({
     data: {
