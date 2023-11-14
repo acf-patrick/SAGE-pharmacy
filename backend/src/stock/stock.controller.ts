@@ -25,12 +25,30 @@ import {
 import { UpdateMedicineDto } from './dto/UpdateMedicine.dto';
 import { CreateMedicineDto } from './dto/CreateMedicine.dto';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @ApiTags('📦 Stock')
 @UseGuards(new AccessTokenGuard())
 @Controller('api/stock')
 export class StockController {
-  constructor(private readonly stockService: StockService) {}
+  constructor(
+    private readonly stockService: StockService,
+    private prisma: PrismaService,
+  ) {}
+
+  @Get('medicine-names')
+  async getAllMedicineNames() {
+    const records = await this.prisma.medicine.findMany({
+      select: {
+        name: true,
+      },
+    });
+    return {
+      names: records
+        .map((record) => record.name)
+        .sort((a, b) => (a < b ? -1 : 1)),
+    };
+  }
 
   @Post('medicine')
   @ApiOperation({ summary: 'Adds medicine to the stock' })
