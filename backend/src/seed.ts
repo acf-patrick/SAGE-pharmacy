@@ -1,6 +1,21 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
+
+async function createMockUser() {
+  const salt = await bcrypt.genSalt();
+  const hashed = await bcrypt.hash('admin', salt);
+
+  const user = await prisma.user.create({
+    data: {
+      username: 'admin',
+      password: hashed,
+      role: 'ADMIN',
+    },
+  });
+  return user;
+}
 
 const medicines = [
   {
@@ -582,13 +597,18 @@ async function createProviders() {
 }
 
 async function main() {
+  // Clear remaining datas
   await prisma.orderMedicine.deleteMany();
   await prisma.order.deleteMany();
   await prisma.medicineFromProvider.deleteMany();
   await prisma.medicine.deleteMany();
   await prisma.provider.deleteMany();
+  await prisma.user.deleteMany();
+
+  // Generate new ones
   await createMedicines();
   await createProviders();
+  await createMockUser();
 }
 
 main()

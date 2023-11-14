@@ -6,6 +6,7 @@ import {
   HttpCode,
   NotFoundException,
   Controller,
+  UseGuards,
 } from '@nestjs/common';
 import { ProviderService } from './provider.service';
 import { StockService } from '../stock/stock.service';
@@ -16,9 +17,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { MatchMedicinesDTO } from './dto/MatchMedicines.dto';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
-@ApiTags('Provider 🏭')
+@ApiTags('🏭 Provider')
 @Controller('api/provider')
+@UseGuards(new AccessTokenGuard())
 export class ProviderController {
   constructor(
     private readonly providerService: ProviderService,

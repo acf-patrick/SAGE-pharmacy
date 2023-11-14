@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLoaderData } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { api } from "../../../api";
 
 const StyledHeader = styled.div`
   border-bottom: 1px solid #00000025;
@@ -88,14 +89,15 @@ const StyledContainer = styled.div`
 `;
 
 export default function ProviderList() {
+  const navigate = useNavigate();
   const listRef = useRef<HTMLUListElement>(null);
-  const { providers: datas } = useLoaderData() as {
-    providers: {
+  const [datas, setDatas] = useState<
+    {
       id: string;
       name: string;
       min: number;
-    }[];
-  };
+    }[]
+  >([]);
 
   const [search, setSearch] = useState("");
   const providers = useMemo(
@@ -109,6 +111,35 @@ export default function ProviderList() {
   );
 
   useEffect(() => {
+    api
+      .get("/provider")
+      .then((res) => {
+        const datas: {
+          id: string;
+          name: string;
+          min: number;
+        }[] = res.data;
+        
+        setDatas(
+          datas
+            .map((provider: { id: string; name: string; min: number }) => ({
+              id: provider.id,
+              name: provider.name,
+              min: provider.min,
+            }))
+            .sort((a, b) => (a.name < b.name ? -1 : 1))
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+        if (err.response.status === 401) {
+          navigate("/login");
+        }
+      });
+    setupListHeaderShadowStyle();
+  }, []);
+
+  const setupListHeaderShadowStyle = () => {
     const list = listRef.current;
     if (list) {
       list.addEventListener("scroll", () => {
@@ -118,7 +149,7 @@ export default function ProviderList() {
         }
       });
     }
-  }, []);
+  };
 
   return (
     <StyledContainer>

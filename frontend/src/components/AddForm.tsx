@@ -116,7 +116,7 @@ const StyledModal = styled.div`
       p {
         margin: 0 1rem;
         font-size: ${({ theme }) => theme.error.fontSize};
-        color: ${({ theme }) => theme.error.color};
+        color: ${({ theme }) => theme.colors.error};
         font-weight: 500;
         text-align: justify;
         animation: ${errorAppear} 500ms both;

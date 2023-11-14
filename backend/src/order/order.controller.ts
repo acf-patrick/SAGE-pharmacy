@@ -1,24 +1,27 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
-  NotFoundException,
   Post,
-  BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
-import { OrderService } from './order.service';
-import { CreateOrdersDto } from './dto/CreateOrders.dto';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AllOrders } from './dto/AllOrders.dto';
-import { SetStatusDto } from './dto/SetStatus.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { OrderStatus } from '@prisma/client';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { AllOrders } from './dto/AllOrders.dto';
+import { CreateOrdersDto } from './dto/CreateOrders.dto';
+import { SetStatusDto } from './dto/SetStatus.dto';
+import { OrderService } from './order.service';
 
 @Controller('api/order')
-@ApiTags('Order 🛍️')
+@ApiTags('🛍️ Order')
+@UseGuards(new AccessTokenGuard())
 export class OrderController {
   constructor(
     private readonly orderService: OrderService,

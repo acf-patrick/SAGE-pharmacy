@@ -11,6 +11,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { StockService } from './stock.service';
 import {
@@ -23,8 +24,10 @@ import {
 } from '@nestjs/swagger';
 import { UpdateMedicineDto } from './dto/UpdateMedicine.dto';
 import { CreateMedicineDto } from './dto/CreateMedicine.dto';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
-@ApiTags('Stock 📦')
+@ApiTags('📦 Stock')
+@UseGuards(new AccessTokenGuard())
 @Controller('api/stock')
 export class StockController {
   constructor(private readonly stockService: StockService) {}
