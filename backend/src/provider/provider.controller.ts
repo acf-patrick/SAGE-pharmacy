@@ -14,10 +14,12 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiProperty,
   ApiTags,
 } from '@nestjs/swagger';
 import { MatchMedicinesDTO } from './dto/MatchMedicines.dto';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { UpdateMatchesDto } from './dto/UpdateMatches.dto';
 
 @ApiTags('🏭 Provider')
 @Controller('api/provider')
@@ -27,6 +29,14 @@ export class ProviderController {
     private readonly providerService: ProviderService,
     private stockService: StockService,
   ) {}
+
+  @Post('medicine/update-matches')
+  @ApiOperation({
+    summary: 'Update matching medicine from stock for medicine from providers',
+  })
+  async updateMedicineMatches(@Body() { matches }: UpdateMatchesDto) {
+    await this.providerService.updateMatches(matches);
+  }
 
   @Get()
   @ApiOperation({ summary: 'Returns all provider with their medicines' })

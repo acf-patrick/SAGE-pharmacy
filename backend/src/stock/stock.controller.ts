@@ -37,6 +37,7 @@ export class StockController {
   ) {}
 
   @Get('medicine-names')
+  @ApiOperation({ summary: 'Returns all medicine names in stock' })
   async getAllMedicineNames() {
     const records = await this.prisma.medicine.findMany({
       select: {
