@@ -346,13 +346,28 @@ export default function ProviderMedicines() {
                   <select
                     name="correspondance"
                     id="correspondance"
-                    defaultValue={medicine.matchingMedicine.name}
+                    defaultValue={
+                      medicine.matchingMedicine
+                        ? medicine.matchingMedicine.name
+                        : "none"
+                    }
                     data-medicine-id={medicine.id}
                     onChange={handleChanges}
                   >
-                    <option value="none">Aucun</option>
-                    {medicineNames.map((name) => (
-                      <option key={name} value={name}>
+                    <option
+                      value="none"
+                      // selected={medicine.matchingMedicine ? true : false}
+                    >
+                      Aucun
+                    </option>
+                    {medicineNames.map((name, i) => (
+                      <option
+                        // selected={
+                        //   medicine.matchingMedicine && i == 0 ? true : false
+                        // }
+                        key={name}
+                        value={name}
+                      >
                         {name}
                       </option>
                     ))}
