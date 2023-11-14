@@ -27,18 +27,27 @@ export class ProviderService {
     }[],
   ) {
     return Promise.allSettled(
-      matches.map(async ({ id, name }) =>
-        this.prisma.medicineFromProvider.update({
-          where: { id },
-          data: {
-            matchingMedicine: {
-              connect: {
-                name,
+      matches.map(({ id, name }) => {
+        return name === 'none'
+          ? this.prisma.medicineFromProvider.update({
+              where: { id },
+              data: {
+                matchingMedicine: {
+                  disconnect: true,
+                },
               },
-            },
-          },
-        }),
-      ),
+            })
+          : this.prisma.medicineFromProvider.update({
+              where: { id },
+              data: {
+                matchingMedicine: {
+                  connect: {
+                    name,
+                  },
+                },
+              },
+            });
+      }),
     );
   }
 
