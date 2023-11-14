@@ -20,7 +20,6 @@ import { useNotification } from "../../hooks";
 import { Medicine } from "../../models";
 import { appear, appearFromLeft } from "../../styles/animations";
 import { Table } from "./components";
-import { useNavigate } from "react-router-dom";
 
 type PageQueryResponse = {
   data: Medicine[];
@@ -155,7 +154,6 @@ export default function Stock() {
   // Modal for medicine edition will appear when set
   const [updateSelectedRows, setUpdateSelectedRows] = useState(false);
   const { pushNotification } = useNotification();
-  const navigate = useNavigate();
 
   useEffect(() => {
     // clear selections
@@ -172,12 +170,7 @@ export default function Stock() {
         setMedicines(res.data);
         setPagesCount(res.pageCount);
       })
-      .catch((err) => {
-        console.error(err);
-        if (err.response.status === 401) {
-          navigate("/login");
-        }
-      })
+      .catch((err) => console.error(err))
       .finally(() => setPending(false));
   }, [searchKeyWord, searchField, currentPage]);
 
@@ -281,7 +274,8 @@ export default function Stock() {
               className="select-all-btn"
               onClick={() =>
                 toggleAllRows(selectedRows.length != medicines.length)
-              }>
+              }
+            >
               <MdSelectAll />
               <span>
                 {selectedRows.length == medicines.length ? "Desel." : "Sel."}{" "}
@@ -300,7 +294,8 @@ export default function Stock() {
                 </button>
                 <button
                   className="delete-btn"
-                  onClick={() => setShowConfirmation(true)}>
+                  onClick={() => setShowConfirmation(true)}
+                >
                   <AiOutlineDelete />
                   <span>Supprimer</span>
                 </button>

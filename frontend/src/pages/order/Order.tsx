@@ -1,9 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { styled } from "styled-components";
 import { Header } from "../../components";
 import Kanban, { KanbanItem } from "./components/Kanban";
-import { api } from "../../api";
-import { useNavigate } from "react-router-dom";
 
 const StyledContainer = styled.div`
   display: flex;
@@ -146,17 +144,7 @@ const data: KanbanItem[] = [
 ];
 
 export default function Order() {
-  const [orders, setOrders] = useState<KanbanItem[]>(data);
-
-  const navigate = useNavigate();
-  useEffect(() => {
-    // Supposed to fetch data here
-    api.get("/auth/valid-token").catch((err) => {
-      if (err.response.status === 401) {
-        navigate("/login");
-      }
-    });
-  }, []);
+  const [orders, _] = useState<KanbanItem[]>(data);
 
   const [orderedOrders, setOrderedOrders] = useState<KanbanItem[]>(
     orders.filter((item) => item.status == KanbanItemStatus.ORDERED)
@@ -192,7 +180,7 @@ export default function Order() {
           moveItem={(index: number) => {
             const orderToMove = orderedOrders[index];
             if (orderToMove.isValid) {
-              const tmp = orderedOrders.filter((order, i) => i != index);
+              const tmp = orderedOrders.filter((_, i) => i != index);
               setOrderedOrders(tmp);
               setPendingOrders([...pendingOrders, orderToMove]);
             }
@@ -212,7 +200,7 @@ export default function Order() {
           moveItem={(index: number) => {
             const orderToMove = pendingOrders[index];
             if (orderToMove.isValid) {
-              const tmp = pendingOrders.filter((order, i) => i != index);
+              const tmp = pendingOrders.filter((_, i) => i != index);
               setPendingOrders(tmp);
               setReceivedOrders([...receivedOrders, orderToMove]);
             }
@@ -232,7 +220,7 @@ export default function Order() {
           moveItem={(index: number) => {
             const orderToMove = receivedOrders[index];
             if (orderToMove.isValid) {
-              const tmp = receivedOrders.filter((order, i) => i != index);
+              const tmp = receivedOrders.filter((_, i) => i != index);
               setReceivedOrders(tmp);
               setFinishedOrders([...finishedOrders, orderToMove]);
             }

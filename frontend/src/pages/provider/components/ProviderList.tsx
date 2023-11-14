@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { api } from "../../../api";
 
@@ -89,7 +89,6 @@ const StyledContainer = styled.div`
 `;
 
 export default function ProviderList() {
-  const navigate = useNavigate();
   const listRef = useRef<HTMLUListElement>(null);
   const [datas, setDatas] = useState<
     {
@@ -119,7 +118,7 @@ export default function ProviderList() {
           name: string;
           min: number;
         }[] = res.data;
-        
+
         setDatas(
           datas
             .map((provider: { id: string; name: string; min: number }) => ({
@@ -130,12 +129,7 @@ export default function ProviderList() {
             .sort((a, b) => (a.name < b.name ? -1 : 1))
         );
       })
-      .catch((err) => {
-        console.error(err);
-        if (err.response.status === 401) {
-          navigate("/login");
-        }
-      });
+      .catch((err) => console.error(err));
     setupListHeaderShadowStyle();
   }, []);
 
