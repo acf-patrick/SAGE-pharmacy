@@ -3,8 +3,8 @@ import { styled } from "styled-components";
 import { api } from "../../api";
 import { Header } from "../../components";
 import { MedicineFromProvider, Provider } from "../../models";
-import EditModal from "./components/EditModal";
 import Kanban from "./components/Kanban";
+import { useNavigate } from "react-router-dom";
 
 // export type OrderMedicine = {
 //   id: string;
@@ -45,9 +45,22 @@ export const KanbanItemStatusObject = {
   FINISHED: "FINISHED",
 } as const;
 
-export type KanbanItemStatus = typeof status;
+export type KanbanItemStatus = "ORDERED" | "PENDING" | "RECEIVED" | "FINISHED";
 
 export default function OrderComponent() {
+  const [orders, setOrders] = useState<{
+    ordered: Order[];
+    pending: Order[];
+    received: Order[];
+    finished: Order[];
+  }>({
+    ordered: [],
+    pending: [],
+    received: [],
+    finished: [],
+  });
+  const navigate = useNavigate();
+
   useEffect(() => {
     // Supposed to fetch data here
     api
@@ -55,76 +68,64 @@ export default function OrderComponent() {
       .then((res) => {
         const data = res.data;
 
-        const orderedList: Order[] = [];
-        const pendingList: Order[] = [];
-        const receivedList: Order[] = [];
-        const finishedList: Order[] = [];
+        const ordered: Order[] = [];
+        const pending: Order[] = [];
+        const received: Order[] = [];
+        const finished: Order[] = [];
         data.forEach((order: Order) => {
           switch (order.status) {
             case KanbanItemStatusObject.ORDERED:
-              orderedList.push(order);
+              ordered.push(order);
               break;
             case KanbanItemStatusObject.PENDING:
-              pendingList.push(order);
+              pending.push(order);
               break;
             case KanbanItemStatusObject.RECEIVED:
-              receivedList.push(order);
+              received.push(order);
               break;
             case KanbanItemStatusObject.FINISHED:
-              finishedList.push(order);
+              finished.push(order);
               break;
             default:
               break;
           }
         });
 
-        setOrderedOrders(orderedList);
-        setPendingOrders(pendingList);
-        setReceivedOrders(receivedList);
-        setFinishedOrders(finishedList);
+        setOrders({ ordered, pending, received, finished });
       })
       .catch((err) => {
         console.log(err);
       });
   }, []);
 
-  const [orderedOrders, setOrderedOrders] = useState<Order[]>([]);
-  const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
-  const [receivedOrders, setReceivedOrders] = useState<Order[]>([]);
-  const [finishedOrders, setFinishedOrders] = useState<Order[]>([]);
-
-  const [currentOrderSelected, setCurrentOrderSelected] =
-    useState<Order | null>(null);
-
-  useEffect(() => {
-    console.log(currentOrderSelected);
-  }, [currentOrderSelected]);
-
   return (
     <>
       <Header headerTitle="Commandes 📋"></Header>
       <StyledContainer>
         <Kanban
-          orders={orderedOrders}
+          orders={orders.ordered}
           title="Commandes"
           moveItems={() => {
-            orderedOrders.forEach((order) => {
+            orders.ordered.forEach((order) => {
               api
                 .patch("/order/" + order.id, {
                   status: KanbanItemStatusObject.PENDING,
                 })
                 .then(() => {
-                  const tmp = orderedOrders
-                    .filter((order) => order.isValid)
-                    .map((order) => {
-                      order.status = KanbanItemStatusObject.PENDING;
-                      order.isValid = true;
-                      return order;
-                    });
-                  setOrderedOrders(
-                    orderedOrders.filter((order) => !order.isValid)
-                  );
-                  setPendingOrders([...pendingOrders, ...tmp]);
+                  setOrders({
+                    ...orders,
+                    pending: [
+                      ...orders.pending,
+                      ...orders.ordered
+                        .filter((order) => order.isValid)
+                        .map((order) => {
+                          order.status = KanbanItemStatusObject.PENDING;
+                          order.isValid = true;
+                          return order;
+                        }),
+                    ],
+                    ordered: orders.ordered.filter((order) => !order.isValid),
+                  });
                 })
                 .catch((err) => {
                   console.error(err);
@@ -132,16 +133,18 @@ export default function OrderComponent() {
             });
           }}
           moveItem={(index: number) => {
-            const orderToMove = orderedOrders[index];
+            const orderToMove = orders.ordered[index];
             api
               .patch("/order/" + orderToMove.id, {
                 status: KanbanItemStatusObject.PENDING,
               })
               .then(() => {
                 if (orderToMove.isValid) {
-                  const tmp = orderedOrders.filter((_order, i) => i != index);
-                  setOrderedOrders(tmp);
-                  setPendingOrders([...pendingOrders, orderToMove]);
+                  setOrders({
+                    ...orders,
+                    ordered: orders.ordered.filter((_, i) => i != index),
+                    pending: [...orders.pending, orderToMove],
+                  });
                 }
               })
               .catch((err) => {
@@ -149,39 +152,45 @@ export default function OrderComponent() {
               });
           }}
           deleteItem={(index: number) => {
-            const orderToMove = orderedOrders[index];
+            const orderToMove = orders.ordered[index];
             api
               .delete("/order/" + orderToMove)
               .then(() => {
-                setOrderedOrders(
-                  orderedOrders.filter((_order, i) => i != index)
-                );
+                setOrders({
+                  ...orders,
+                  ordered: orders.ordered.filter((_order, i) => i != index),
+                });
               })
               .catch((err) => {
                 console.error(err);
               });
           }}
-          onOrderSelect={setCurrentOrderSelected}
+          onOrderSelect={(order) => {
+            navigate(order.id);
+          }}
         />
         <Kanban
-          orders={pendingOrders}
+          orders={orders.pending}
           title="En Cours"
           moveItems={() =>
-            pendingOrders.forEach((order) => {
+            orders.pending.forEach((order) => {
               api
                 .patch("/order/" + order.id, {
                   status: KanbanItemStatusObject.RECEIVED,
                 })
                 .then(() => {
-                  const tmp = pendingOrders.map((order) => {
-                    order.status = KanbanItemStatusObject.RECEIVED;
-                    order.isValid = true;
-                    return order;
+                  setOrders({
+                    ...orders,
+                    pending: orders.pending.filter((order) => !order.isValid),
+                    received: [
+                      ...orders.received,
+                      ...orders.pending.map((order) => {
+                        order.status = KanbanItemStatusObject.RECEIVED;
+                        order.isValid = true;
+                        return order;
+                      }),
+                    ],
                   });
-                  setPendingOrders(
-                    pendingOrders.filter((order) => !order.isValid)
-                  );
-                  setReceivedOrders([...receivedOrders, ...tmp]);
                 })
                 .catch((err) => {
                   console.error(err);
@@ -189,16 +198,18 @@ export default function OrderComponent() {
             })
           }
           moveItem={(index: number) => {
-            const orderToMove = pendingOrders[index];
+            const orderToMove = orders.pending[index];
             api
               .patch("/order/" + orderToMove.id, {
                 status: KanbanItemStatusObject.RECEIVED,
               })
               .then(() => {
                 if (orderToMove.isValid) {
-                  const tmp = pendingOrders.filter((_order, i) => i != index);
-                  setPendingOrders(tmp);
-                  setReceivedOrders([...receivedOrders, orderToMove]);
+                  setOrders({
+                    ...orders,
+                    pending: orders.pending.filter((_, i) => i != index),
+                    received: [...orders.received, orderToMove],
+                  });
                 }
               })
               .catch((err) => {
@@ -206,41 +217,45 @@ export default function OrderComponent() {
               });
           }}
           deleteItem={(index: number) => {
-            const orderToMove = pendingOrders[index];
+            const orderToMove = orders.pending[index];
             api
               .patch("/order/" + orderToMove.id, {
                 status: KanbanItemStatusObject.ORDERED,
               })
               .then(() => {
-                setPendingOrders(
-                  pendingOrders.filter((_order, i) => i != index)
-                );
-                setOrderedOrders([...orderedOrders, orderToMove]);
+                setOrders({
+                  ...orders,
+                  ordered: [...orders.ordered, orderToMove],
+                  pending: orders.pending.filter((_, i) => i != index),
+                });
               })
               .catch((err) => {
                 console.error(err);
               });
           }}
-          onOrderSelect={setCurrentOrderSelected}
+          onOrderSelect={() => {}}
         />
         <Kanban
-          orders={receivedOrders}
+          orders={orders.received}
           title="Reception"
           moveItems={() => {
-            receivedOrders.forEach((order) => {
+            orders.received.forEach((order) => {
               api
                 .patch("/order/" + order.id, {
                   status: KanbanItemStatusObject.FINISHED,
                 })
                 .then(() => {
-                  const tmp = receivedOrders.map((order) => {
-                    order.status = KanbanItemStatusObject.FINISHED;
-                    return order;
+                  setOrders({
+                    ...orders,
+                    received: orders.received.filter((order) => !order.isValid),
+                    finished: [
+                      ...orders.finished,
+                      ...orders.received.map((order) => {
+                        order.status = KanbanItemStatusObject.FINISHED;
+                        return order;
+                      }),
+                    ],
                   });
-                  setReceivedOrders(
-                    receivedOrders.filter((order) => !order.isValid)
-                  );
-                  setFinishedOrders([...finishedOrders, ...tmp]);
                 })
                 .catch((err) => {
                   console.error(err);
@@ -248,16 +263,18 @@ export default function OrderComponent() {
             });
           }}
           moveItem={(index: number) => {
-            const orderToMove = receivedOrders[index];
+            const orderToMove = orders.received[index];
             api
               .patch("/order/" + orderToMove.id, {
                 status: KanbanItemStatusObject.FINISHED,
               })
               .then(() => {
                 if (orderToMove.isValid) {
-                  const tmp = receivedOrders.filter((_order, i) => i != index);
-                  setReceivedOrders(tmp);
-                  setFinishedOrders([...finishedOrders, orderToMove]);
+                  setOrders({
+                    ...orders,
+                    received: orders.received.filter((_, i) => i != index),
+                    finished: [...orders.finished, orderToMove],
+                  });
                 }
               })
               .catch((err) => {
@@ -265,52 +282,47 @@ export default function OrderComponent() {
               });
           }}
           deleteItem={(index: number) => {
-            const orderToMove = receivedOrders[index];
+            const orderToMove = orders.received[index];
             api
               .patch("/order/" + orderToMove.id, {
                 status: KanbanItemStatusObject.PENDING,
               })
               .then(() => {
-                setReceivedOrders(
-                  receivedOrders.filter((_order, i) => i != index)
-                );
-                setPendingOrders([...pendingOrders, orderToMove]);
+                setOrders({
+                  ...orders,
+                  received: orders.received.filter((_order, i) => i != index),
+                  pending: [...orders.pending, orderToMove],
+                });
               })
               .catch((err) => {
                 console.error(err);
               });
           }}
-          onOrderSelect={setCurrentOrderSelected}
+          onOrderSelect={() => {}}
         />
         <Kanban
-          orders={finishedOrders}
+          orders={orders.finished}
           title="Terminé"
           deleteItem={(index: number) => {
-            const orderToMove = finishedOrders[index];
+            const orderToMove = orders.finished[index];
             api
               .patch("/order/" + orderToMove.id, {
                 status: KanbanItemStatusObject.RECEIVED,
               })
               .then(() => {
-                setFinishedOrders(
-                  finishedOrders.filter((_order, i) => i != index)
-                );
-                setReceivedOrders([...receivedOrders, orderToMove]);
+                setOrders({
+                  ...orders,
+                  finished: orders.finished.filter((_, i) => i != index),
+                  received: [...orders.received, orderToMove],
+                });
               })
               .catch((err) => {
                 console.error(err);
               });
           }}
-          onOrderSelect={setCurrentOrderSelected}
+          onOrderSelect={() => {}}
         />
       </StyledContainer>
-      {currentOrderSelected ? (
-        <EditModal
-          order={currentOrderSelected}
-          onClose={() => setCurrentOrderSelected(null)}
-          onValidate={() => setCurrentOrderSelected(null)}
-        />
-      ) : null}
     </>
   );
 }
