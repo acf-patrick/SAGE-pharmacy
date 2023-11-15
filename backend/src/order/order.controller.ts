@@ -13,11 +13,11 @@ import {
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OrderStatus } from '@prisma/client';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { AllOrders } from './dto/AllOrders.dto';
 import { CreateOrdersDto } from './dto/CreateOrders.dto';
-import { SetStatusDto } from './dto/SetStatus.dto';
+import { UpdateOrderDto } from './dto/UpdateOrder.dto';
 import { OrderService } from './order.service';
+import { UpdateMedicineQuantitiesDto } from './dto/UpdateMedicineQuantities.dto';
 
 @Controller('api/order')
 @ApiTags('🛍️ Order')
@@ -30,17 +30,26 @@ export class OrderController {
     return this.orderService.getOrder(id);
   }
 
+  @Patch(':id/medicine')
+  async updateMedicineQuantities(
+    @Param('id') id: string,
+    @Body() { datas }: UpdateMedicineQuantitiesDto,
+  ) {
+    await this.orderService.setMedicinesQuantities(id, datas);
+    return `Updated`;
+  }
+
   @Patch(':id')
   async setOrderStatus(
     @Param('id') id: string,
-    @Body() { status }: SetStatusDto,
+    @Body() { status }: UpdateOrderDto,
   ) {
     const statusList = [
       OrderStatus.ORDERED,
       OrderStatus.PENDING,
       OrderStatus.RECEIVED,
       OrderStatus.FINISHED,
-      OrderStatus.AVOIR
+      OrderStatus.AVOIR,
     ];
 
     if (!statusList.includes(status)) {
@@ -48,6 +57,7 @@ export class OrderController {
     }
 
     await this.orderService.setOrderStatus(id, status);
+
     return `${id} status updated to ${status}`;
   }
 

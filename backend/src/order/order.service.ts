@@ -58,14 +58,19 @@ export class OrderService {
         medicineOrder.quantity * medicineFromProvider.priceWithoutTax;
     }
 
-    const medicinesFromProviderInOrder: MedicineFromProvider[] = [];
+    const medicinesFromProviderInOrder: (MedicineFromProvider & {
+      quantityToOrder: number;
+    })[] = [];
     for (let orderMedicine of record.medicineOrders) {
       const medicine = await this.prisma.medicineFromProvider.findUnique({
         where: {
           id: orderMedicine.medicineFromProviderId,
         },
       });
-      medicinesFromProviderInOrder.push(medicine);
+      medicinesFromProviderInOrder.push({
+        ...medicine,
+        quantityToOrder: orderMedicine.quantity,
+      });
     }
     order.orderMedicines = medicinesFromProviderInOrder;
 
@@ -98,6 +103,39 @@ export class OrderService {
         });
       }
     }
+  }
+
+  async setOrderQuantity(orderId: string, quantity: number) {
+    this.prisma.order.update({
+      where: {
+        id: orderId,
+      },
+      data: {},
+    });
+  }
+
+  setMedicinesQuantities(
+    orderId: string,
+    medicines: {
+      name: string;
+      quantity: number;
+    }[],
+  ) {
+    return Promise.allSettled(
+      medicines.map(({ name, quantity }) =>
+        this.prisma.orderMedicine.updateMany({
+          where: {
+            orderId,
+            medicine: {
+              name,
+            },
+          },
+          data: {
+            quantity,
+          },
+        }),
+      ),
+    );
   }
 
   async setOrderStatus(orderId: string, status: OrderStatus) {
