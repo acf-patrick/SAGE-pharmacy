@@ -14,7 +14,6 @@ export type Order = {
   provider: Provider;
   providerName: string;
   createdAt: string;
-  isValid: boolean;
   status: KanbanItemStatus;
   minPurchase: number;
   totalPriceWithTax: number;
@@ -27,6 +26,7 @@ export const KanbanItemStatusObject = {
   PENDING: "PENDING",
   RECEIVED: "RECEIVED",
   FINISHED: "FINISHED",
+  AVOIR: "AVOIR"
 } as const;
 
-export type KanbanItemStatus = "ORDERED" | "PENDING" | "RECEIVED" | "FINISHED";
+export type KanbanItemStatus = "ORDERED" | "PENDING" | "RECEIVED" | "FINISHED" | "AVOIR";

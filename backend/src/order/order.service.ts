@@ -87,6 +87,15 @@ export class OrderService {
             isValid: false,
           },
         });
+      } else if (order.status !== 'ORDERED') {
+        await this.prisma.order.update({
+          where: {
+            providerName: order.providerName,
+          },
+          data: {
+            isValid: true,
+          },
+        });
       }
     }
   }
@@ -100,25 +109,21 @@ export class OrderService {
       throw new NotFoundException(`No matching order with ID ${orderId}`);
     }
 
-    const statusList = [
-      OrderStatus.ORDERED,
-      OrderStatus.PENDING,
-      OrderStatus.RECEIVED,
-      OrderStatus.FINISHED,
-    ];
+    const map = new Map<OrderStatus, OrderStatus[]>();
+    map.set(OrderStatus.ORDERED, [OrderStatus.PENDING]);
+    map.set(OrderStatus.PENDING, [OrderStatus.ORDERED, OrderStatus.RECEIVED]);
+    map.set(OrderStatus.RECEIVED, [OrderStatus.FINISHED, OrderStatus.AVOIR]);
+    map.set(OrderStatus.FINISHED, [OrderStatus.RECEIVED]);
+    map.set(OrderStatus.AVOIR, [OrderStatus.RECEIVED, OrderStatus.FINISHED]);
 
-    const index = statusList.indexOf(order.status);
-    const incomingIndex = statusList.indexOf(status);
-    if (
-      (index === 0 && status !== 'PENDING') ||
-      (incomingIndex !== index - 1 && incomingIndex !== index + 1)
-    ) {
+    const value = map.get(order.status);
+    if (!value.includes(status)) {
       throw new BadRequestException(
-        `Invalid status provided. Order has status ${order.status}`,
+        `Invalid status provided: ${status} . Order has status: ${order.status}`,
       );
     }
 
-    return this.prisma.order.update({
+    await this.prisma.order.update({
       where: {
         id: orderId,
       },
@@ -126,6 +131,8 @@ export class OrderService {
         status,
       },
     });
+
+    return await this.verifyOrdersValidity();
   }
 
   async getAllOrders() {

@@ -15,6 +15,7 @@ enum OrderStatus {
   PENDING
   RECEIVED
   FINISHED
+  AVOIR
 }
 
 enum UserRole {

@@ -40,6 +40,7 @@ export class OrderController {
       OrderStatus.PENDING,
       OrderStatus.RECEIVED,
       OrderStatus.FINISHED,
+      OrderStatus.AVOIR
     ];
 
     if (!statusList.includes(status)) {

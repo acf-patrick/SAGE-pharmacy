@@ -4,6 +4,7 @@ import { api } from "../../../api";
 import Kanban from "./Kanban";
 import { useNavigate } from "react-router-dom";
 import { KanbanItemStatusObject, Order } from "../types";
+import { errorAppear } from "../../../components/UpdateForm";
 
 const StyledContainer = styled.div`
   display: flex;
@@ -52,6 +53,7 @@ export default function OrderList() {
               received.push(order);
               break;
             case KanbanItemStatusObject.FINISHED:
+            case KanbanItemStatusObject.AVOIR:
               finished.push(order);
               break;
             default:
@@ -66,6 +68,9 @@ export default function OrderList() {
       });
   }, []);
 
+  const isValid = (order: Order) =>
+    order.minPurchase <= order.totalPriceWithTax;
+
   return (
     <StyledContainer>
       <Kanban
@@ -73,6 +78,9 @@ export default function OrderList() {
         title="Commandes"
         moveItems={() => {
           orders.ordered.forEach((order) => {
+            if (!(order.minPurchase <= order.totalPriceWithTax)) {
+              return;
+            }
             api
               .patch("/order/" + order.id, {
                 status: KanbanItemStatusObject.PENDING,
@@ -83,14 +91,13 @@ export default function OrderList() {
                   pending: [
                     ...orders.pending,
                     ...orders.ordered
-                      .filter((order) => order.isValid)
+                      .filter((order) => isValid(order))
                       .map((order) => {
                         order.status = KanbanItemStatusObject.PENDING;
-                        order.isValid = true;
                         return order;
                       }),
                   ],
-                  ordered: orders.ordered.filter((order) => !order.isValid),
+                  ordered: orders.ordered.filter((order) => !isValid(order)),
                 });
               })
               .catch((err) => {
@@ -100,22 +107,23 @@ export default function OrderList() {
         }}
         moveItem={(index: number) => {
           const orderToMove = orders.ordered[index];
-          api
-            .patch("/order/" + orderToMove.id, {
-              status: KanbanItemStatusObject.PENDING,
-            })
-            .then(() => {
-              if (orderToMove.isValid) {
+          if (isValid(orderToMove)) {
+            api
+              .patch("/order/" + orderToMove.id, {
+                status: KanbanItemStatusObject.PENDING,
+              })
+              .then(() => {
+                orderToMove.status = KanbanItemStatusObject.PENDING;
                 setOrders({
                   ...orders,
                   ordered: orders.ordered.filter((_, i) => i != index),
                   pending: [...orders.pending, orderToMove],
                 });
-              }
-            })
-            .catch((err) => {
-              console.error(err);
-            });
+              })
+              .catch((err) => {
+                console.error(err);
+              });
+          }
         }}
         deleteItem={(index: number) => {
           const orderToMove = orders.ordered[index];
@@ -147,12 +155,11 @@ export default function OrderList() {
               .then(() => {
                 setOrders({
                   ...orders,
-                  pending: orders.pending.filter((order) => !order.isValid),
+                  pending: orders.pending.filter((order) => !isValid(order)),
                   received: [
                     ...orders.received,
                     ...orders.pending.map((order) => {
                       order.status = KanbanItemStatusObject.RECEIVED;
-                      order.isValid = true;
                       return order;
                     }),
                   ],
@@ -170,13 +177,12 @@ export default function OrderList() {
               status: KanbanItemStatusObject.RECEIVED,
             })
             .then(() => {
-              if (orderToMove.isValid) {
-                setOrders({
-                  ...orders,
-                  pending: orders.pending.filter((_, i) => i != index),
-                  received: [...orders.received, orderToMove],
-                });
-              }
+              orderToMove.status = KanbanItemStatusObject.RECEIVED;
+              setOrders({
+                ...orders,
+                pending: orders.pending.filter((_, i) => i != index),
+                received: [...orders.received, orderToMove],
+              });
             })
             .catch((err) => {
               console.error(err);
@@ -189,6 +195,7 @@ export default function OrderList() {
               status: KanbanItemStatusObject.ORDERED,
             })
             .then(() => {
+              orderToMove.status = KanbanItemStatusObject.ORDERED;
               setOrders({
                 ...orders,
                 ordered: [...orders.ordered, orderToMove],
@@ -199,7 +206,6 @@ export default function OrderList() {
               console.error(err);
             });
         }}
-        onOrderSelect={() => {}}
       />
       <Kanban
         orders={orders.received}
@@ -213,7 +219,7 @@ export default function OrderList() {
               .then(() => {
                 setOrders({
                   ...orders,
-                  received: orders.received.filter((order) => !order.isValid),
+                  received: orders.received.filter((order) => !isValid(order)),
                   finished: [
                     ...orders.finished,
                     ...orders.received.map((order) => {
@@ -235,13 +241,12 @@ export default function OrderList() {
               status: KanbanItemStatusObject.FINISHED,
             })
             .then(() => {
-              if (orderToMove.isValid) {
-                setOrders({
-                  ...orders,
-                  received: orders.received.filter((_, i) => i != index),
-                  finished: [...orders.finished, orderToMove],
-                });
-              }
+              orderToMove.status = KanbanItemStatusObject.FINISHED;
+              setOrders({
+                ...orders,
+                received: orders.received.filter((_, i) => i != index),
+                finished: [...orders.finished, orderToMove],
+              });
             })
             .catch((err) => {
               console.error(err);
@@ -254,6 +259,7 @@ export default function OrderList() {
               status: KanbanItemStatusObject.PENDING,
             })
             .then(() => {
+              orderToMove.status = KanbanItemStatusObject.PENDING;
               setOrders({
                 ...orders,
                 received: orders.received.filter((_order, i) => i != index),
@@ -264,7 +270,28 @@ export default function OrderList() {
               console.error(err);
             });
         }}
-        onOrderSelect={() => {}}
+        onOrderSelect={(order) => {
+          api
+            .patch("/order/" + order.id, {
+              status: KanbanItemStatusObject.AVOIR,
+            })
+            .then(() => {
+              setOrders((orders) => {
+                order.status = KanbanItemStatusObject.AVOIR;
+
+                return {
+                  ...orders,
+                  received: orders.received.filter(
+                    (record) => record.id != order.id
+                  ),
+                  finished: [...orders.finished, order],
+                };
+              });
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        }}
       />
       <Kanban
         orders={orders.finished}
@@ -276,6 +303,7 @@ export default function OrderList() {
               status: KanbanItemStatusObject.RECEIVED,
             })
             .then(() => {
+              orderToMove.status = KanbanItemStatusObject.RECEIVED;
               setOrders({
                 ...orders,
                 finished: orders.finished.filter((_, i) => i != index),
@@ -286,7 +314,6 @@ export default function OrderList() {
               console.error(err);
             });
         }}
-        onOrderSelect={() => {}}
       />
     </StyledContainer>
   );

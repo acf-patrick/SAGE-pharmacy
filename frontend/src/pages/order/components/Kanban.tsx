@@ -11,7 +11,7 @@ type KanbanProps = {
   moveItems?: () => void;
   moveItem?: (indexOfItemToMove: number) => void;
   deleteItem?: (indexOfItemToDelete: number) => void;
-  onOrderSelect: (order: Order) => void;
+  onOrderSelect?: (order: Order) => void;
 };
 
 const StyledDiv = styled.div`
@@ -107,8 +107,16 @@ const StyledKanbanItemDiv = styled.div<{
     position: absolute;
     top: 0;
     left: 0;
-    background-color: ${({ theme, $isValid }) =>
-      $isValid ? theme.colors.kanban.ready : theme.colors.kanban.notReady};
+    background-color: ${({ theme, $isValid, $status }) => {
+      if ($status == "ORDERED") {
+        return $isValid
+          ? theme.colors.kanban.ready
+          : theme.colors.kanban.notReady;
+      } else {
+        if ($status == "AVOIR") return theme.colors.kanban.incomplete;
+        return theme.colors.kanban.ready;
+      }
+    }};
     width: 45%;
     height: 30px;
     display: flex;
@@ -118,6 +126,7 @@ const StyledKanbanItemDiv = styled.div<{
     color: white;
 
     &::after {
+      border-radius: 5px;
       display: block;
       position: absolute;
       right: -20px;
@@ -170,23 +179,63 @@ function KanbanItemComponent({
   order,
   moveItem,
   deleteItem,
-  onOrderSelect,
+  onOrderEdit: onOrderEdit,
 }: {
   order: Order;
-  moveItem: (i: number) => void;
-  deleteItem: (i: number) => void;
-  onOrderSelect: (order: Order) => void;
+  moveItem?: () => void;
+  deleteItem?: () => void;
+  onOrderEdit?: (order: Order) => void;
 }) {
+  const map = new Map<KanbanItemStatus, string>([
+    [KanbanItemStatusObject.PENDING, "En cours"],
+    [KanbanItemStatusObject.RECEIVED, "Reçu"],
+    [KanbanItemStatusObject.FINISHED, "Fini"],
+    [KanbanItemStatusObject.AVOIR, "Avoir"],
+  ]);
+
   return (
-    <StyledKanbanItemDiv $isValid={order.isValid} $status={order.status}>
-      <div className="ticket">{!order.isValid ? "Pas prêt" : "Prêt"}</div>
-      <h1>{order.providerName + "_" + order.createdAt}</h1>
+    <StyledKanbanItemDiv
+      $isValid={order.minPurchase <= order.totalPriceWithTax}
+      $status={order.status}
+    >
+      <div className="ticket">
+        {order.status == "ORDERED"
+          ? order.minPurchase <= order.totalPriceWithTax
+            ? "Prêt"
+            : "Pas prêt"
+          : map.get(order.status)}
+      </div>
+      <h1>
+        {order.providerName +
+          "_" +
+          new Date(order.createdAt).toLocaleDateString().replace(/\//g, "_")}
+      </h1>
       <div className="buttons">
-        {order.status != KanbanItemStatusObject.FINISHED ? (
-          <BsCheckLg className="validate" onClick={moveItem} />
+        {moveItem ? (
+          <BsCheckLg
+            title="Passer au suivant"
+            className="validate"
+            onClick={moveItem}
+          />
         ) : null}
-        <RxCross2 className="delete" onClick={deleteItem} />
-        <MdEdit className="edit" onClick={() => onOrderSelect(order)} />
+        {deleteItem ? (
+          <RxCross2
+            title="Revenir au précédent"
+            className="delete"
+            onClick={deleteItem}
+          />
+        ) : null}
+        {onOrderEdit ? (
+          <MdEdit
+            title={
+              order.status == KanbanItemStatusObject.RECEIVED
+                ? 'Mettre en "Avoir"'
+                : "Modifier"
+            }
+            className="edit"
+            onClick={() => onOrderEdit(order)}
+          />
+        ) : null}
       </div>
     </StyledKanbanItemDiv>
   );
@@ -200,6 +249,44 @@ export default function Kanban({
   deleteItem,
   onOrderSelect,
 }: KanbanProps) {
+  const generateMoveItem = (i: number): (() => void | undefined) => {
+    const order = orders[i];
+    switch (order.status) {
+      case KanbanItemStatusObject.ORDERED:
+        if (order.minPurchase <= order.totalPriceWithTax) {
+          return () => moveItem(i);
+        }
+        return undefined;
+      case KanbanItemStatusObject.PENDING:
+      case KanbanItemStatusObject.RECEIVED:
+        return () => moveItem(i);
+    }
+    return undefined;
+  };
+
+  const generateDeleteItem = (i: number): (() => void | undefined) => {
+    const order = orders[i];
+    if (
+      order.status != KanbanItemStatusObject.RECEIVED &&
+      order.status != KanbanItemStatusObject.FINISHED
+    ) {
+      return () => deleteItem(i);
+    }
+
+    return undefined;
+  };
+
+  const generateEditItem = (i: number): (() => void | undefined) => {
+    const order = orders[i];
+    if (
+      order.status == KanbanItemStatusObject.RECEIVED ||
+      order.status == KanbanItemStatusObject.ORDERED
+    ) {
+      return () => onOrderSelect(order);
+    }
+    return undefined;
+  };
+
   return (
     <StyledDiv>
       <div className="header">
@@ -216,9 +303,9 @@ export default function Kanban({
           <KanbanItemComponent
             key={i}
             order={order}
-            moveItem={() => (moveItem ? moveItem(i) : {})}
-            deleteItem={() => (deleteItem ? deleteItem(i) : {})}
-            onOrderSelect={onOrderSelect}
+            moveItem={generateMoveItem(i)}
+            deleteItem={generateDeleteItem(i)}
+            onOrderEdit={generateEditItem(i)}
           />
         ))}
       </StyledKanban>
