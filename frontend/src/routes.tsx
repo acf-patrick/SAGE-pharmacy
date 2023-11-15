@@ -6,6 +6,8 @@ import {
   ProviderMedicines,
   ProviderNotFound,
 } from "./pages/provider/components";
+import { loader as orderLoader } from "./pages/order/components/EditOrder";
+import { EditOrder, OrderList } from "./pages/order/components";
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +25,17 @@ export const router = createBrowserRouter([
       {
         path: "order",
         element: <Order />,
+        children: [
+          {
+            path: "",
+            element: <OrderList />,
+          },
+          {
+            path: ":id",
+            loader: orderLoader,
+            element: <EditOrder />,
+          },
+        ],
       },
       {
         path: "provider",

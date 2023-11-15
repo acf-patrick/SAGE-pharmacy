@@ -34,12 +34,12 @@ export type MedicineFromProvider = {
   dci: string;
   providerId: string;
   expirationDate: string;
-  matchingMedicine: Medicine
+  matchingMedicine: Medicine;
 };
 
 export type Provider = {
   id: string;
   name: string;
   medicines: MedicineFromProvider[];
-  min: number
+  min: number;
 };

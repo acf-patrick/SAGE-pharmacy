@@ -1,6 +1,7 @@
 import { styled } from "styled-components";
 import { darken, lighten } from "polished";
 import { createPortal } from "react-dom";
+import { appear } from "./UpdateForm";
 
 export type Content = {
   text: string;
@@ -15,7 +16,6 @@ const StyledButton = styled.button<{ $color: string }>`
   cursor: pointer;
   font-weight: bold;
   transition: color 250ms, background-color 250ms;
-
   background-color: ${({ $color }) => $color};
   outline: solid 3px ${({ $color }) => darken(0.25, $color)};
   color: white;
@@ -28,6 +28,9 @@ const StyledButton = styled.button<{ $color: string }>`
 `;
 
 const StyledModal = styled.div`
+  transition: all 500ms;
+  animation: ${appear} both 100ms;
+
   .background {
     position: absolute;
     right: 0;
