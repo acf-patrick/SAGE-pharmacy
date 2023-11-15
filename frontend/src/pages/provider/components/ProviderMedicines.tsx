@@ -275,7 +275,8 @@ export default function ProviderMedicines() {
     if (provider) {
       const tmp: string[] = [];
       provider.medicines.forEach((medicine) => {
-        tmp.push(medicine.matchingMedicine.name);
+        if (medicine.matchingMedicine) tmp.push(medicine.matchingMedicine.name);
+        else tmp.push("none");
       });
       setCorrespondances(tmp);
     }
@@ -295,6 +296,8 @@ export default function ProviderMedicines() {
         name: el.value,
       });
     });
+
+    console.log(correspondancesToChange);
 
     api
       .post("/provider/medicine/update-matches", {
@@ -354,20 +357,9 @@ export default function ProviderMedicines() {
                     data-medicine-id={medicine.id}
                     onChange={handleChanges}
                   >
-                    <option
-                      value="none"
-                      // selected={medicine.matchingMedicine ? true : false}
-                    >
-                      Aucun
-                    </option>
-                    {medicineNames.map((name, i) => (
-                      <option
-                        // selected={
-                        //   medicine.matchingMedicine && i == 0 ? true : false
-                        // }
-                        key={name}
-                        value={name}
-                      >
+                    <option value="none">Aucun</option>
+                    {medicineNames.map((name) => (
+                      <option key={name} value={name}>
                         {name}
                       </option>
                     ))}
