@@ -132,7 +132,10 @@ const StyledContainer = styled.div`
     padding-right: 2rem;
 
     p {
-      text-align: end;
+      max-width: 280px;
+      margin-left: auto;
+      display: flex;
+      justify-content: space-between;
     }
 
     span {
@@ -146,7 +149,6 @@ const StyledContainer = styled.div`
 
 export default function EditOrder() {
   const order = useLoaderData() as Order;
-  const onValidate = () => {};
 
   const [rows, setRows] = useState<
     {
@@ -159,14 +161,20 @@ export default function EditOrder() {
 
   useEffect(() => {
     setRows(
-      order.orderMedicines.map((medicine) => ({
-        medicineName: medicine.name,
-        priceWithoutTax: medicine.priceWithoutTax,
-        priceWithTax: medicine.priceWithTax,
-        quantity: medicine.quantity,
-      }))
+      order.orderMedicines
+        .sort((a, b) => (a.name < b.name ? -1 : 1))
+        .map((medicine) => ({
+          medicineName: medicine.name,
+          priceWithoutTax: medicine.priceWithoutTax,
+          priceWithTax: medicine.priceWithTax,
+          quantity: medicine.quantityToOrder,
+        }))
     );
   }, [order]);
+
+  const onValidate = () => {
+    
+  };
 
   return (
     <StyledContainer>
@@ -245,6 +253,10 @@ export default function EditOrder() {
             })()}
             Ar.
           </span>
+        </p>
+        <p>
+          <span>Achat minimum</span>
+          <span>{order.minPurchase}Ar.</span>
         </p>
       </div>
     </StyledContainer>
