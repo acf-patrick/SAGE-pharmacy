@@ -23,10 +23,12 @@ import { OrderService } from './order.service';
 @ApiTags('🛍️ Order')
 @UseGuards(new AccessTokenGuard())
 export class OrderController {
-  constructor(
-    private readonly orderService: OrderService,
-    private prisma: PrismaService,
-  ) {}
+  constructor(private readonly orderService: OrderService) {}
+
+  @Get(':id')
+  getOneOrder(@Param('id') id: string) {
+    return this.orderService.getOrder(id);
+  }
 
   @Patch(':id')
   async setOrderStatus(

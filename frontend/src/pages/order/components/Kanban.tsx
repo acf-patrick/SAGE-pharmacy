@@ -3,7 +3,7 @@ import { GoMoveToEnd } from "react-icons/go";
 import { MdEdit } from "react-icons/md";
 import { RxCross2 } from "react-icons/rx";
 import { styled } from "styled-components";
-import { KanbanItemStatus, KanbanItemStatusObject, Order } from "../Order";
+import { KanbanItemStatus, KanbanItemStatusObject, Order } from "../types";
 
 type KanbanProps = {
   title: string;

@@ -6,7 +6,11 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrdersDto } from './dto/CreateOrders.dto';
 import { ProviderService } from 'src/provider/provider.service';
-import { MedicineFromProvider, OrderMedicine, OrderStatus } from '@prisma/client';
+import {
+  MedicineFromProvider,
+  OrderMedicine,
+  OrderStatus,
+} from '@prisma/client';
 
 @Injectable()
 export class OrderService {
@@ -17,6 +21,55 @@ export class OrderService {
 
   getOrderCount() {
     return this.prisma.order.count();
+  }
+
+  async getOrder(id: string) {
+    const record = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        provider: true,
+        medicineOrders: true,
+      },
+    });
+
+    const order = {
+      providerName: record.provider.name,
+      minPurchase: record.provider.min,
+      status: record.status,
+      totalPriceWithoutTax: 0,
+      totalPriceWithTax: 0,
+      isValid: record.isValid,
+      createdAt: record.createdAt,
+      id: record.id,
+      orderMedicines: [],
+    };
+
+    // Compute prices
+    for (let medicineOrder of record.medicineOrders) {
+      const medicineFromProvider =
+        await this.prisma.medicineFromProvider.findUnique({
+          where: {
+            id: medicineOrder.medicineFromProviderId,
+          },
+        });
+      order.totalPriceWithTax +=
+        medicineOrder.quantity * medicineFromProvider.priceWithTax;
+      order.totalPriceWithoutTax +=
+        medicineOrder.quantity * medicineFromProvider.priceWithoutTax;
+    }
+
+    const medicinesFromProviderInOrder: MedicineFromProvider[] = [];
+    for (let orderMedicine of record.medicineOrders) {
+      const medicine = await this.prisma.medicineFromProvider.findUnique({
+        where: {
+          id: orderMedicine.medicineFromProviderId,
+        },
+      });
+      medicinesFromProviderInOrder.push(medicine);
+    }
+    order.orderMedicines = medicinesFromProviderInOrder;
+
+    return order;
   }
 
   async verifyOrdersValidity() {
@@ -76,13 +129,6 @@ export class OrderService {
   }
 
   async getAllOrders() {
-    const records = await this.prisma.order.findMany({
-      include: {
-        provider: true,
-        medicineOrders: true,
-      },
-    });
-
     const orders: {
       providerName: string;
       minPurchase: number;
@@ -95,44 +141,13 @@ export class OrderService {
       orderMedicines: MedicineFromProvider[];
     }[] = [];
 
-    for (let record of records) {
-      const order = {
-        providerName: record.provider.name,
-        minPurchase: record.provider.min,
-        status: record.status,
-        totalPriceWithoutTax: 0,
-        totalPriceWithTax: 0,
-        isValid: record.isValid,
-        createdAt: record.createdAt,
-        id: record.id,
-        orderMedicines: []
-      };
-
-      // Compute prices
-      for (let medicineOrder of record.medicineOrders) {
-        const medicineFromProvider =
-          await this.prisma.medicineFromProvider.findUnique({
-            where: {
-              id: medicineOrder.medicineFromProviderId,
-            },
-          });
-        order.totalPriceWithTax +=
-          medicineOrder.quantity * medicineFromProvider.priceWithTax;
-        order.totalPriceWithoutTax +=
-          medicineOrder.quantity * medicineFromProvider.priceWithoutTax;
-      }
-
-      const medicinesFromProviderInOrder: MedicineFromProvider[]  = [];
-      for (let orderMedicine of record.medicineOrders) {
-        const medicine = await this.prisma.medicineFromProvider.findUnique({
-          where: {
-            id: orderMedicine.medicineFromProviderId
-          }
-        })
-        medicinesFromProviderInOrder.push(medicine);
-      }
-      order.orderMedicines = medicinesFromProviderInOrder;
-
+    const records = await this.prisma.order.findMany({
+      select: {
+        id: true,
+      },
+    });
+    for (let { id } of records) {
+      const order = await this.getOrder(id);
       orders.push(order);
     }
 
