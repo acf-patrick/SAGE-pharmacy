@@ -19,6 +19,32 @@ export class OrderService {
     private prisma: PrismaService,
   ) {}
 
+  deleteOrderMedicine(orderId: string, medicineName: string) {
+    return this.prisma.orderMedicine.deleteMany({
+      where: {
+        orderId,
+        medicine: {
+          name: medicineName,
+        },
+      },
+    });
+  }
+
+  async delete(id: string) {
+    try {
+      await this.prisma.orderMedicine.deleteMany({
+        where: {
+          orderId: id,
+        },
+      });
+      await this.prisma.order.delete({
+        where: { id },
+      });
+    } catch (e) {
+      throw new NotFoundException(`No matching order with ID : ${id}`);
+    }
+  }
+
   getOrderCount() {
     return this.prisma.order.count();
   }

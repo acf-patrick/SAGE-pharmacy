@@ -1,10 +1,11 @@
 import { lighten } from "polished";
 import { styled } from "styled-components";
 import { Order } from "../types";
-import { useLoaderData } from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
 import { api } from "../../../api";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import React, { useEffect, useState } from "react";
+import { useNotification } from "../../../hooks";
 
 export async function loader({ params }) {
   const res = await api.get(`/order/${params.id}`);
@@ -149,7 +150,8 @@ const StyledContainer = styled.div`
 
 export default function EditOrder() {
   const order = useLoaderData() as Order;
-
+  const navigate = useNavigate();
+  const { pushNotification } = useNotification();
   const [rows, setRows] = useState<
     {
       medicineName: string;
@@ -173,7 +175,38 @@ export default function EditOrder() {
   }, [order]);
 
   const onValidate = () => {
-    
+    api
+      .patch(`/order/${order.id}/medicine`, {
+        datas: rows.map((row) => ({
+          name: row.medicineName,
+          quantity: row.quantity,
+        })),
+      })
+      .then(() => {
+        navigate("/order");
+        pushNotification(
+          `Bon de commande pour ${order.providerName} mis à jour`
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+        pushNotification("Une erreur s'est produite");
+      });
+  };
+
+  const removeMedicineOrder = (medicineName: string) => {
+    api
+      .post(`/order/${order.id}`, { medicineName })
+      .then(() => {
+        pushNotification(`${medicineName} supprimé du bon de commande`);
+        setRows((rows) =>
+          rows.filter((row) => row.medicineName != medicineName)
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+        pushNotification("Une erreur s'est produite");
+      });
   };
 
   return (
@@ -219,7 +252,7 @@ export default function EditOrder() {
                 <span>{row.quantity * row.priceWithoutTax}</span>
               </div>
               <div className={i % 2 ? "odd" : "even"}>
-                <button>
+                <button onClick={() => removeMedicineOrder(row.medicineName)}>
                   <RiDeleteBin5Line />
                 </button>
               </div>

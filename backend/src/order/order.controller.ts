@@ -18,6 +18,7 @@ import { CreateOrdersDto } from './dto/CreateOrders.dto';
 import { UpdateOrderDto } from './dto/UpdateOrder.dto';
 import { OrderService } from './order.service';
 import { UpdateMedicineQuantitiesDto } from './dto/UpdateMedicineQuantities.dto';
+import { DeleteMedicineOrderDto } from './dto/DeleteMedicineOrder.dto';
 
 @Controller('api/order')
 @ApiTags('🛍️ Order')
@@ -26,11 +27,13 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get one order by ID' })
   getOneOrder(@Param('id') id: string) {
     return this.orderService.getOrder(id);
   }
 
   @Patch(':id/medicine')
+  @ApiOperation({ summary: "Update order's quantity of medicine to order" })
   async updateMedicineQuantities(
     @Param('id') id: string,
     @Body() { datas }: UpdateMedicineQuantitiesDto,
@@ -40,6 +43,7 @@ export class OrderController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: "Update order's status" })
   async setOrderStatus(
     @Param('id') id: string,
     @Body() { status }: UpdateOrderDto,
@@ -84,6 +88,28 @@ export class OrderController {
   async createOrders(@Body() createOrdersDto: CreateOrdersDto) {
     await this.orderService.createOrders(createOrdersDto);
     return 'Orders created';
+  }
+
+  @Post(':id')
+  @ApiOperation({ summary: 'Delete a medicine order' })
+  async deleteMedicineOrder(
+    @Param('id') orderId: string,
+    @Body() { medicineName }: DeleteMedicineOrderDto,
+  ) {
+    try {
+      await this.orderService.deleteOrderMedicine(orderId, medicineName);
+    } catch {
+      throw new NotFoundException(`Order or medicine order not found`);
+    }
+
+    return `${medicineName} remove from order ${orderId}`;
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete order with given ID' })
+  async deleteOrder(@Param('id') id: string) {
+    await this.orderService.delete(id);
+    return `Order ${id} removed`;
   }
 
   @Delete()
