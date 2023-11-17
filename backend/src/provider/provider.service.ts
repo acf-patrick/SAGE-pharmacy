@@ -20,6 +20,17 @@ export class ProviderService {
     private stockService: StockService,
   ) {}
 
+  getMedicines(name: string) {
+    return this.prisma.provider.findUnique({
+      where: {
+        name,
+      },
+      select: {
+        medicines: true,
+      },
+    });
+  }
+
   updateMatches(
     matches: {
       id: string;

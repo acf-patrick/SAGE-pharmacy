@@ -19,12 +19,26 @@ import { UpdateOrderDto } from './dto/UpdateOrder.dto';
 import { OrderService } from './order.service';
 import { UpdateMedicineQuantitiesDto } from './dto/UpdateMedicineQuantities.dto';
 import { DeleteMedicineOrderDto } from './dto/DeleteMedicineOrder.dto';
+import { CreateMedicineOrderDto } from './dto/CreateMedicineOrder.dto';
 
 @Controller('api/order')
 @ApiTags('🛍️ Order')
 @UseGuards(new AccessTokenGuard())
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
+
+  @Post(':id/medicine')
+  @ApiOperation({ summary: 'Add medicine to purchase order' })
+  async addMedicine(@Param('id') id: string, @Body() medicine: CreateMedicineOrderDto) {
+    const { medicineName, providerName } =
+      await this.orderService.createMedicineOrder(
+        id,
+        medicine.medicineFromProviderId,
+        medicine.quantity,
+      );
+
+    return `${medicineName} added to purchase order for ${providerName}`;
+  }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get one order by ID' })

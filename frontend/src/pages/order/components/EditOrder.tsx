@@ -6,7 +6,10 @@ import { api } from "../../../api";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import React, { useEffect, useState } from "react";
 import { useNotification } from "../../../hooks";
-import { ConfirmationDialog } from "../../../components";
+import {
+  AddMedicineToPurchaseOrder,
+  ConfirmationDialog,
+} from "../../../components";
 
 export async function loader({ params }) {
   const res = await api.get(`/order/${params.id}`);
@@ -18,6 +21,10 @@ const StyledContainer = styled.div`
   flex-direction: column;
   gap: 1rem;
   padding: 0 2rem;
+
+  input {
+    width: 64px;
+  }
 
   header {
     display: flex;
@@ -152,12 +159,14 @@ const StyledContainer = styled.div`
 export default function EditOrder() {
   const order = useLoaderData() as Order;
   const navigate = useNavigate();
+  const [showAddMedicineModal, setShowAddMedicineModal] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const { pushNotification } = useNotification();
   const [rows, setRows] = useState<
     {
       medicineName: string;
       quantity: number;
+      maxQuantity: number;
       priceWithTax: number;
       priceWithoutTax: number;
     }[]
@@ -172,6 +181,7 @@ export default function EditOrder() {
           priceWithoutTax: medicine.priceWithoutTax,
           priceWithTax: medicine.priceWithTax,
           quantity: medicine.quantityToOrder,
+          maxQuantity: medicine.quantity,
         }))
     );
   }, [order]);
@@ -221,7 +231,9 @@ export default function EditOrder() {
         <header>
           <h1>🍃 {order.providerName}</h1>
           <div className="buttons">
-            <button>Ajouter</button>
+            <button onClick={() => setShowAddMedicineModal(true)}>
+              Ajouter
+            </button>
             <button onClick={onValidate}>Valider</button>
           </div>
         </header>
@@ -241,6 +253,7 @@ export default function EditOrder() {
                   <input
                     type="number"
                     min={1}
+                    max={row.maxQuantity}
                     value={row.quantity}
                     onChange={(e) => {
                       const value = parseInt(e.currentTarget.value);
@@ -300,6 +313,14 @@ export default function EditOrder() {
           </p>
         </div>
       </StyledContainer>
+      {showAddMedicineModal && (
+        <AddMedicineToPurchaseOrder
+          onClose={() => setShowAddMedicineModal(false)}
+          orderId={order.id}
+          providerName={order.providerName}
+          existingOrders={rows.map((row) => row.medicineName)}
+        />
+      )}
       {showValidation && (
         <ConfirmationDialog
           action={() => {

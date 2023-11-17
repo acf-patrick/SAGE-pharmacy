@@ -19,6 +19,29 @@ export class OrderService {
     private prisma: PrismaService,
   ) {}
 
+  async createMedicineOrder(
+    orderId: string,
+    medicineFromProviderId: string,
+    quantity: number,
+  ) {
+    const record = await this.prisma.orderMedicine.create({
+      data: {
+        quantity,
+        medicineFromProviderId,
+        orderId,
+      },
+      include: {
+        medicine: true,
+        Order: true,
+      },
+    });
+
+    return {
+      medicineName: record.medicine.name,
+      providerName: record.Order.providerName,
+    };
+  }
+
   deleteOrderMedicine(orderId: string, medicineName: string) {
     return this.prisma.orderMedicine.deleteMany({
       where: {
