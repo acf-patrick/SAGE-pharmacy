@@ -1,10 +1,15 @@
 import { lighten } from "polished";
 import { styled } from "styled-components";
 import { Order } from "../types";
-import { useLoaderData } from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
 import { api } from "../../../api";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import React, { useEffect, useState } from "react";
+import { useNotification } from "../../../hooks";
+import {
+  AddMedicineToPurchaseOrder,
+  ConfirmationDialog,
+} from "../../../components";
 
 export async function loader({ params }) {
   const res = await api.get(`/order/${params.id}`);
@@ -16,6 +21,10 @@ const StyledContainer = styled.div`
   flex-direction: column;
   gap: 1rem;
   padding: 0 2rem;
+
+  input {
+    width: 64px;
+  }
 
   header {
     display: flex;
@@ -132,7 +141,10 @@ const StyledContainer = styled.div`
     padding-right: 2rem;
 
     p {
-      text-align: end;
+      max-width: 280px;
+      margin-left: auto;
+      display: flex;
+      justify-content: space-between;
     }
 
     span {
@@ -146,12 +158,15 @@ const StyledContainer = styled.div`
 
 export default function EditOrder() {
   const order = useLoaderData() as Order;
-  const onValidate = () => {};
-
+  const navigate = useNavigate();
+  const [showAddMedicineModal, setShowAddMedicineModal] = useState(false);
+  const [showValidation, setShowValidation] = useState(false);
+  const { pushNotification } = useNotification();
   const [rows, setRows] = useState<
     {
       medicineName: string;
       quantity: number;
+      maxQuantity: number;
       priceWithTax: number;
       priceWithoutTax: number;
     }[]
@@ -159,94 +174,178 @@ export default function EditOrder() {
 
   useEffect(() => {
     setRows(
-      order.orderMedicines.map((medicine) => ({
-        medicineName: medicine.name,
-        priceWithoutTax: medicine.priceWithoutTax,
-        priceWithTax: medicine.priceWithTax,
-        quantity: medicine.quantity,
-      }))
+      order.orderMedicines
+        .sort((a, b) => (a.name < b.name ? -1 : 1))
+        .map((medicine) => ({
+          medicineName: medicine.name,
+          priceWithoutTax: medicine.priceWithoutTax,
+          priceWithTax: medicine.priceWithTax,
+          quantity: medicine.quantityToOrder,
+          maxQuantity: medicine.quantity,
+        }))
     );
   }, [order]);
 
+  const onValidate = () => {
+    if (rows.length > 0) {
+      api
+        .patch(`/order/${order.id}/medicine`, {
+          datas: rows.map((row) => ({
+            name: row.medicineName,
+            quantity: row.quantity,
+          })),
+        })
+        .then(() => {
+          navigate("/order");
+          pushNotification(
+            `Bon de commande pour ${order.providerName} mis à jour`
+          );
+        })
+        .catch((err) => {
+          console.error(err);
+          pushNotification("Une erreur s'est produite");
+        });
+    } else {
+      setShowValidation(true);
+    }
+  };
+
+  const removeMedicineOrder = (medicineName: string) => {
+    api
+      .post(`/order/${order.id}`, { medicineName })
+      .then(() => {
+        pushNotification(`${medicineName} supprimé du bon de commande`);
+        setRows((rows) =>
+          rows.filter((row) => row.medicineName != medicineName)
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+        pushNotification("Une erreur s'est produite");
+      });
+  };
+
   return (
-    <StyledContainer>
-      <header>
-        <h1>🍃 {order.providerName}</h1>
-        <div className="buttons">
-          <button>Ajouter</button>
-          <button onClick={onValidate}>Valider</button>
+    <>
+      <StyledContainer>
+        <header>
+          <h1>🍃 {order.providerName}</h1>
+          <div className="buttons">
+            <button onClick={() => setShowAddMedicineModal(true)}>
+              Ajouter
+            </button>
+            <button onClick={onValidate}>Valider</button>
+          </div>
+        </header>
+        <div className="table-container">
+          <div className="table">
+            <div className="heading">Nom</div>
+            <div className="heading">Quantité</div>
+            <div className="heading">Prix HT</div>
+            <div className="heading">Prix TTC</div>
+            <div className="blank"></div>
+            {rows.map((row, i) => (
+              <React.Fragment key={i}>
+                <div className={i % 2 ? "odd" : "even"}>
+                  <span>{row.medicineName}</span>
+                </div>
+                <div className={i % 2 ? "odd" : "even"}>
+                  <input
+                    type="number"
+                    min={1}
+                    max={row.maxQuantity}
+                    value={row.quantity}
+                    onChange={(e) => {
+                      const value = parseInt(e.currentTarget.value);
+                      setRows((rows) => {
+                        const row = rows[i];
+                        row.quantity = value;
+                        return [...rows];
+                      });
+                    }}
+                  />
+                </div>
+                <div className={i % 2 ? "odd" : "even"}>
+                  <span>{row.quantity * row.priceWithTax}</span>
+                </div>
+                <div className={i % 2 ? "odd" : "even"}>
+                  <span>{row.quantity * row.priceWithoutTax}</span>
+                </div>
+                <div className={i % 2 ? "odd" : "even"}>
+                  <button onClick={() => removeMedicineOrder(row.medicineName)}>
+                    <RiDeleteBin5Line />
+                  </button>
+                </div>
+              </React.Fragment>
+            ))}
+          </div>
         </div>
-      </header>
-      <div className="table-container">
-        <div className="table">
-          <div className="heading">Nom</div>
-          <div className="heading">Quantité</div>
-          <div className="heading">Prix HT</div>
-          <div className="heading">Prix TTC</div>
-          <div className="blank"></div>
-          {rows.map((row, i) => (
-            <React.Fragment key={i}>
-              <div className={i % 2 ? "odd" : "even"}>
-                <span>{row.medicineName}</span>
-              </div>
-              <div className={i % 2 ? "odd" : "even"}>
-                <input
-                  type="number"
-                  min={1}
-                  value={row.quantity}
-                  onChange={(e) => {
-                    const value = parseInt(e.currentTarget.value);
-                    setRows((rows) => {
-                      const row = rows[i];
-                      row.quantity = value;
-                      return [...rows];
-                    });
-                  }}
-                />
-              </div>
-              <div className={i % 2 ? "odd" : "even"}>
-                <span>{row.quantity * row.priceWithTax}</span>
-              </div>
-              <div className={i % 2 ? "odd" : "even"}>
-                <span>{row.quantity * row.priceWithoutTax}</span>
-              </div>
-              <div className={i % 2 ? "odd" : "even"}>
-                <button>
-                  <RiDeleteBin5Line />
-                </button>
-              </div>
-            </React.Fragment>
-          ))}
+        <div className="prices">
+          <p>
+            <span>Prix Total HT</span>{" "}
+            <span>
+              {(function () {
+                let total = 0;
+                rows.forEach((row) => {
+                  total += row.priceWithTax * row.quantity;
+                });
+                return total;
+              })()}
+              Ar.
+            </span>
+          </p>
+          <p>
+            <span>Prix Total TTC</span>{" "}
+            <span>
+              {(function () {
+                let total = 0;
+                rows.forEach((row) => {
+                  total += row.priceWithoutTax * row.quantity;
+                });
+                return total;
+              })()}
+              Ar.
+            </span>
+          </p>
+          <p>
+            <span>Achat minimum</span>
+            <span>{order.minPurchase}Ar.</span>
+          </p>
         </div>
-      </div>
-      <div className="prices">
-        <p>
-          <span>Prix Total HT</span>{" "}
-          <span>
-            {(function () {
-              let total = 0;
-              rows.forEach((row) => {
-                total += row.priceWithTax * row.quantity;
-              });
-              return total;
-            })()}
-            Ar.
-          </span>
-        </p>
-        <p>
-          <span>Prix Total TTC</span>{" "}
-          <span>
-            {(function () {
-              let total = 0;
-              rows.forEach((row) => {
-                total += row.priceWithoutTax * row.quantity;
-              });
-              return total;
-            })()}
-            Ar.
-          </span>
-        </p>
-      </div>
-    </StyledContainer>
+      </StyledContainer>
+      {showAddMedicineModal && (
+        <AddMedicineToPurchaseOrder
+          onClose={() => setShowAddMedicineModal(false)}
+          orderId={order.id}
+          providerName={order.providerName}
+          existingOrders={rows.map((row) => row.medicineName)}
+        />
+      )}
+      {showValidation && (
+        <ConfirmationDialog
+          action={() => {
+            api.delete(`/order/${order.id}`).finally(() => {
+              navigate("/order");
+              pushNotification(
+                `Bon de commande pour ${order.providerName} mis à jour`
+              );
+            });
+          }}
+          cancel={{
+            buttonColor: "red",
+            text: "Annuler",
+          }}
+          confirm={{
+            buttonColor: "green",
+            text: "Valider",
+          }}
+          message={`Ce bon de commande ne contient aucun médicament. Ne rien commander à ${order.providerName} ?`}
+          onClose={() => {
+            setShowValidation(false);
+          }}
+          title="Bon de commande vide"
+        />
+      )}
+    </>
   );
 }

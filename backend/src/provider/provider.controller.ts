@@ -7,6 +7,7 @@ import {
   NotFoundException,
   Controller,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ProviderService } from './provider.service';
 import { StockService } from '../stock/stock.service';
@@ -69,6 +70,13 @@ export class ProviderController {
   })
   getMatchingMedicines(@Body() { names }: MatchMedicinesDTO) {
     return this.providerService.getMatchingMedicinesForList(names);
+  }
+
+  @Get('medicines')
+  @ApiOperation({ summary: "Returns list of provider's medicines" })
+  async getMedicines(@Query('providerName') providerName: string) {
+    const { medicines } = await this.providerService.getMedicines(providerName);
+    return medicines;
   }
 
   @Get(':id')
