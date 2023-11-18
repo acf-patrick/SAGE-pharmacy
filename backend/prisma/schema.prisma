@@ -62,14 +62,14 @@ model MedicineFromProvider {
 
 model Provider {
   id                  String                 @id @default(uuid())
-  accountName         String
+  accountNumber       String
   abridgment          String
   commonAccountNumber Int
   address             String
   complementAdress    String?
   postalCode          Int?
-  City                String
-  Country             String
+  city                String
+  country             String
   telephone           String[]
   telecopie           String?
   email               String?

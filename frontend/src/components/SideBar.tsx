@@ -5,8 +5,9 @@ import paths from "../paths";
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import { Provider } from "../models";
-import { IoIosArrowDropdown } from "react-icons/io";
+import { IoIosArrowDropdown, IoMdArrowDropright } from "react-icons/io";
 import { IoAddCircleOutline } from "react-icons/io5";
+import React from "react";
 
 const StyledSideBar = styled.div`
   max-width: 280px;
@@ -103,21 +104,25 @@ const StyledSideBar = styled.div`
         transform: scaleY(1);
         transition: transform 0.25s ease;
         display: flex;
-        gap: 0.5rem;
 
         &.folded {
           transform: scaleY(0);
         }
 
         li {
-          padding: 5px;
+          padding: 10px;
           transition: background-color 0.1s;
           cursor: pointer;
+          font-size: 15px;
+          padding-left: 25%;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
 
           a {
             width: 100%;
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
           }
 
           &:hover {
@@ -128,6 +133,8 @@ const StyledSideBar = styled.div`
           &:last-of-type {
             display: flex;
             align-items: center;
+            text-align: start;
+            padding-left: 0;
 
             svg {
               font-size: 20px;
@@ -154,7 +161,7 @@ export default function SideBar() {
       .catch((err) => {
         console.error("Error in SideBar.tsx line 88: " + err);
       });
-  }, []);
+  }, [location]);
 
   return (
     <StyledSideBar>
@@ -164,7 +171,7 @@ export default function SideBar() {
       <nav>
         <ul>
           {paths.map((path, i) => (
-            <>
+            <React.Fragment key={i}>
               {path.to != "/provider" ? (
                 <li key={i}>
                   <Link
@@ -201,6 +208,7 @@ export default function SideBar() {
                   <ul className={unfoldedProviderList ? "" : "folded"}>
                     {providers.map((provider, i) => (
                       <li key={i}>
+                        <IoMdArrowDropright />
                         <Link
                           key={provider.name}
                           to={path.to + "/" + provider.id}
@@ -218,7 +226,7 @@ export default function SideBar() {
                   </ul>
                 </li>
               )}
-            </>
+            </React.Fragment>
           ))}
         </ul>
       </nav>

@@ -1,12 +1,13 @@
 import { darken, lighten } from "polished";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { api } from "../../../api";
 import { ConfirmationDialog } from "../../../components";
 import { Provider } from "../../../models";
 import { appear } from "../../../styles/animations";
 import { theme } from "../../../styles/theme";
+import { TbBasketCancel } from "react-icons/tb";
 
 const StyledTitle = styled.div`
   display: flex;
@@ -17,27 +18,46 @@ const StyledTitle = styled.div`
     font-size: 2rem;
   }
 
-  .appear {
-    transform: translateY(0);
-    opacity: 1;
-    cursor: pointer;
-  }
+  .buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 
-  button {
-    height: 3rem;
-    padding: 5px 20px;
-    border: none;
-    background-color: ${({ theme }) => theme.colors.tertiary};
-    color: white;
-    font-weight: 600;
-    border-radius: 5px;
-    transform: translateY(-1rem);
-    opacity: 0;
-    transition: all 250ms;
-    cursor: default;
+    .appear {
+      transform: translateY(0);
+      opacity: 1;
+      cursor: pointer;
+    }
 
-    &:hover {
-      background-color: ${({ theme }) => lighten(0.1, theme.colors.tertiary)};
+    button {
+      height: 3rem;
+      padding: 5px 20px;
+      border: none;
+      opacity: 0;
+      color: white;
+      font-weight: 600;
+      border-radius: 5px;
+      transition: all 250ms;
+      cursor: pointer;
+
+      &:first-of-type {
+        background-color: ${({ theme }) => theme.colors.tertiary};
+
+        &:hover {
+          background-color: ${({ theme }) =>
+            lighten(0.1, theme.colors.tertiary)};
+        }
+      }
+
+      &:last-of-type {
+        opacity: 1;
+        background-color: ${({ theme }) => theme.colors.buttons.delete};
+
+        &:hover {
+          background-color: ${({ theme }) =>
+            lighten(0.1, theme.colors.buttons.delete)};
+        }
+      }
     }
   }
 `;
@@ -227,13 +247,31 @@ const StyledList = styled.div`
   }
 `;
 
+const StyledH2 = styled.h2`
+  font-size: 4rem;
+  font-weight: normal;
+  margin-top: 15rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  animation: 500ms both ${appear};
+
+  svg {
+    font-size: 6rem;
+  }
+`;
+
 export default function ProviderMedicines() {
   const { id: providerId } = useParams();
   const [provider, setProvider] = useState<Provider | null>(null);
   const [medicineNames, setMedicineNames] = useState<string[]>([]);
   const [correspondances, setCorrespondances] = useState<string[]>([]);
   const [changedCorrespondances, setChangedCorrespondances] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showChangeConfirmation, setShowChangeConfirmation] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     api
@@ -311,17 +349,29 @@ export default function ProviderMedicines() {
     setChangedCorrespondances(isThereCorrespondancesChanges);
   };
 
-  return provider ? (
+  const deleteProvider = () => {
+    api
+      .delete("/provider/" + providerId)
+      .then(() => {
+        navigate("/stock");
+      })
+      .catch((err) => console.log(err));
+  };
+
+  return provider && provider.medicines.length > 0 ? (
     <>
       <StyledTitle>
         <h1>{provider.name}</h1>
-        <button
-          disabled={!changedCorrespondances}
-          className={changedCorrespondances ? "appear" : ""}
-          onClick={() => setShowConfirmation(true)}
-        >
-          Enregistrer Modif.
-        </button>
+        <div className="buttons">
+          <button
+            disabled={!changedCorrespondances}
+            className={changedCorrespondances ? "appear" : ""}
+            onClick={() => setShowChangeConfirmation(true)}
+          >
+            Enregistrer Modif.
+          </button>
+          <button>Supprimer</button>
+        </div>
       </StyledTitle>
       <StyledList>
         <table>
@@ -370,7 +420,7 @@ export default function ProviderMedicines() {
           </tbody>
         </table>
       </StyledList>
-      {showConfirmation ? (
+      {showChangeConfirmation ? (
         <ConfirmationDialog
           title="Enregistrer Modification"
           action={updateCorrespondances}
@@ -380,9 +430,27 @@ export default function ProviderMedicines() {
             text: "Enregistrer",
           }}
           message="Voulez-vous enregistrer les changements?"
-          onClose={() => setShowConfirmation(false)}
+          onClose={() => setShowChangeConfirmation(false)}
+        />
+      ) : null}
+      {showDeleteConfirmation ? (
+        <ConfirmationDialog
+          title="Supprimer le fournisseur"
+          action={deleteProvider}
+          cancel={{ buttonColor: theme.colors.primary, text: "Annuler" }}
+          confirm={{
+            buttonColor: theme.colors.cancelButton,
+            text: "Supprimer",
+          }}
+          message="Voulez-vous supprimer le fournisseur?"
+          onClose={() => setShowDeleteConfirmation(false)}
         />
       ) : null}
     </>
-  ) : null;
+  ) : (
+    <StyledH2>
+      <span>Liste de Médicament vide</span>
+      <TbBasketCancel />
+    </StyledH2>
+  );
 }

@@ -21,6 +21,7 @@ import {
 import { MatchMedicinesDTO } from './dto/MatchMedicines.dto';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { UpdateMatchesDto } from './dto/UpdateMatches.dto';
+import { CreateProviderDto } from './dto/CreateProviderDto';
 
 @ApiTags('🏭 Provider')
 @Controller('api/provider')
@@ -88,5 +89,13 @@ export class ProviderController {
     }
 
     return provider;
+  }
+
+  @Post()
+  @ApiOperation({
+    summary: 'Create new provider without medicines and without order',
+  })
+  async createProvider(@Body() createProviderDto: CreateProviderDto) {
+    return await this.providerService.createProvider(createProviderDto);
   }
 }

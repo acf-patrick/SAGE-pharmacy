@@ -1,8 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Body,
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { MedicineFromProvider } from '@prisma/client';
+import { MedicineFromProvider, Provider } from '@prisma/client';
 import { StockService } from 'src/stock/stock.service';
 import { cpSync } from 'fs';
+import { CreateProviderDto } from './dto/CreateProviderDto';
 
 // Utility type used for stock medicine and provider's medicine matching
 type MedicineMapRecord = {
@@ -228,5 +234,18 @@ export class ProviderService {
     }
 
     return ret;
+  }
+
+  // create new medicine without adding medicines nor order
+  async createProvider(createProviderDto: CreateProviderDto) {
+    const provider = { ...createProviderDto };
+    try {
+      const res = await this.prisma.provider.create({
+        data: provider,
+      });
+      return res;
+    } catch (e) {
+      throw new BadRequestException('Invalid data received as body data');
+    }
   }
 }
