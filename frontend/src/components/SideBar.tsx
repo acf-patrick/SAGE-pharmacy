@@ -2,6 +2,11 @@ import { lighten } from "polished";
 import { Link, useLocation } from "react-router-dom";
 import { styled } from "styled-components";
 import paths from "../paths";
+import { useEffect, useState } from "react";
+import { api } from "../api";
+import { Provider } from "../models";
+import { IoIosArrowDropdown } from "react-icons/io";
+import { IoAddCircleOutline } from "react-icons/io5";
 
 const StyledSideBar = styled.div`
   max-width: 280px;
@@ -61,14 +66,74 @@ const StyledSideBar = styled.div`
           display: flex;
           align-items: center;
           gap: 1rem;
+          position: relative;
+
+          svg {
+            &:nth-of-type(2) {
+              position: absolute;
+              right: 1rem;
+              transform: rotate(0);
+              transition: transform 250ms;
+
+              &.unfolded {
+                transform: rotate(180deg);
+              }
+            }
+          }
         }
       }
     }
 
     li {
+      overflow: hidden;
+      max-height: 1000px;
+      transition: max-height 0.25s ease;
+
+      &.folded {
+        max-height: 3rem;
+      }
+
       &:hover {
         background-color: ${({ theme }) =>
           lighten(0.1, theme.colors.secondary)};
+      }
+
+      ul {
+        transform-origin: top;
+        transform: scaleY(1);
+        transition: transform 0.25s ease;
+        display: flex;
+        gap: 0.5rem;
+
+        &.folded {
+          transform: scaleY(0);
+        }
+
+        li {
+          padding: 5px;
+          transition: background-color 0.1s;
+          cursor: pointer;
+
+          a {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+          }
+
+          &:hover {
+            background-color: ${({ theme }) =>
+              lighten(0.15, theme.colors.secondary)};
+          }
+
+          &:last-of-type {
+            display: flex;
+            align-items: center;
+
+            svg {
+              font-size: 20px;
+            }
+          }
+        }
       }
     }
   }
@@ -76,6 +141,20 @@ const StyledSideBar = styled.div`
 
 export default function SideBar() {
   const location = useLocation();
+  const [providers, setProviders] = useState<Provider[]>([]);
+  const [unfoldedProviderList, setUnfoldedProviderList] = useState(false);
+
+  useEffect(() => {
+    api
+      .get("/provider")
+      .then((res) => {
+        const data: Provider[] = res.data;
+        setProviders(data);
+      })
+      .catch((err) => {
+        console.error("Error in SideBar.tsx line 88: " + err);
+      });
+  }, []);
 
   return (
     <StyledSideBar>
@@ -85,17 +164,61 @@ export default function SideBar() {
       <nav>
         <ul>
           {paths.map((path, i) => (
-            <li key={i}>
-              <Link
-                to={path.to}
-                className={location.pathname.includes(path.to) ? "active" : ""}
-              >
-                <span>
-                  {path.icon}
-                  {path.name}
-                </span>
-              </Link>
-            </li>
+            <>
+              {path.to != "/provider" ? (
+                <li key={i}>
+                  <Link
+                    to={path.to}
+                    className={
+                      location.pathname.includes(path.to) ? "active" : ""
+                    }
+                  >
+                    <span>
+                      {path.icon}
+                      {path.name}
+                    </span>
+                  </Link>
+                </li>
+              ) : (
+                <li key={i} className={unfoldedProviderList ? "" : "folded"}>
+                  <a
+                    onClick={() =>
+                      setUnfoldedProviderList(
+                        (unfoldedProviderList) => !unfoldedProviderList
+                      )
+                    }
+                  >
+                    <span>
+                      {path.icon}
+                      {path.name}
+                      {providers.length > 0 ? (
+                        <IoIosArrowDropdown
+                          className={unfoldedProviderList ? "unfolded" : ""}
+                        />
+                      ) : null}
+                    </span>
+                  </a>
+                  <ul className={unfoldedProviderList ? "" : "folded"}>
+                    {providers.map((provider, i) => (
+                      <li key={i}>
+                        <Link
+                          key={provider.name}
+                          to={path.to + "/" + provider.id}
+                        >
+                          {provider.name}
+                        </Link>
+                      </li>
+                    ))}
+                    <li>
+                      <Link to="/provider/create">
+                        <span>Ajouter Fournisseur</span>
+                      </Link>
+                      <IoAddCircleOutline />
+                    </li>
+                  </ul>
+                </li>
+              )}
+            </>
           ))}
         </ul>
       </nav>

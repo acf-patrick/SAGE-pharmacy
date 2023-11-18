@@ -250,7 +250,7 @@ export default function ProviderMedicines() {
         setProvider(res.data);
       })
       .catch((err) => console.error(err));
-  }, []);
+  }, [location.pathname]);
 
   const dateToLocaleFormat = (date: string) => {
     let s = new Date(date).toLocaleDateString("fr-FR", {
