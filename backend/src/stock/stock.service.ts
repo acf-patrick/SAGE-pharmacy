@@ -18,10 +18,6 @@ type MedicineQuery =
       sellingPrice: number;
     }
   | {
-      type: 'costPrice';
-      costPrice: number;
-    }
-  | {
       type: 'quantity';
       quantity: number;
     }
@@ -42,8 +38,20 @@ type MedicineQuery =
       max: number;
     }
   | {
-      type: 'expirationDate';
-      expirationDate: Date;
+      type: 'alert';
+      alert: number;
+    }
+  | {
+      type: 'family';
+      family: string;
+    }
+  | {
+      type: 'nomenclature';
+      nomenclature: string;
+    }
+  | {
+      type: 'real';
+      real: number;
     };
 
 @Injectable()
@@ -73,13 +81,6 @@ export class StockService {
 
     if (query) {
       switch (query.type) {
-        case 'costPrice':
-          count = await this.prisma.medicine.count({
-            where: {
-              costPrice: query.costPrice,
-            },
-          });
-          break;
         case 'dci':
           count = await this.prisma.medicine.count({
             where: {
@@ -135,6 +136,34 @@ export class StockService {
           count = await this.prisma.medicine.count({
             where: {
               sellingPrice: query.sellingPrice,
+            },
+          });
+          break;
+        case 'alert':
+          count = await this.prisma.medicine.count({
+            where: {
+              alert: query.alert,
+            },
+          });
+          break;
+        case 'family':
+          count = await this.prisma.medicine.count({
+            where: {
+              family: query.family,
+            },
+          });
+          break;
+        case 'nomenclature':
+          count = await this.prisma.medicine.count({
+            where: {
+              nomenclature: query.nomenclature,
+            },
+          });
+          break;
+        case 'real':
+          count = await this.prisma.medicine.count({
+            where: {
+              real: query.real,
             },
           });
           break;
@@ -154,15 +183,6 @@ export class StockService {
 
     if (query) {
       switch (query.type) {
-        case 'costPrice':
-          medicines = await this.prisma.medicine.findMany({
-            skip: index * this.pageLength,
-            take: this.pageLength,
-            where: {
-              costPrice: query.costPrice,
-            },
-          });
-          break;
         case 'dci':
           medicines = await this.prisma.medicine.findMany({
             skip: index * this.pageLength,
@@ -232,6 +252,42 @@ export class StockService {
             take: this.pageLength,
             where: {
               sellingPrice: query.sellingPrice,
+            },
+          });
+          break;
+        case 'alert':
+          medicines = await this.prisma.medicine.findMany({
+            skip: index * this.pageLength,
+            take: this.pageLength,
+            where: {
+              alert: query.alert,
+            },
+          });
+          break;
+        case 'family':
+          medicines = await this.prisma.medicine.findMany({
+            skip: index * this.pageLength,
+            take: this.pageLength,
+            where: {
+              family: query.family,
+            },
+          });
+          break;
+        case 'nomenclature':
+          medicines = await this.prisma.medicine.findMany({
+            skip: index * this.pageLength,
+            take: this.pageLength,
+            where: {
+              nomenclature: query.nomenclature,
+            },
+          });
+          break;
+        case 'real':
+          medicines = await this.prisma.medicine.findMany({
+            skip: index * this.pageLength,
+            take: this.pageLength,
+            where: {
+              real: query.real,
             },
           });
           break;

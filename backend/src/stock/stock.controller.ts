@@ -74,13 +74,16 @@ export class StockController {
     @Query('name') name?: string,
     @Query('sellingPrice', new ParseIntPipe({ optional: true }))
     sellingPrice?: number,
-    @Query('costPrice', new ParseIntPipe({ optional: true }))
-    costPrice?: number,
     @Query('quantity', new ParseIntPipe({ optional: true })) quantity?: number,
     @Query('min', new ParseIntPipe({ optional: true })) min?: number,
     @Query('max', new ParseIntPipe({ optional: true })) max?: number,
     @Query('location') location?: string,
     @Query('dci') dci?: string,
+    @Query('alerte', new ParseIntPipe({ optional: true })) alert?: number,
+    @Query('family') family?: string,
+    @Query('family') type?: string,
+    @Query('family') nomenclature?: string,
+    @Query('real', new ParseIntPipe({ optional: true })) real?: number,
   ) {
     let query;
 
@@ -113,15 +116,30 @@ export class StockController {
           type: 'quantity',
           quantity,
         };
-      } else if (costPrice >= 0) {
-        query = {
-          type: 'costPrice',
-          costPrice,
-        };
       } else if (sellingPrice >= 0) {
         query = {
           type: 'sellingPrice',
           sellingPrice,
+        };
+      } else if (alert >= 0) {
+        query = {
+          type: 'alert',
+          alert,
+        };
+      } else if (family) {
+        query = {
+          type: 'family',
+          family,
+        };
+      } else if (nomenclature) {
+        query = {
+          type: 'nomenclature',
+          nomenclature,
+        };
+      } else if (real >= 0) {
+        query = {
+          type: 'real',
+          real,
         };
       } else {
         query = undefined;

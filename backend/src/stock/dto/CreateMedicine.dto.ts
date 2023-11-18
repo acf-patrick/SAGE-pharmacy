@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDateString, IsNumber, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateMedicineDto {
   @IsString()
@@ -14,9 +20,19 @@ export class CreateMedicineDto {
   @ApiProperty()
   dci: string;
 
-  @IsNumber()
+  @IsString()
+  @IsOptional()
   @ApiProperty()
-  costPrice: number;
+  nomenclature?: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  type?: string;
+
+  @IsString()
+  @ApiProperty()
+  family: string;
 
   @IsNumber()
   @ApiProperty()
@@ -28,7 +44,15 @@ export class CreateMedicineDto {
 
   @IsNumber()
   @ApiProperty()
+  real: number;
+
+  @IsNumber()
+  @ApiProperty()
   min: number;
+
+  @IsNumber()
+  @ApiProperty()
+  alert: number;
 
   @IsNumber()
   @ApiProperty()
@@ -41,4 +65,8 @@ export class CreateMedicineDto {
   @IsDateString()
   @ApiProperty()
   expirationDate: Date;
+
+  @IsString()
+  @ApiProperty()
+  reference: string;
 }
