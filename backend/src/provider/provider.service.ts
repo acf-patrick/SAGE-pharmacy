@@ -248,4 +248,18 @@ export class ProviderService {
       throw new BadRequestException('Invalid data received as body data');
     }
   }
+
+  // delete provider
+  async deleteProvider(providerId: string) {
+    try {
+      const res = await this.prisma.provider.delete({
+        where: {
+          id: providerId,
+        },
+      });
+      return res;
+    } catch (e) {
+      throw new NotFoundException(`Provider with ${providerId} not found.`);
+    }
+  }
 }

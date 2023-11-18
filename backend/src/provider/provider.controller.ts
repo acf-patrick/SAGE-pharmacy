@@ -8,6 +8,7 @@ import {
   Controller,
   UseGuards,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { ProviderService } from './provider.service';
 import { StockService } from '../stock/stock.service';
@@ -97,5 +98,13 @@ export class ProviderController {
   })
   async createProvider(@Body() createProviderDto: CreateProviderDto) {
     return await this.providerService.createProvider(createProviderDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Delete a provider',
+  })
+  async deleteProvider(@Param('id') id: string) {
+    return await this.providerService.deleteProvider(id);
   }
 }

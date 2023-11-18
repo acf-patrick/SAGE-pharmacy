@@ -1,6 +1,6 @@
 import { darken, lighten } from "polished";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { api } from "../../../api";
 import { ConfirmationDialog } from "../../../components";
@@ -22,6 +22,7 @@ const StyledTitle = styled.div`
     display: flex;
     align-items: center;
     gap: 1rem;
+    margin-right: 2rem;
 
     .appear {
       transform: translateY(0);
@@ -256,6 +257,10 @@ const StyledH2 = styled.h2`
   align-items: center;
   gap: 3rem;
   animation: 500ms both ${appear};
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 3rem;
 
   svg {
     font-size: 6rem;
@@ -272,6 +277,7 @@ export default function ProviderMedicines() {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     api
@@ -320,6 +326,10 @@ export default function ProviderMedicines() {
     }
   }, [provider]);
 
+  useEffect(() => {
+    setChangedCorrespondances(false);
+  }, [location]);
+
   const updateCorrespondances = () => {
     const correspondancesToChange: {
       id: string;
@@ -342,7 +352,7 @@ export default function ProviderMedicines() {
         matches: correspondancesToChange,
       })
       .catch((err) => console.error(err))
-      .finally(() => location.reload());
+      .finally(() => navigate(0));
   };
 
   const handleChanges = () => {
@@ -358,7 +368,9 @@ export default function ProviderMedicines() {
       .catch((err) => console.log(err));
   };
 
-  return provider && provider.medicines.length > 0 ? (
+  if (!provider) return null;
+
+  return (
     <>
       <StyledTitle>
         <h1>{provider.name}</h1>
@@ -370,56 +382,65 @@ export default function ProviderMedicines() {
           >
             Enregistrer Modif.
           </button>
-          <button>Supprimer</button>
+          <button onClick={() => setShowDeleteConfirmation(true)}>
+            Supprimer
+          </button>
         </div>
       </StyledTitle>
-      <StyledList>
-        <table>
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Prix HT</th>
-              <th>Prix TTC</th>
-              <th>Quantité Disp.</th>
-              <th>DCI</th>
-              <th>Expiration</th>
-              <th>Correspondance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {provider.medicines.map((medicine) => (
-              <tr key={medicine.id}>
-                <td>{medicine.name}</td>
-                <td>{medicine.priceWithoutTax}</td>
-                <td>{medicine.priceWithTax}</td>
-                <td>{medicine.quantity}</td>
-                <td>{medicine.dci}</td>
-                <td>{dateToLocaleFormat(medicine.expirationDate)}</td>
-                <td>
-                  <select
-                    name="correspondance"
-                    id="correspondance"
-                    defaultValue={
-                      medicine.matchingMedicine
-                        ? medicine.matchingMedicine.name
-                        : "none"
-                    }
-                    data-medicine-id={medicine.id}
-                    onChange={handleChanges}
-                  >
-                    <option value="none">Aucun</option>
-                    {medicineNames.map((name) => (
-                      <option key={name} value={name}>
-                        {name}
-                      </option>
-                    ))}
-                  </select>
-                </td>
+      {provider && provider.medicines.length > 0 ? (
+        <StyledList>
+          <table>
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Prix HT</th>
+                <th>Prix TTC</th>
+                <th>Quantité Disp.</th>
+                <th>DCI</th>
+                <th>Expiration</th>
+                <th>Correspondance</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </StyledList>
+            </thead>
+            <tbody>
+              {provider.medicines.map((medicine) => (
+                <tr key={medicine.id}>
+                  <td>{medicine.name}</td>
+                  <td>{medicine.priceWithoutTax}</td>
+                  <td>{medicine.priceWithTax}</td>
+                  <td>{medicine.quantity}</td>
+                  <td>{medicine.dci}</td>
+                  <td>{dateToLocaleFormat(medicine.expirationDate)}</td>
+                  <td>
+                    <select
+                      name="correspondance"
+                      id="correspondance"
+                      defaultValue={
+                        medicine.matchingMedicine
+                          ? medicine.matchingMedicine.name
+                          : "none"
+                      }
+                      data-medicine-id={medicine.id}
+                      onChange={handleChanges}
+                    >
+                      <option value="none">Aucun</option>
+                      {medicineNames.map((name) => (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </StyledList>
+      ) : (
+        <StyledH2>
+          <span>Liste de Médicament vide</span>
+          <TbBasketCancel />
+        </StyledH2>
+      )}
       {showChangeConfirmation ? (
         <ConfirmationDialog
           title="Enregistrer Modification"
@@ -437,7 +458,7 @@ export default function ProviderMedicines() {
         <ConfirmationDialog
           title="Supprimer le fournisseur"
           action={deleteProvider}
-          cancel={{ buttonColor: theme.colors.primary, text: "Annuler" }}
+          cancel={{ buttonColor: theme.colors.tertiary, text: "Annuler" }}
           confirm={{
             buttonColor: theme.colors.cancelButton,
             text: "Supprimer",
@@ -447,10 +468,5 @@ export default function ProviderMedicines() {
         />
       ) : null}
     </>
-  ) : (
-    <StyledH2>
-      <span>Liste de Médicament vide</span>
-      <TbBasketCancel />
-    </StyledH2>
   );
 }
