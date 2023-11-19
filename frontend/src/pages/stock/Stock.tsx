@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { CgFileAdd } from "react-icons/cg";
 import { FiEdit } from "react-icons/fi";
-import { MdSelectAll } from "react-icons/md";
+import { MdOutlineTabUnselected, MdSelectAll } from "react-icons/md";
 import { TbBasketCancel } from "react-icons/tb";
 import { MoonLoader } from "react-spinners";
 import { styled } from "styled-components";
@@ -108,6 +108,12 @@ const StyledStock = styled.div`
   justify-content: space-around;
   position: relative;
 
+  .count {
+    margin: unset;
+    margin-top: -1rem;
+    margin-bottom: 1rem;
+  }
+
   .pending {
     position: absolute;
     top: 25vh;
@@ -139,6 +145,7 @@ export default function Stock() {
   const [searchKeyWord, setSearchKeyWord] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [totalCount, setTotalCount] = useState(-1);
   const [searchField, setSearchField] = useState<
     | "name"
     | "sellingPrice"
@@ -154,6 +161,15 @@ export default function Stock() {
   // Modal for medicine edition will appear when set
   const [updateSelectedRows, setUpdateSelectedRows] = useState(false);
   const { pushNotification } = useNotification();
+
+  useEffect(() => {
+    api
+      .get("/stock/medicine-count")
+      .then((res) => setTotalCount(res.data))
+      .catch((err) =>
+        console.error(`Failed to get total medicine count : ${err}`)
+      );
+  }, []);
 
   useEffect(() => {
     // clear selections
@@ -187,7 +203,7 @@ export default function Stock() {
     else console.error("No row selected!");
   };
 
-  const deletSelectedRows = () => {
+  const deleteSelectedRows = () => {
     setShowConfirmation(false);
     const idsToDelete = selectedRows.map((row) => row.id);
 
@@ -272,15 +288,19 @@ export default function Stock() {
           <div className="buttons">
             <button
               className="select-all-btn"
+              title={
+                selectedRows.length != medicines.length
+                  ? "Tout sélectionner"
+                  : "Tout désélectionner"
+              }
               onClick={() =>
                 toggleAllRows(selectedRows.length != medicines.length)
-              }
-            >
-              <MdSelectAll />
-              <span>
-                {selectedRows.length == medicines.length ? "Desel." : "Sel."}{" "}
-                Tout
-              </span>
+              }>
+              {selectedRows.length == medicines.length ? (
+                <MdOutlineTabUnselected />
+              ) : (
+                <MdSelectAll />
+              )}
             </button>
             <button className="add-btn" onClick={() => setShowAddForm(true)}>
               <CgFileAdd />
@@ -294,8 +314,7 @@ export default function Stock() {
                 </button>
                 <button
                   className="delete-btn"
-                  onClick={() => setShowConfirmation(true)}
-                >
+                  onClick={() => setShowConfirmation(true)}>
                   <AiOutlineDelete />
                   <span>Supprimer</span>
                 </button>
@@ -312,6 +331,11 @@ export default function Stock() {
             </div>
           ) : (
             <>
+              {totalCount >= 0 && (
+                <small className="count">
+                  💊 {totalCount} produits chargés
+                </small>
+              )}
               {medicines.length > 0 ? (
                 <>
                   <Table
@@ -372,7 +396,7 @@ export default function Stock() {
           cancel={{ buttonColor: "grey", text: "Annuler" }}
           confirm={{ buttonColor: "red", text: "Supprimer" }}
           onClose={() => setShowConfirmation(false)}
-          action={deletSelectedRows}
+          action={deleteSelectedRows}
         />
       ) : null}
     </>

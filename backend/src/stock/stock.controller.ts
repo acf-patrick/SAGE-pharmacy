@@ -36,6 +36,12 @@ export class StockController {
     private prisma: PrismaService,
   ) {}
 
+  @Get('medicine-count')
+  @ApiOperation({ summary: 'Returns number of records in stock' })
+  getMedicineCount() {
+    return this.prisma.medicine.count();
+  }
+
   @Get('medicine-names')
   @ApiOperation({ summary: 'Returns all medicine names in stock' })
   async getAllMedicineNames() {

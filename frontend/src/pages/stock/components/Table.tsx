@@ -109,7 +109,7 @@ const StyledTable = styled.div`
         gap: 1rem;
         align-items: center;
         padding-left: 1rem;
-        min-width: 240px;
+        min-width: max-content;
 
         & > div {
           height: 100%;
@@ -231,24 +231,8 @@ export default function Table({
     () => [
       ...medicines.sort((m1: Medicine, m2: Medicine) => {
         if (ascending) {
-          if (!m1[sortBy] && m2[sortBy]) {
-            return 1;
-          }
-
-          if (!m2[sortBy] && m1[sortBy]) {
-            return -1;
-          }
-
           return m1[sortBy] < m2[sortBy] ? -1 : 1;
         } else {
-          if (!m1[sortBy] && m2[sortBy]) {
-            return -1;
-          }
-
-          if (!m2[sortBy] && m1[sortBy]) {
-            return 1;
-          }
-
           return m1[sortBy] > m2[sortBy] ? -1 : 1;
         }
       }),
@@ -258,18 +242,19 @@ export default function Table({
 
   const headersMap = new Map<string, Field>([
     ["Désignation", "name"],
+    ["Référence", "reference"],
+    ["Stock réel", "real"],
+    ["Stock à terme", "quantity"],
+    ["Stock d'alerte", "alert"],
+    ["Min", "min"],
+    ["Max", "max"],
     ["Famille", "family"],
     ["Nomenclature", "nomenclature"],
     ["Prix d'achat", "costPrice"],
     ["Prix de vente", "sellingPrice"],
-    ["Stock réel", "real"],
-    ["Stock à terme", "quantity"],
     ["Emplacement", "location"],
     ["DCI", "dci"],
     ["Taxé", "isTaxed"],
-    ["Stock d'alerte", "alert"],
-    ["Min", "min"],
-    ["Max", "max"],
     ["Expiration", "expirationDate"],
     ["Fabrication", "manufacturationDate"],
   ]);
@@ -293,7 +278,7 @@ export default function Table({
     let classValue = "";
     if (selectedRowIds.findIndex((id) => id === medicine.id) >= 0)
       classValue += " selected";
-    if (medicine.quantity <= medicine.min) classValue += " low";
+    if (medicine.quantity <= medicine.alert) classValue += " low";
 
     var diff = Math.abs(
       new Date(medicine.expirationDate).getTime() - new Date().getTime()
@@ -343,20 +328,21 @@ export default function Table({
                   <label htmlFor={medicine.name}>{medicine.name}</label>
                 </div>
               </td>
+              <td>{medicine.reference}</td>
+              <td>{medicine.real}</td>
+              <td>{medicine.quantity}</td>
+              <td>{medicine.alert}</td>
+              <td>{medicine.min}</td>
+              <td>{medicine.max}</td>
               <td>{medicine.family}</td>
               <td>{medicine.nomenclature}</td>
               <td>{medicine.costPrice}</td>
               <td>{medicine.sellingPrice}</td>
-              <td>{medicine.real}</td>
-              <td>{medicine.quantity}</td>
               <td>{medicine.location}</td>
               <td>{medicine.dci}</td>
               <td className="editable boolean">
                 {medicine.isTaxed ? "Oui" : "Non"}
               </td>
-              <td>{medicine.alert}</td>
-              <td>{medicine.min}</td>
-              <td>{medicine.max}</td>
               <td>{dateToLocaleFormat(medicine.expirationDate)}</td>
               <td>{dateToLocaleFormat(medicine.manufacturationDate)}</td>
             </tr>

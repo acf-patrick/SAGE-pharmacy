@@ -60,7 +60,7 @@ type MedicineQuery =
 
 @Injectable()
 export class StockService {
-  private pageLength = 20;
+  private pageLength = 100;
 
   constructor(private prisma: PrismaService) {}
 
