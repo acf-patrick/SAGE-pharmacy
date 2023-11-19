@@ -56,6 +56,10 @@ type MedicineQuery =
   | {
       type: 'real';
       real: number;
+    }
+  | {
+      type: 'reference';
+      reference: string;
     };
 
 @Injectable()
@@ -119,6 +123,16 @@ export class StockService {
             },
           });
           break;
+        case 'reference':
+          count = await this.prisma.medicine.count({
+            where: {
+              reference: {
+                contains: query.reference,
+                mode: 'insensitive',
+              },
+            },
+          });
+          break;
         case 'name':
           count = await this.prisma.medicine.count({
             where: {
@@ -160,14 +174,20 @@ export class StockService {
         case 'family':
           count = await this.prisma.medicine.count({
             where: {
-              family: query.family,
+              family: {
+                contains: query.family,
+                mode: 'insensitive',
+              },
             },
           });
           break;
         case 'nomenclature':
           count = await this.prisma.medicine.count({
             where: {
-              nomenclature: query.nomenclature,
+              nomenclature: {
+                contains: query.nomenclature,
+                mode: 'insensitive',
+              },
             },
           });
           break;
@@ -191,7 +211,7 @@ export class StockService {
   async getPage(page: number, query?: MedicineQuery) {
     const index = page ? page : 0;
     let medicines;
-
+    
     if (query) {
       switch (query.type) {
         case 'dci':
@@ -289,7 +309,22 @@ export class StockService {
             skip: index * this.pageLength,
             take: this.pageLength,
             where: {
-              family: query.family,
+              family: {
+                contains: query.family,
+                mode: 'insensitive',
+              },
+            },
+          });
+          break;
+        case 'reference':
+          medicines = await this.prisma.medicine.findMany({
+            skip: index * this.pageLength,
+            take: this.pageLength,
+            where: {
+              reference: {
+                contains: query.reference,
+                mode: 'insensitive',
+              },
             },
           });
           break;
@@ -298,7 +333,10 @@ export class StockService {
             skip: index * this.pageLength,
             take: this.pageLength,
             where: {
-              nomenclature: query.nomenclature,
+              nomenclature: {
+                contains: query.nomenclature,
+                mode: 'insensitive',
+              },
             },
           });
           break;

@@ -89,8 +89,8 @@ export class StockController {
     @Query('dci') dci?: string,
     @Query('alerte', new ParseIntPipe({ optional: true })) alert?: number,
     @Query('family') family?: string,
-    @Query('family') type?: string,
-    @Query('family') nomenclature?: string,
+    @Query('nomenclature') nomenclature?: string,
+    @Query('reference') reference?: string,
     @Query('real', new ParseIntPipe({ optional: true })) real?: number,
   ) {
     let query;
@@ -148,6 +148,11 @@ export class StockController {
         query = {
           type: 'nomenclature',
           nomenclature,
+        };
+      } else if (reference) {
+        query = {
+          type: 'reference',
+          reference,
         };
       } else if (real >= 0) {
         query = {

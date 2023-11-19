@@ -120,7 +120,7 @@ const StyledStock = styled.div`
     left: 50%;
     transform: translateX(-50%);
   }
-
+  
   h2 {
     font-size: 4rem;
     font-weight: normal;
@@ -155,6 +155,11 @@ export default function Stock() {
     | "dci"
     | "min"
     | "max"
+    | "real"
+    | "nomenclature"
+    | "family"
+    | "alert"
+    | "reference"
   >("name");
   const [pending, setPending] = useState(true);
 
@@ -252,8 +257,20 @@ export default function Stock() {
             }}
             fields={[
               {
-                name: "Nom",
+                name: "Désignation",
                 value: "name",
+              },
+              {
+                name: "Nomenclature",
+                value: "nomenclature",
+              },
+              {
+                name: "Famille",
+                value: "family",
+              },
+              {
+                name: "Référence",
+                value: "reference",
               },
               {
                 name: "Prix d'achat",
@@ -264,7 +281,15 @@ export default function Stock() {
                 value: "sellingPrice",
               },
               {
-                name: "Quantité",
+                name: "Stock d'alerte",
+                value: "alert",
+              },
+              {
+                name: "Stock réel",
+                value: "real",
+              },
+              {
+                name: "Stock à terme",
                 value: "quantity",
               },
               {
