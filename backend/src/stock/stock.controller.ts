@@ -74,6 +74,8 @@ export class StockController {
     @Query('name') name?: string,
     @Query('sellingPrice', new ParseIntPipe({ optional: true }))
     sellingPrice?: number,
+    @Query('costPrice', new ParseIntPipe({ optional: true }))
+    costPrice?: number,
     @Query('quantity', new ParseIntPipe({ optional: true })) quantity?: number,
     @Query('min', new ParseIntPipe({ optional: true })) min?: number,
     @Query('max', new ParseIntPipe({ optional: true })) max?: number,
@@ -120,6 +122,11 @@ export class StockController {
         query = {
           type: 'sellingPrice',
           sellingPrice,
+        };
+      } else if (costPrice >= 0) {
+        query = {
+          type: 'costPrice',
+          costPrice,
         };
       } else if (alert >= 0) {
         query = {

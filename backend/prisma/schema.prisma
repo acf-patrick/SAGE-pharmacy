@@ -58,7 +58,7 @@ model MedicineFromProvider {
   priceWithTax     Int
   priceWithoutTax  Int
   quantity         Int
-  dci              String
+  dci              String?
   Provider         Provider        @relation(fields: [providerId], references: [id])
   providerId       String
   expirationDate   DateTime        @db.Date

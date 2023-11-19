@@ -40,6 +40,10 @@ export class CreateMedicineDto {
 
   @IsNumber()
   @ApiProperty()
+  costPrice: number;
+
+  @IsNumber()
+  @ApiProperty()
   quantity: number;
 
   @IsNumber()

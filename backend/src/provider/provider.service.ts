@@ -20,33 +20,38 @@ export class ProviderService {
     private stockService: StockService,
   ) {}
 
-  updateMatches(
+  async updateMatches(
     matches: {
       id: string;
       name: string;
     }[],
   ) {
     return Promise.allSettled(
-      matches.map(({ id, name }) => {
-        return name === 'none'
-          ? this.prisma.medicineFromProvider.update({
-              where: { id },
-              data: {
-                matchingMedicine: {
-                  disconnect: true,
-                },
+      matches.map(async ({ id, name }) => {
+        if (name === 'none') {
+          return this.prisma.medicineFromProvider.update({
+            where: { id },
+            data: {
+              matchingMedicine: {
+                disconnect: true,
               },
-            })
-          : this.prisma.medicineFromProvider.update({
-              where: { id },
-              data: {
-                matchingMedicine: {
-                  connect: {
-                    name,
-                  },
-                },
+            },
+          });
+        }
+
+        const matchingMedicines = await this.prisma.medicine.findMany({
+          where: { name },
+        });
+        return this.prisma.medicineFromProvider.update({
+          where: { id },
+          data: {
+            matchingMedicine: {
+              connect: {
+                id: matchingMedicines[0].id,
               },
-            });
+            },
+          },
+        });
       }),
     );
   }

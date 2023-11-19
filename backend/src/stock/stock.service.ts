@@ -18,6 +18,10 @@ type MedicineQuery =
       sellingPrice: number;
     }
   | {
+      type: 'costPrice';
+      costPrice: number;
+    }
+  | {
       type: 'quantity';
       quantity: number;
     }
@@ -139,6 +143,13 @@ export class StockService {
             },
           });
           break;
+        case 'costPrice':
+          count = await this.prisma.medicine.count({
+            where: {
+              costPrice: query.costPrice,
+            },
+          });
+          break;
         case 'alert':
           count = await this.prisma.medicine.count({
             where: {
@@ -255,6 +266,15 @@ export class StockService {
             },
           });
           break;
+        case 'costPrice':
+          medicines = await this.prisma.medicine.findMany({
+            skip: index * this.pageLength,
+            take: this.pageLength,
+            where: {
+              costPrice: query.costPrice,
+            },
+          });
+          break;
         case 'alert':
           medicines = await this.prisma.medicine.findMany({
             skip: index * this.pageLength,
@@ -307,12 +327,6 @@ export class StockService {
   getMedicine(id: string) {
     return this.prisma.medicine.findUnique({
       where: { id },
-    });
-  }
-
-  getMedicineByName(name: string) {
-    return this.prisma.medicine.findUnique({
-      where: { name },
     });
   }
 
