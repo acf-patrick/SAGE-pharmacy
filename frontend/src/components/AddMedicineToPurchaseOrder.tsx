@@ -1,17 +1,23 @@
-import { useEffect, useState } from "react";
-import { api } from "../api";
-import { MedicineFromProvider } from "../models";
-import { useNotification } from "../hooks";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { IoAddCircleOutline } from "react-icons/io5";
-import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import styled from "styled-components";
+import { api } from "../api";
+import { useNotification } from "../hooks";
+import { MedicineFromProvider } from "../models";
+
+type ItemProps = {
+  name: string;
+  quantity: number;
+};
 
 type Props = {
-  orderId: string;
+  orderId?: string;
   providerName: string;
   existingOrders: string[];
   onClose: () => void;
+  onValidate?: (props: ItemProps) => void;
 };
 
 const StyledBackground = styled.div`
@@ -131,6 +137,7 @@ export default function AddMedicineToPurchaseOrder({
   onClose,
   providerName,
   existingOrders,
+  onValidate,
 }: Props) {
   const container = document.querySelector("#portal");
   if (!container) {
@@ -143,6 +150,7 @@ export default function AddMedicineToPurchaseOrder({
   const [medicine, setMedicine] = useState({
     index: 0,
     quantity: 1,
+    name: "",
   });
 
   useEffect(() => {
@@ -170,8 +178,19 @@ export default function AddMedicineToPurchaseOrder({
       });
   }, []);
 
+  const selectRef = useRef<HTMLSelectElement>(null);
+
+  useEffect(() => {
+    if (medicines && medicines.length > 0) {
+      selectRef.current.value = medicines[0].name;
+    }
+  }, [medicines]);
+
   const formOnSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // fail safe
+    if (!orderId) return;
 
     const medicineName = medicines[medicine.index].name;
     api
@@ -201,21 +220,38 @@ export default function AddMedicineToPurchaseOrder({
         </h1>
         <p className="provider-name">{providerName}</p>
         {medicines.length > 0 && (
-          <form onSubmit={formOnSubmit}>
+          <form
+            onSubmit={
+              !onValidate
+                ? formOnSubmit
+                : (e) => {
+                    e.preventDefault();
+                    onValidate({
+                      name: selectRef.current.value,
+                      quantity: medicine.quantity,
+                    });
+                  }
+            }
+          >
             <div>
               <label htmlFor="medicine">Désignation</label>
               <select
+                ref={selectRef}
                 name="medicine"
                 id="medicine"
+                defaultValue={medicine.name}
                 onChange={(e) => {
                   const designation = e.currentTarget.value;
+                  console.log(designation);
                   setMedicine((medicine) => ({
                     index: medicines.findIndex(
                       (medicine) => medicine.name == designation
                     ),
                     quantity: medicine.quantity,
+                    name: designation,
                   }));
-                }}>
+                }}
+              >
                 {medicines.map((medicine, i) => (
                   <option key={i} value={medicine.name}>
                     {medicine.name}
@@ -242,6 +278,7 @@ export default function AddMedicineToPurchaseOrder({
                   setMedicine((medicine) => ({
                     index: medicine.index,
                     quantity: isNaN(quantity) ? 0 : quantity,
+                    name: medicine.name,
                   }));
                 }}
               />
