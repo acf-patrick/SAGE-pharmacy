@@ -114,19 +114,20 @@ function CreateProvider() {
       <label htmlFor="name">
         Désignation<span>*</span>
       </label>
-      <input type="text" name="name" id="name" />
+      <input required type="text" name="name" id="name" />
       <label htmlFor="account-number">
         Numéro de compte<span>*</span>
       </label>
-      <input type="text" name="account-number" id="account-number" />
+      <input required type="text" name="account-number" id="account-number" />
       <label htmlFor="abridgment">
         Abrégé<span>*</span>
       </label>
-      <input type="text" name="abridgment" id="abridgment" />
+      <input required type="text" name="abridgment" id="abridgment" />
       <label htmlFor="common-account-number">
         Numéro de compte collectif<span>*</span>
       </label>
       <input
+        required
         type="text"
         name="common-account-number"
         id="common-account-number"
@@ -134,7 +135,7 @@ function CreateProvider() {
       <label htmlFor="address">
         Adresse<span>*</span>
       </label>
-      <input type="text" name="address" id="address" />
+      <input required type="text" name="address" id="address" />
       <label htmlFor="complement-address">Complément d'adresse</label>
       <input type="text" name="complement-address" id="complement-address" />
       <label htmlFor="postal-code">Code postal</label>
@@ -142,15 +143,15 @@ function CreateProvider() {
       <label htmlFor="city">
         Ville<span>*</span>
       </label>
-      <input type="text" name="city" id="city" />
+      <input required type="text" name="city" id="city" />
       <label htmlFor="country">
         Pays<span>*</span>
       </label>
-      <input type="text" name="country" id="country" />
+      <input required type="text" name="country" id="country" />
       <label htmlFor="telephone">
         Téléphone<span>*</span>
       </label>
-      <input type="text" name="telephone" id="telephone" />
+      <input required type="text" name="telephone" id="telephone" />
       <label htmlFor="telecopie">Télécopie</label>
       <input type="text" name="telecopie" id="telecopie" />
       <label htmlFor="email">Email</label>
@@ -168,7 +169,7 @@ function CreateProvider() {
       <label htmlFor="collector">
         Collecteur<span>*</span>
       </label>
-      <input type="text" name="collector" id="collector" />
+      <input required type="text" name="collector" id="collector" />
       <label htmlFor="min">Achat Min</label>
       <input type="text" name="min" id="min" />
       <button type="submit">Ajouter</button>
