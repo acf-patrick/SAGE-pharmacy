@@ -61,11 +61,28 @@ model MedicineFromProvider {
 }
 
 model Provider {
-  id        String                 @id @default(uuid())
-  name      String                 @unique
-  medicines MedicineFromProvider[]
-  min       Int // Minimal value of purchase
-  Order     Order[]
+  id                  String                 @id @default(uuid())
+  accountNumber       String
+  abridgment          String
+  commonAccountNumber Int
+  address             String
+  complementAdress    String?
+  postalCode          Int?
+  city                String
+  country             String
+  telephone           String[]
+  telecopie           String?
+  email               String?
+  contactName         String?
+  rc                  String?
+  stat                String?
+  nif                 String?
+  cif                 String?
+  collector           String
+  name                String                 @unique
+  medicines           MedicineFromProvider[]
+  min                 Int                    @default(1) // Minimal value of purchase
+  Order               Order[]
 }
 
 model OrderMedicine {

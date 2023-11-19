@@ -1,5 +1,5 @@
 import { lighten } from "polished";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import readXlsxFile from "read-excel-file";
 import styled from "styled-components";
 import { Header } from "../../components";
@@ -69,10 +69,14 @@ export default function Provider() {
     readXlsxFile(file, { schema }).then((rows) => console.log(rows));
   };
 
+  const location = useLocation();
+
   return (
     <>
       <StyledHeader headerTitle="Fournisseurs 🏭">
-        <button onClick={triggerFileInput}>Importer</button>
+        {location.pathname.includes("create") ? null : (
+          <button onClick={triggerFileInput}>Importer</button>
+        )}
         <input
           onChange={importXlsxFile}
           type="file"

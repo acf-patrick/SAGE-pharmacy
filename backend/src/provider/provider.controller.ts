@@ -8,6 +8,7 @@ import {
   Controller,
   UseGuards,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { ProviderService } from './provider.service';
 import { StockService } from '../stock/stock.service';
@@ -21,6 +22,7 @@ import {
 import { MatchMedicinesDTO } from './dto/MatchMedicines.dto';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { UpdateMatchesDto } from './dto/UpdateMatches.dto';
+import { CreateProviderDto } from './dto/CreateProviderDto';
 
 @ApiTags('🏭 Provider')
 @Controller('api/provider')
@@ -88,5 +90,21 @@ export class ProviderController {
     }
 
     return provider;
+  }
+
+  @Post()
+  @ApiOperation({
+    summary: 'Create new provider without medicines and without order',
+  })
+  async createProvider(@Body() createProviderDto: CreateProviderDto) {
+    return await this.providerService.createProvider(createProviderDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Delete a provider',
+  })
+  async deleteProvider(@Param('id') id: string) {
+    return await this.providerService.deleteProvider(id);
   }
 }
