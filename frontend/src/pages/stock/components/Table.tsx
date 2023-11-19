@@ -94,9 +94,8 @@ const StyledTable = styled.div`
       min-width: 10rem;
       overflow-y: auto;
 
-      &:not(:last-of-type) {
-        border-right: solid 1px black;
-      }
+      border-right: solid 1px #7a7a7a;
+      border-bottom: solid 1px #7a7a7a;
 
       input[type="checkbox"] {
         cursor: pointer;
@@ -207,7 +206,14 @@ type Field =
   | "isTaxed"
   | "min"
   | "max"
-  | "expirationDate";
+  | "expirationDate"
+  | "real"
+  | "nomenclature"
+  | "type"
+  | "family"
+  | "alert"
+  | "reference"
+  | "manufacturationDate";
 
 export default function Table({
   medicines,
@@ -225,8 +231,24 @@ export default function Table({
     () => [
       ...medicines.sort((m1: Medicine, m2: Medicine) => {
         if (ascending) {
+          if (!m1[sortBy] && m2[sortBy]) {
+            return 1;
+          }
+
+          if (!m2[sortBy] && m1[sortBy]) {
+            return -1;
+          }
+
           return m1[sortBy] < m2[sortBy] ? -1 : 1;
         } else {
+          if (!m1[sortBy] && m2[sortBy]) {
+            return -1;
+          }
+
+          if (!m2[sortBy] && m1[sortBy]) {
+            return 1;
+          }
+
           return m1[sortBy] > m2[sortBy] ? -1 : 1;
         }
       }),
@@ -235,19 +257,28 @@ export default function Table({
   );
 
   const headersMap = new Map<string, Field>([
-    ["Nom", "name"],
-    ["Prix d'achat", "sellingPrice"],
-    ["Prix de vente", "costPrice"],
-    ["Quantité", "quantity"],
+    ["Désignation", "name"],
+    ["Famille", "family"],
+    ["Nomenclature", "nomenclature"],
+    ["Prix d'achat", "costPrice"],
+    ["Prix de vente", "sellingPrice"],
+    ["Stock réel", "real"],
+    ["Stock à terme", "quantity"],
     ["Emplacement", "location"],
     ["DCI", "dci"],
     ["Taxé", "isTaxed"],
-    ["Stock Min", "min"],
-    ["Stock Max", "max"],
+    ["Stock d'alerte", "alert"],
+    ["Min", "min"],
+    ["Max", "max"],
     ["Expiration", "expirationDate"],
+    ["Fabrication", "manufacturationDate"],
   ]);
 
   const dateToLocaleFormat = (date: string) => {
+    if (!date) {
+      return "";
+    }
+
     let s = new Date(date).toLocaleDateString("fr-FR", {
       day: "numeric",
       month: "long",
@@ -283,8 +314,7 @@ export default function Table({
                 onClick={() => {
                   setSortBy(headersMap.get(header)!);
                   setAscending(!ascending);
-                }}
-              >
+                }}>
                 <div className="inner-th">
                   <p>{header}</p>
                   {headersMap.get(header) == sortBy ? (
@@ -313,17 +343,22 @@ export default function Table({
                   <label htmlFor={medicine.name}>{medicine.name}</label>
                 </div>
               </td>
+              <td>{medicine.family}</td>
+              <td>{medicine.nomenclature}</td>
               <td>{medicine.costPrice}</td>
               <td>{medicine.sellingPrice}</td>
+              <td>{medicine.real}</td>
               <td>{medicine.quantity}</td>
               <td>{medicine.location}</td>
               <td>{medicine.dci}</td>
               <td className="editable boolean">
                 {medicine.isTaxed ? "Oui" : "Non"}
               </td>
+              <td>{medicine.alert}</td>
               <td>{medicine.min}</td>
               <td>{medicine.max}</td>
               <td>{dateToLocaleFormat(medicine.expirationDate)}</td>
+              <td>{dateToLocaleFormat(medicine.manufacturationDate)}</td>
             </tr>
           ))}
         </tbody>

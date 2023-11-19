@@ -136,6 +136,10 @@ const StyledSideBar = styled.div`
             text-align: start;
             padding-left: 0;
 
+            * {
+              font-size: 1rem;
+            }
+
             svg {
               font-size: 20px;
             }
@@ -178,8 +182,7 @@ export default function SideBar() {
                     to={path.to}
                     className={
                       location.pathname.includes(path.to) ? "active" : ""
-                    }
-                  >
+                    }>
                     <span>
                       {path.icon}
                       {path.name}
@@ -193,8 +196,7 @@ export default function SideBar() {
                       setUnfoldedProviderList(
                         (unfoldedProviderList) => !unfoldedProviderList
                       )
-                    }
-                  >
+                    }>
                     <span>
                       {path.icon}
                       {path.name}
@@ -211,8 +213,7 @@ export default function SideBar() {
                         <IoMdArrowDropright />
                         <Link
                           key={provider.name}
-                          to={path.to + "/" + provider.id}
-                        >
+                          to={path.to + "/" + provider.id}>
                           {provider.name}
                         </Link>
                       </li>

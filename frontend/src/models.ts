@@ -3,13 +3,20 @@ export type Medicine = {
   name: string;
   sellingPrice: number;
   costPrice: number;
-  quantity: number;
+  quantity: number; // stock à terme
   location: string;
   dci?: string;
   isTaxed: boolean;
   min: number;
   max: number;
-  expirationDate: string;
+  expirationDate?: string;
+  alert: number;
+  family: string;
+  manufacturationDate?: string;
+  nomenclature?: string;
+  real: number; // stock réel
+  reference: string;
+  type: string;
 };
 
 export type MedicineDto = {
