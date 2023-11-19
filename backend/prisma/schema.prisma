@@ -31,40 +31,40 @@ model User {
 }
 
 model Medicine {
-  id                   String                 @id @default(uuid())
-  name                 String
-  sellingPrice         Int
-  costPrice            Int
-  quantity             Int // Stock à terme
-  real                 Int // Stock réel
-  nomenclature         String?
-  location             String
-  dci                  String?
-  type                 String                 @default("Standard")
-  family               String
-  isTaxed              Boolean                @default(true)
-  min                  Int
-  alert                Int // Stock d'alerte
-  max                  Int
-  reference            String                 @unique
-  expirationDate       DateTime?              @db.Date
-  manufacturationDate  DateTime?              @db.Date
-  MedicineFromProvider MedicineFromProvider[]
+  id                     String                @id @default(uuid())
+  name                   String
+  sellingPrice           Int
+  costPrice              Int
+  quantity               Int // Stock à terme
+  real                   Int // Stock réel
+  nomenclature           String?
+  location               String
+  dci                    String?
+  type                   String                @default("Standard")
+  family                 String
+  isTaxed                Boolean               @default(true)
+  min                    Int
+  alert                  Int // Stock d'alerte
+  max                    Int
+  reference              String                @unique
+  expirationDate         DateTime?             @db.Date
+  manufacturationDate    DateTime?             @db.Date
+  MedicineFromProvider   MedicineFromProvider? @relation(fields: [medicineFromProviderId], references: [id])
+  medicineFromProviderId String?
 }
 
 model MedicineFromProvider {
-  id               String          @id @default(uuid())
-  name             String
-  priceWithTax     Int
-  priceWithoutTax  Int
-  quantity         Int
-  dci              String?
-  Provider         Provider        @relation(fields: [providerId], references: [id])
-  providerId       String
-  expirationDate   DateTime        @db.Date
-  OrderMedicine    OrderMedicine[]
-  matchingMedicine Medicine?       @relation(fields: [medicineId], references: [id])
-  medicineId       String?
+  id                String          @id @default(uuid())
+  name              String
+  priceWithTax      Int
+  priceWithoutTax   Int
+  quantity          Int
+  dci               String?
+  Provider          Provider        @relation(fields: [providerId], references: [id])
+  providerId        String
+  expirationDate    DateTime        @db.Date
+  OrderMedicine     OrderMedicine[]
+  matchingMedicines Medicine[]
 }
 
 model Provider {

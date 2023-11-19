@@ -182,23 +182,28 @@ async function createProviders() {
           priceWithTax = 100 * Math.round(Math.random() * 1000);
         } while (priceWithTax < priceWithoutTax);
 
-        const completeDatas = records.filter((record) => record.dci);
-        const record = completeDatas.length > 0 ? completeDatas[0] : records[0];
-
-        await prisma.medicineFromProvider.create({
-          data: {
-            name: randomMedicineName,
-            priceWithoutTax,
-            priceWithTax,
-            quantity: Math.floor(Math.random() * 100) + 1,
-            dci: record.dci,
-            expirationDate: new Date(
-              Date.now() + Math.random() * (365 * 24 * 60 * 60 * 1000),
-            ),
-            medicineId: record.id,
-            providerId: provider.id,
-          },
-        });
+        for (let record of records) {
+          await prisma.medicineFromProvider.create({
+            data: {
+              name: randomMedicineName,
+              priceWithoutTax,
+              priceWithTax,
+              quantity: Math.floor(Math.random() * 100) + 1,
+              dci: record.dci,
+              expirationDate: new Date(
+                Date.now() + Math.random() * (365 * 24 * 60 * 60 * 1000),
+              ),
+              providerId: provider.id,
+              matchingMedicines: {
+                connect: [
+                  {
+                    id: record.id,
+                  },
+                ],
+              },
+            },
+          });
+        }
       }
     }),
   );
