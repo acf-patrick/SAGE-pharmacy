@@ -8,7 +8,7 @@ import { useNotification } from "../hooks";
 import { MedicineFromProvider } from "../models";
 
 type ItemProps = {
-  name: string;
+  medicineName: string;
   quantity: number;
 };
 
@@ -227,7 +227,7 @@ export default function AddMedicineToPurchaseOrder({
                 : (e) => {
                     e.preventDefault();
                     onValidate({
-                      name: selectRef.current.value,
+                      medicineName: selectRef.current.value,
                       quantity: medicine.quantity,
                     });
                   }

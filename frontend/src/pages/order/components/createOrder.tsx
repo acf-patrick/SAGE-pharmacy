@@ -1,11 +1,16 @@
 import { lighten } from "polished";
 import React, { useEffect, useState } from "react";
 import { RiDeleteBin5Line } from "react-icons/ri";
+import { useNavigate } from "react-router-dom";
 import { styled } from "styled-components";
 import { api } from "../../../api";
-import { AddMedicineToPurchaseOrder } from "../../../components";
-import { Provider } from "../../../models";
-import { Order } from "../types";
+import {
+  AddMedicineToPurchaseOrder,
+  ConfirmationDialog,
+} from "../../../components";
+import { useNotification } from "../../../hooks";
+import { MedicineFromProvider, Provider } from "../../../models";
+import { KanbanItemStatusObject, OrderDto } from "../types";
 
 const StyledCreateOrder = styled.form`
   margin-left: 2rem;
@@ -182,6 +187,7 @@ function createOrder() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [currentProvider, setCurrentProvider] = useState<Provider | null>(null);
   const [showAddMedicineModal, setShowAddMedicineModal] = useState(false);
+  const [showValidation, setShowValidation] = useState(false);
   const [rows, setRows] = useState<
     {
       medicineName: string;
@@ -191,11 +197,11 @@ function createOrder() {
       priceWithoutTax: number;
     }[]
   >([]);
-  const [orderToCreate, setOrderToCreate] = useState<Order>();
+  const { pushNotification } = useNotification();
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.get("/provider").then((res) => setProviders(res.data));
-    api.post("/provider").then((res) => setOrderToCreate(res.data));
   }, []);
 
   useEffect(() => {
@@ -208,14 +214,83 @@ function createOrder() {
     setCurrentProvider(providers[e.currentTarget.value]);
   };
 
-  const updateList = ({
-    name,
+  const updateNewOrderMedicines = ({
+    medicineName,
     quantity,
   }: {
-    name: string;
+    medicineName: string;
     quantity: number;
   }) => {
-    console.log(`${name} , ${quantity}`);
+    console.log(medicineName + "," + quantity);
+
+    let maxQuantity = 0;
+    let priceWithoutTax = 0;
+    let priceWithTax = 0;
+
+    console.log(currentProvider);
+
+    currentProvider.medicines.forEach((medicine) => {
+      if (medicine.name == medicineName) {
+        maxQuantity = medicine.quantity;
+        priceWithTax = medicine.priceWithTax;
+        priceWithoutTax = medicine.priceWithoutTax;
+      }
+    });
+
+    const obj = {
+      maxQuantity,
+      medicineName,
+      priceWithoutTax,
+      priceWithTax,
+      quantity,
+    };
+
+    setRows([...rows, obj]);
+
+    setShowAddMedicineModal(false);
+  };
+
+  const createNewOrder = () => {
+    let totalPriceWithTax = 0;
+    let totalPriceWithoutTax = 0;
+    const orderMedicines: (MedicineFromProvider & {
+      quantityToOrder: number;
+    })[] = [];
+    rows.forEach((row) => {
+      totalPriceWithTax += row.priceWithTax * row.quantity;
+      totalPriceWithoutTax += row.priceWithoutTax * row.quantity;
+      const foundMedicine = currentProvider.medicines.find(
+        (medicine) => medicine.name == row.medicineName
+      );
+      if (foundMedicine) {
+        orderMedicines.push({
+          ...foundMedicine,
+          quantityToOrder: row.quantity,
+        });
+      }
+    });
+
+    const provider: OrderDto = {
+      createdAt: new Date().toISOString(),
+      minPurchase: currentProvider.min,
+      provider: currentProvider,
+      providerName: currentProvider.name,
+      status: KanbanItemStatusObject.ORDERED,
+      totalPriceWithTax,
+      totalPriceWithoutTax,
+      orderMedicines,
+    };
+
+    console.log(provider);
+
+    api
+      .post("/order/create", provider)
+      .then(() => pushNotification("Bon de commande créé avec succès"))
+      .catch((err) => {
+        console.error(err);
+        pushNotification("Erreur lors de la création du bon de commande");
+      })
+      .finally(() => navigate("/order"));
   };
 
   return (
@@ -244,7 +319,14 @@ function createOrder() {
             <button onClick={() => setShowAddMedicineModal(true)}>
               Ajouter
             </button>
-            <button onClick={() => {}}>Valider</button>
+            <button
+              onClick={() => {
+                if (rows.length > 0) setShowValidation(true);
+                else pushNotification("Bon de commande vide");
+              }}
+            >
+              Valider
+            </button>
           </div>
         </header>
         {rows.length == 0 ? (
@@ -332,7 +414,25 @@ function createOrder() {
           onClose={() => setShowAddMedicineModal(false)}
           providerName={currentProvider.name}
           existingOrders={rows.map((row) => row.medicineName)}
-          onValidate={updateList}
+          onValidate={updateNewOrderMedicines}
+        />
+      )}
+      {showValidation && (
+        <ConfirmationDialog
+          action={createNewOrder}
+          cancel={{
+            buttonColor: "red",
+            text: "Annuler",
+          }}
+          confirm={{
+            buttonColor: "green",
+            text: "Valider",
+          }}
+          message={`Créer un bon de commande contenat les médicament de la liste à ${currentProvider.name} ?`}
+          onClose={() => {
+            setShowValidation(false);
+          }}
+          title="Bon de commande vide"
         />
       )}
     </>

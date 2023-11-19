@@ -23,6 +23,19 @@ export type Order = {
   })[];
 };
 
+export type OrderDto = {
+  provider: Provider;
+  providerName: string;
+  createdAt: string;
+  status: KanbanItemStatus;
+  minPurchase: number;
+  totalPriceWithTax: number;
+  totalPriceWithoutTax: number;
+  orderMedicines: (MedicineFromProvider & {
+    quantityToOrder: number;
+  })[];
+};
+
 export const KanbanItemStatusObject = {
   ORDERED: "ORDERED",
   PENDING: "PENDING",
