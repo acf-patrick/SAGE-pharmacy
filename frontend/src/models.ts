@@ -5,7 +5,7 @@ export type Medicine = {
   costPrice: number;
   quantity: number;
   location: string;
-  dci: string;
+  dci?: string;
   isTaxed: boolean;
   min: number;
   max: number;
@@ -18,7 +18,7 @@ export type MedicineDto = {
   costPrice: number;
   quantity: number;
   location: string;
-  dci: string;
+  dci?: string;
   isTaxed: boolean;
   min: number;
   max: number;
@@ -31,7 +31,7 @@ export type MedicineFromProvider = {
   priceWithoutTax: number;
   priceWithTax: number;
   quantity: number;
-  dci: string;
+  dci?: string;
   providerId: string;
   expirationDate: string;
   matchingMedicine: Medicine;

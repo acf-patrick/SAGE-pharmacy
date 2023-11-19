@@ -175,11 +175,11 @@ async function createProviders() {
           },
         });
 
-        const priceWithoutTax = 100 * Math.round(Math.random() * 1000);
+        const priceWithoutTax = 100 * Math.round(Math.random() * 100);
 
         let priceWithTax;
         do {
-          priceWithTax = 100 * Math.round(Math.random() * 1000);
+          priceWithTax = 100 * Math.round(Math.random() * 100);
         } while (priceWithTax < priceWithoutTax);
 
         for (let record of records) {

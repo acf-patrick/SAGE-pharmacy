@@ -243,16 +243,18 @@ const Purchase = () => {
 
     const matches: MatchMedicine[] = [];
 
-    for (let name of Object.keys(data)) {
-      const res = await api.get(`/stock?name=${name}`);
-      const min = res.data.data[0].min;
+    await Promise.all(
+      Object.keys(data).map(async (id) => {
+        const res = await api.get(`/stock/${id}`);
+        const { name, min } = res.data;
 
-      matches.push({
-        name,
-        stockMin: min,
-        providerMedicines: data[name],
-      });
-    }
+        matches.push({
+          name,
+          stockMin: min,
+          providerMedicines: data[id],
+        });
+      })
+    );
 
     return matches.sort((a, b) => (a.name < b.name ? -1 : 1));
   };
@@ -333,8 +335,7 @@ const Purchase = () => {
               } else {
                 setShowConfirmation(true);
               }
-            }}
-          >
+            }}>
             Commander
           </button>
         </div>
@@ -386,8 +387,7 @@ const Purchase = () => {
                         "checkbox",
                         "name",
                         i % 2 == 0 ? "even" : "odd",
-                      ].join(" ")}
-                    >
+                      ].join(" ")}>
                       <input
                         type="checkbox"
                         id={medicine.name}
@@ -414,8 +414,7 @@ const Purchase = () => {
                         <select
                           name={medicine.name}
                           id={medicine.name}
-                          onChange={(e) => selectedMedicineOnChange(i, e)}
-                        >
+                          onChange={(e) => selectedMedicineOnChange(i, e)}>
                           {medicine.providerMedicines.map((match, i) => (
                             <option
                               key={i}
@@ -424,8 +423,7 @@ const Purchase = () => {
                                 medicine: match.medicine,
                                 providerName: match.provider.name,
                                 order: match.quantityToOrder,
-                              })}
-                            >
+                              })}>
                               {match.medicine.name +
                                 " (" +
                                 match.provider.name +
