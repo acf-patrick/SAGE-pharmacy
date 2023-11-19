@@ -55,20 +55,11 @@ export class ProviderController {
   })
   @ApiNotFoundResponse({ description: 'If no matching has been done' })
   async provideMedicinesForNearLow() {
-    const names = (await this.stockService.getNearLowMedicines()).map(
-      (record) => record.name,
+    const ids = (await this.stockService.getNearLowMedicines()).map(
+      (record) => record.id,
     );
 
-    return this.providerService.getMatchingMedicinesForList(names);
-  }
-
-  @Post('match')
-  @HttpCode(200)
-  @ApiOperation({
-    summary: 'Map medicine names to medicines from providers',
-  })
-  getMatchingMedicines(@Body() { names }: MatchMedicinesDTO) {
-    return this.providerService.getMatchingMedicinesForList(names);
+    return this.providerService.getMatchingMedicinesForList(ids);
   }
 
   @Get(':id')

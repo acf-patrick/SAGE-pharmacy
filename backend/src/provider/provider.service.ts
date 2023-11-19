@@ -23,32 +23,27 @@ export class ProviderService {
   async updateMatches(
     matches: {
       id: string;
-      name: string;
+      medicineIds: string[];
     }[],
   ) {
     return Promise.allSettled(
-      matches.map(async ({ id, name }) => {
-        if (name === 'none') {
-          return this.prisma.medicineFromProvider.update({
-            where: { id },
+      matches.map(async ({ id, medicineIds }) => {
+        if (medicineIds.length == 0) {
+          return this.prisma.medicine.updateMany({
+            where: {
+              medicineFromProviderId: id,
+            },
             data: {
-              matchingMedicine: {
-                disconnect: true,
-              },
+              medicineFromProviderId: null,
             },
           });
         }
 
-        const matchingMedicines = await this.prisma.medicine.findMany({
-          where: { name },
-        });
         return this.prisma.medicineFromProvider.update({
           where: { id },
           data: {
-            matchingMedicine: {
-              connect: {
-                id: matchingMedicines[0].id,
-              },
+            matchingMedicines: {
+              connect: medicineIds.map((id) => ({ id })),
             },
           },
         });
@@ -101,7 +96,7 @@ export class ProviderService {
       include: {
         medicines: {
           include: {
-            matchingMedicine: true,
+            matchingMedicines: true,
           },
         },
       },
@@ -147,16 +142,19 @@ export class ProviderService {
     return records;
   }
 
-  async getMatchingMedicines(name: string) {
-    const medicine = await this.prisma.medicine.findUnique({
-      where: { name },
-    });
+  async getMatchingMedicines(id: string) {
+    const medicine = await this.stockService.getMedicine(id);
+    if (!medicine) {
+      return [];
+    }
 
     const medicinesFromProvider =
       await this.prisma.medicineFromProvider.findMany({
         where: {
-          matchingMedicine: {
-            name,
+          matchingMedicines: {
+            some: {
+              id,
+            },
           },
         },
       });
@@ -174,21 +172,19 @@ export class ProviderService {
     return orders === 0 ? medicinesFromProvider : [];
   }
 
-  // return matching medicines for given medicine names
+  // return matching medicines for given medicine IDs
   async getMatchingMedicinesForList(
-    names: string[],
+    ids: string[],
   ): Promise<Record<string, MedicineMapRecord[]>> {
     const map = new Map<string, MedicineMapRecord[]>();
 
-    const matchName = async (name: string) => {
-      let medicines = await this.getMatchingMedicines(name);
+    const matchName = async (id: string) => {
+      let medicines = await this.getMatchingMedicines(id);
       if (medicines.length > 0) {
         const record: MedicineMapRecord[] = [];
         for (let medicine of medicines) {
           const provider = await this.getOne(medicine.providerId);
-          const medicineInStock = await this.stockService.getMedicineByName(
-            name,
-          );
+          const medicineInStock = await this.stockService.getMedicine(id);
 
           const numberOfMedicinesToOrder =
             medicineInStock.max - medicineInStock.quantity;
@@ -204,15 +200,15 @@ export class ProviderService {
                 : medicine.quantity,
           });
         }
-        map.set(name, record);
+        map.set(id, record);
       }
     };
 
-    await Promise.allSettled(names.map((name) => matchName(name)));
+    await Promise.allSettled(ids.map((id) => matchName(id)));
 
     if (map.size === 0) {
       throw new NotFoundException(
-        'No available medicine from provider for given medicine names',
+        'No available medicine from provider for given medicine ID',
       );
     }
 
