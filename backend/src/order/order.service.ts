@@ -19,6 +19,55 @@ export class OrderService {
     private prisma: PrismaService,
   ) {}
 
+  async createMedicineOrder(
+    orderId: string,
+    medicineFromProviderId: string,
+    quantity: number,
+  ) {
+    const record = await this.prisma.orderMedicine.create({
+      data: {
+        quantity,
+        medicineFromProviderId,
+        orderId,
+      },
+      include: {
+        medicine: true,
+        Order: true,
+      },
+    });
+
+    return {
+      medicineName: record.medicine.name,
+      providerName: record.Order.providerName,
+    };
+  }
+
+  deleteOrderMedicine(orderId: string, medicineName: string) {
+    return this.prisma.orderMedicine.deleteMany({
+      where: {
+        orderId,
+        medicine: {
+          name: medicineName,
+        },
+      },
+    });
+  }
+
+  async delete(id: string) {
+    try {
+      await this.prisma.orderMedicine.deleteMany({
+        where: {
+          orderId: id,
+        },
+      });
+      await this.prisma.order.delete({
+        where: { id },
+      });
+    } catch (e) {
+      throw new NotFoundException(`No matching order with ID : ${id}`);
+    }
+  }
+
   getOrderCount() {
     return this.prisma.order.count();
   }
@@ -58,14 +107,19 @@ export class OrderService {
         medicineOrder.quantity * medicineFromProvider.priceWithoutTax;
     }
 
-    const medicinesFromProviderInOrder: MedicineFromProvider[] = [];
+    const medicinesFromProviderInOrder: (MedicineFromProvider & {
+      quantityToOrder: number;
+    })[] = [];
     for (let orderMedicine of record.medicineOrders) {
       const medicine = await this.prisma.medicineFromProvider.findUnique({
         where: {
           id: orderMedicine.medicineFromProviderId,
         },
       });
-      medicinesFromProviderInOrder.push(medicine);
+      medicinesFromProviderInOrder.push({
+        ...medicine,
+        quantityToOrder: orderMedicine.quantity,
+      });
     }
     order.orderMedicines = medicinesFromProviderInOrder;
 
@@ -98,6 +152,39 @@ export class OrderService {
         });
       }
     }
+  }
+
+  async setOrderQuantity(orderId: string, quantity: number) {
+    this.prisma.order.update({
+      where: {
+        id: orderId,
+      },
+      data: {},
+    });
+  }
+
+  setMedicinesQuantities(
+    orderId: string,
+    medicines: {
+      name: string;
+      quantity: number;
+    }[],
+  ) {
+    return Promise.allSettled(
+      medicines.map(({ name, quantity }) =>
+        this.prisma.orderMedicine.updateMany({
+          where: {
+            orderId,
+            medicine: {
+              name,
+            },
+          },
+          data: {
+            quantity,
+          },
+        }),
+      ),
+    );
   }
 
   async setOrderStatus(orderId: string, status: OrderStatus) {

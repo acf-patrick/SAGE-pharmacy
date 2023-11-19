@@ -18,7 +18,9 @@ export type Order = {
   minPurchase: number;
   totalPriceWithTax: number;
   totalPriceWithoutTax: number;
-  orderMedicines: MedicineFromProvider[];
+  orderMedicines: (MedicineFromProvider & {
+    quantityToOrder: number;
+  })[];
 };
 
 export const KanbanItemStatusObject = {
@@ -26,7 +28,12 @@ export const KanbanItemStatusObject = {
   PENDING: "PENDING",
   RECEIVED: "RECEIVED",
   FINISHED: "FINISHED",
-  AVOIR: "AVOIR"
+  AVOIR: "AVOIR",
 } as const;
 
-export type KanbanItemStatus = "ORDERED" | "PENDING" | "RECEIVED" | "FINISHED" | "AVOIR";
+export type KanbanItemStatus =
+  | "ORDERED"
+  | "PENDING"
+  | "RECEIVED"
+  | "FINISHED"
+  | "AVOIR";

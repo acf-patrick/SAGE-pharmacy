@@ -43,3 +43,25 @@ export type Provider = {
   medicines: MedicineFromProvider[];
   min: number;
 };
+
+export type ProviderDto = {
+  accountNumber: string;
+  abridgment: string;
+  commonAccountNumber: number;
+  address: string;
+  complementAdress?: string;
+  postalCode?: number;
+  city: string;
+  country: string;
+  telephone: string[];
+  telecopie?: string;
+  email?: string;
+  contactName?: string;
+  rc?: string;
+  stat?: string;
+  nif?: string;
+  cif?: string;
+  collector: string;
+  name: string;
+  min: number;
+};

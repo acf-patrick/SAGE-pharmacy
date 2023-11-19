@@ -1,12 +1,13 @@
 import { darken, lighten } from "polished";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { api } from "../../../api";
 import { ConfirmationDialog } from "../../../components";
 import { Provider } from "../../../models";
 import { appear } from "../../../styles/animations";
 import { theme } from "../../../styles/theme";
+import { TbBasketCancel } from "react-icons/tb";
 
 const StyledTitle = styled.div`
   display: flex;
@@ -17,27 +18,47 @@ const StyledTitle = styled.div`
     font-size: 2rem;
   }
 
-  .appear {
-    transform: translateY(0);
-    opacity: 1;
-    cursor: pointer;
-  }
+  .buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-right: 2rem;
 
-  button {
-    height: 3rem;
-    padding: 5px 20px;
-    border: none;
-    background-color: ${({ theme }) => theme.colors.tertiary};
-    color: white;
-    font-weight: 600;
-    border-radius: 5px;
-    transform: translateY(-1rem);
-    opacity: 0;
-    transition: all 250ms;
-    cursor: default;
+    .appear {
+      transform: translateY(0);
+      opacity: 1;
+      cursor: pointer;
+    }
 
-    &:hover {
-      background-color: ${({ theme }) => lighten(0.1, theme.colors.tertiary)};
+    button {
+      height: 3rem;
+      padding: 5px 20px;
+      border: none;
+      opacity: 0;
+      color: white;
+      font-weight: 600;
+      border-radius: 5px;
+      transition: all 250ms;
+      cursor: pointer;
+
+      &:first-of-type {
+        background-color: ${({ theme }) => theme.colors.tertiary};
+
+        &:hover {
+          background-color: ${({ theme }) =>
+            lighten(0.1, theme.colors.tertiary)};
+        }
+      }
+
+      &:last-of-type {
+        opacity: 1;
+        background-color: ${({ theme }) => theme.colors.buttons.delete};
+
+        &:hover {
+          background-color: ${({ theme }) =>
+            lighten(0.1, theme.colors.buttons.delete)};
+        }
+      }
     }
   }
 `;
@@ -227,13 +248,36 @@ const StyledList = styled.div`
   }
 `;
 
+const StyledH2 = styled.h2`
+  font-size: 4rem;
+  font-weight: normal;
+  margin-top: 15rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  animation: 500ms both ${appear};
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+
+  svg {
+    font-size: 6rem;
+  }
+`;
+
 export default function ProviderMedicines() {
   const { id: providerId } = useParams();
   const [provider, setProvider] = useState<Provider | null>(null);
   const [medicineNames, setMedicineNames] = useState<string[]>([]);
   const [correspondances, setCorrespondances] = useState<string[]>([]);
   const [changedCorrespondances, setChangedCorrespondances] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showChangeConfirmation, setShowChangeConfirmation] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     api
@@ -250,7 +294,7 @@ export default function ProviderMedicines() {
         setProvider(res.data);
       })
       .catch((err) => console.error(err));
-  }, []);
+  }, [location.pathname]);
 
   const dateToLocaleFormat = (date: string) => {
     let s = new Date(date).toLocaleDateString("fr-FR", {
@@ -282,6 +326,10 @@ export default function ProviderMedicines() {
     }
   }, [provider]);
 
+  useEffect(() => {
+    setChangedCorrespondances(false);
+  }, [location]);
+
   const updateCorrespondances = () => {
     const correspondancesToChange: {
       id: string;
@@ -304,73 +352,96 @@ export default function ProviderMedicines() {
         matches: correspondancesToChange,
       })
       .catch((err) => console.error(err))
-      .finally(() => location.reload());
+      .finally(() => navigate(0));
   };
 
   const handleChanges = () => {
     setChangedCorrespondances(isThereCorrespondancesChanges);
   };
 
-  return provider ? (
+  const deleteProvider = () => {
+    api
+      .delete("/provider/" + providerId)
+      .then(() => {
+        navigate("/stock");
+      })
+      .catch((err) => console.log(err));
+  };
+
+  if (!provider) return null;
+
+  return (
     <>
       <StyledTitle>
         <h1>{provider.name}</h1>
-        <button
-          disabled={!changedCorrespondances}
-          className={changedCorrespondances ? "appear" : ""}
-          onClick={() => setShowConfirmation(true)}
-        >
-          Enregistrer Modif.
-        </button>
+        <div className="buttons">
+          <button
+            disabled={!changedCorrespondances}
+            className={changedCorrespondances ? "appear" : ""}
+            onClick={() => setShowChangeConfirmation(true)}
+          >
+            Enregistrer Modif.
+          </button>
+          <button onClick={() => setShowDeleteConfirmation(true)}>
+            Supprimer
+          </button>
+        </div>
       </StyledTitle>
-      <StyledList>
-        <table>
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Prix HT</th>
-              <th>Prix TTC</th>
-              <th>Quantité Disp.</th>
-              <th>DCI</th>
-              <th>Expiration</th>
-              <th>Correspondance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {provider.medicines.map((medicine) => (
-              <tr key={medicine.id}>
-                <td>{medicine.name}</td>
-                <td>{medicine.priceWithoutTax}</td>
-                <td>{medicine.priceWithTax}</td>
-                <td>{medicine.quantity}</td>
-                <td>{medicine.dci}</td>
-                <td>{dateToLocaleFormat(medicine.expirationDate)}</td>
-                <td>
-                  <select
-                    name="correspondance"
-                    id="correspondance"
-                    defaultValue={
-                      medicine.matchingMedicine
-                        ? medicine.matchingMedicine.name
-                        : "none"
-                    }
-                    data-medicine-id={medicine.id}
-                    onChange={handleChanges}
-                  >
-                    <option value="none">Aucun</option>
-                    {medicineNames.map((name) => (
-                      <option key={name} value={name}>
-                        {name}
-                      </option>
-                    ))}
-                  </select>
-                </td>
+      {provider && provider.medicines.length > 0 ? (
+        <StyledList>
+          <table>
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Prix HT</th>
+                <th>Prix TTC</th>
+                <th>Quantité Disp.</th>
+                <th>DCI</th>
+                <th>Expiration</th>
+                <th>Correspondance</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </StyledList>
-      {showConfirmation ? (
+            </thead>
+            <tbody>
+              {provider.medicines.map((medicine) => (
+                <tr key={medicine.id}>
+                  <td>{medicine.name}</td>
+                  <td>{medicine.priceWithoutTax}</td>
+                  <td>{medicine.priceWithTax}</td>
+                  <td>{medicine.quantity}</td>
+                  <td>{medicine.dci}</td>
+                  <td>{dateToLocaleFormat(medicine.expirationDate)}</td>
+                  <td>
+                    <select
+                      name="correspondance"
+                      id="correspondance"
+                      defaultValue={
+                        medicine.matchingMedicine
+                          ? medicine.matchingMedicine.name
+                          : "none"
+                      }
+                      data-medicine-id={medicine.id}
+                      onChange={handleChanges}
+                    >
+                      <option value="none">Aucun</option>
+                      {medicineNames.map((name, i) => (
+                        <option key={ i} value={name}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </StyledList>
+      ) : (
+        <StyledH2>
+          <span>Liste de Médicament vide</span>
+          <TbBasketCancel />
+        </StyledH2>
+      )}
+      {showChangeConfirmation ? (
         <ConfirmationDialog
           title="Enregistrer Modification"
           action={updateCorrespondances}
@@ -380,9 +451,22 @@ export default function ProviderMedicines() {
             text: "Enregistrer",
           }}
           message="Voulez-vous enregistrer les changements?"
-          onClose={() => setShowConfirmation(false)}
+          onClose={() => setShowChangeConfirmation(false)}
+        />
+      ) : null}
+      {showDeleteConfirmation ? (
+        <ConfirmationDialog
+          title="Supprimer le fournisseur"
+          action={deleteProvider}
+          cancel={{ buttonColor: theme.colors.tertiary, text: "Annuler" }}
+          confirm={{
+            buttonColor: theme.colors.cancelButton,
+            text: "Supprimer",
+          }}
+          message="Voulez-vous supprimer le fournisseur?"
+          onClose={() => setShowDeleteConfirmation(false)}
         />
       ) : null}
     </>
-  ) : null;
+  );
 }

@@ -33,6 +33,22 @@ function randInt() {
   return Math.round(1 + 19 * Math.random());
 }
 
+type Provider = {
+  accountNumber: string;
+  abridgment: string;
+  commonAccountNumber: number;
+  address: string;
+  postalCode?: number;
+  city: string;
+  country: string;
+  telephone: string[];
+  contactName?: string;
+  stat?: string;
+  nif?: string;
+  collector: string;
+  name: string;
+};
+
 type Medicine = {
   type: string;
   reference: string;
@@ -127,18 +143,11 @@ async function createMockUser() {
 }
 
 async function createProviders() {
-  const providerNames = [
-    'MediHealth',
-    'PharmaCare',
-    'HealMart',
-    'CurePharm',
-    'VitaPlus',
-    'MediCo',
-    'HealLife',
-    'LifePharm',
-    'GlobalMeds',
-    'WellnessRx',
-  ];
+  const {
+    providers,
+  }: {
+    providers: Provider[];
+  } = JSON.parse(fs.readFileSync(join(__dirname, 'datas.json'), 'utf-8'));
 
   const medicineNames = (
     await prisma.medicine.findMany({
@@ -148,63 +157,61 @@ async function createProviders() {
     })
   ).map(({ name }) => name);
 
-  await Promise.all(
-    providerNames.map(async (providerName) => {
-      const provider = await prisma.provider.create({
-        data: {
-          name: providerName,
-          min: Math.floor(Math.random() * 30) + 10, // Random min value between 10 and 39
+  for (let i = 0; i < providers.length; i++) {
+    const currentProvider: Provider = providers[i];
+    const provider = await prisma.provider.create({
+      data: {
+        ...currentProvider,
+        min: Math.floor(Math.random() * 80001) + 20000, // Random min value between [20.000 - 100.000],
+      },
+    });
+
+    const uniqueMedicineNames = new Set();
+
+    for (let j = 0; j < 20; j++) {
+      let randomMedicineName;
+
+      do {
+        randomMedicineName =
+          medicineNames[Math.floor(Math.random() * medicineNames.length)];
+      } while (uniqueMedicineNames.has(randomMedicineName));
+
+      uniqueMedicineNames.add(randomMedicineName);
+
+      const records = await prisma.medicine.findMany({
+        where: {
+          name: randomMedicineName,
         },
       });
+      const priceWithoutTax = 100 * Math.round(Math.random() * 100);
 
-      const uniqueMedicineNames = new Set();
+      let priceWithTax;
+      do {
+        priceWithTax = 100 * Math.round(Math.random() * 100);
+      } while (priceWithTax < priceWithoutTax);
 
-      for (let j = 0; j < 20; j++) {
-        let randomMedicineName;
-
-        do {
-          randomMedicineName =
-            medicineNames[Math.floor(Math.random() * medicineNames.length)];
-        } while (uniqueMedicineNames.has(randomMedicineName));
-
-        uniqueMedicineNames.add(randomMedicineName);
-
-        const records = await prisma.medicine.findMany({
-          where: {
+      for (let record of records) {
+        await prisma.medicineFromProvider.create({
+          data: {
             name: randomMedicineName,
+            priceWithoutTax,
+            priceWithTax,
+            quantity: Math.floor(Math.random() * 100) + 1,
+            dci: record.dci,
+            expirationDate: new Date(
+              Date.now() + Math.random() * (365 * 24 * 60 * 60 * 1000),
+            ),
+            providerId: provider.id,
+            matchingMedicines: {
+              connect: [
+                {
+                  id: record.id,
+                },
+              ],
+            },
           },
         });
-
-        const priceWithoutTax = 100 * Math.round(Math.random() * 100);
-
-        let priceWithTax;
-        do {
-          priceWithTax = 100 * Math.round(Math.random() * 100);
-        } while (priceWithTax < priceWithoutTax);
-
-        for (let record of records) {
-          await prisma.medicineFromProvider.create({
-            data: {
-              name: randomMedicineName,
-              priceWithoutTax,
-              priceWithTax,
-              quantity: Math.floor(Math.random() * 100) + 1,
-              dci: record.dci,
-              expirationDate: new Date(
-                Date.now() + Math.random() * (365 * 24 * 60 * 60 * 1000),
-              ),
-              providerId: provider.id,
-              matchingMedicines: {
-                connect: [
-                  {
-                    id: record.id,
-                  },
-                ],
-              },
-            },
-          });
-        }
       }
-    }),
-  );
+    }
+  }
 }

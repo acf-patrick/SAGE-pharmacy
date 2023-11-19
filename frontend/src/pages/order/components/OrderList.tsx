@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { styled } from "styled-components";
 import { api } from "../../../api";
-import Kanban from "./Kanban";
-import { useNavigate } from "react-router-dom";
 import { KanbanItemStatusObject, Order } from "../types";
-import { errorAppear } from "../../../components/UpdateForm";
+import Kanban from "./Kanban";
 
 const StyledContainer = styled.div`
   display: flex;
@@ -128,7 +127,7 @@ export default function OrderList() {
         deleteItem={(index: number) => {
           const orderToMove = orders.ordered[index];
           api
-            .delete("/order/" + orderToMove)
+            .delete("/order/" + orderToMove.id)
             .then(() => {
               setOrders({
                 ...orders,

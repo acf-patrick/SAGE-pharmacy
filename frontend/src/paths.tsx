@@ -21,7 +21,7 @@ const paths = [
   },
   {
     to: "/provider",
-    name: "Fournisseur",
+    name: "Fournisseurs",
     icon: <PiFactoryBold />,
   },
 ];
