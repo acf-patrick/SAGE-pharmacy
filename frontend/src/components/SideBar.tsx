@@ -129,18 +129,27 @@ const StyledSideBar = styled.div`
             background-color: ${({ theme }) =>
               lighten(0.15, theme.colors.secondary)};
           }
-
-          &:last-of-type {
-            display: flex;
-            align-items: center;
-            text-align: start;
-            padding-left: 0;
-
-            svg {
-              font-size: 20px;
-            }
-          }
         }
+      }
+    }
+
+    .add-btn {
+      display: flex;
+      align-items: center;
+      text-align: start;
+      padding-left: 0;
+
+      svg {
+        font-size: 20px;
+      }
+    }
+
+    .list-container {
+      max-height: 50vh;
+      overflow-y: auto;
+
+      &.folded {
+        overflow-y: hidden;
       }
     }
   }
@@ -205,25 +214,31 @@ export default function SideBar() {
                       ) : null}
                     </span>
                   </a>
-                  <ul className={unfoldedProviderList ? "" : "folded"}>
-                    {providers.map((provider, i) => (
-                      <li key={i}>
-                        <IoMdArrowDropright />
-                        <Link
-                          key={provider.name}
-                          to={path.to + "/" + provider.id}
-                        >
-                          {provider.name}
-                        </Link>
-                      </li>
-                    ))}
-                    <li>
-                      <Link to="/provider/create">
-                        <span>Ajouter Fournisseur</span>
-                      </Link>
-                      <IoAddCircleOutline />
-                    </li>
-                  </ul>
+                  <div
+                    className={`list-container ${
+                      unfoldedProviderList ? "" : "folded"
+                    }`}
+                  >
+                    <ul className={unfoldedProviderList ? "" : "folded"}>
+                      {providers.map((provider, i) => (
+                        <li key={i}>
+                          <IoMdArrowDropright />
+                          <Link
+                            key={provider.name}
+                            to={path.to + "/" + provider.id}
+                          >
+                            {provider.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="add-btn">
+                    <Link to="/provider/create">
+                      <span>Ajouter Fournisseur</span>
+                    </Link>
+                    <IoAddCircleOutline />
+                  </div>
                 </li>
               )}
             </React.Fragment>

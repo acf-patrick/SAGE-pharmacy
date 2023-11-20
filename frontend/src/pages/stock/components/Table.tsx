@@ -10,7 +10,7 @@ const StyledTable = styled.div`
   border: solid 1px ${({ theme }) => theme.colors.quaternary};
   border-radius: 5px;
   padding-bottom: 0.25rem;
-  max-height: 80vh;
+  max-height: 75vh;
   animation: 750ms 500ms both ${appear};
 
   h2 {
