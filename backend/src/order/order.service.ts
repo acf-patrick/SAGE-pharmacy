@@ -264,18 +264,45 @@ export class OrderService {
     >();
 
     for (let order of createOrdersDto.orders) {
-      const provider = await this.providerService.getOwner(order.medicineId);
+      if (order.medicineId) {
+        const provider = await this.providerService.getOwner(order.medicineId);
 
-      const medicines = orders.get(provider.name);
-      const record = {
-        medicineId: order.medicineId,
-        quantity: order.quantityToOrder,
-      };
+        const medicines = orders.get(provider.name);
+        const record = {
+          medicineId: order.medicineId,
+          quantity: order.quantityToOrder,
+        };
 
-      if (medicines) {
-        medicines.push(record);
-      } else {
-        orders.set(provider.name, [record]);
+        if (medicines) {
+          medicines.push(record);
+        } else {
+          orders.set(provider.name, [record]);
+        }
+      } else if (order.medicine) {
+        const provider = await this.providerService.getOne(
+          order.medicine.owner,
+        );
+
+        const records = await this.prisma.medicineFromProvider.findMany({
+          where: {
+            providerId: provider.id,
+            name: order.medicine.name,
+          },
+          select: { id: true },
+        });
+        const medicineId = records[0].id;
+
+        const medicines = orders.get(provider.name);
+        const record = {
+          medicineId: medicineId,
+          quantity: order.quantityToOrder,
+        };
+
+        if (medicines) {
+          medicines.push(record);
+        } else {
+          orders.set(provider.name, [record]);
+        }
       }
     }
 

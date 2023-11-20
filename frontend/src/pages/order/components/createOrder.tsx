@@ -251,40 +251,16 @@ function CreateOrder() {
   };
 
   const createNewOrder = () => {
-    let totalPriceWithTax = 0;
-    let totalPriceWithoutTax = 0;
-    const orderMedicines: (MedicineFromProvider & {
-      quantityToOrder: number;
-    })[] = [];
-    rows.forEach((row) => {
-      totalPriceWithTax += row.priceWithTax * row.quantity;
-      totalPriceWithoutTax += row.priceWithoutTax * row.quantity;
-      const foundMedicine = currentProvider.medicines.find(
-        (medicine) => medicine.name == row.medicineName
-      );
-      if (foundMedicine) {
-        orderMedicines.push({
-          ...foundMedicine,
-          quantityToOrder: row.quantity,
-        });
-      }
-    });
-
-    const provider: OrderDto = {
-      createdAt: new Date().toISOString(),
-      minPurchase: currentProvider.min,
-      provider: currentProvider,
-      providerName: currentProvider.name,
-      status: KanbanItemStatusObject.ORDERED,
-      totalPriceWithTax,
-      totalPriceWithoutTax,
-      orderMedicines,
-    };
-
-    console.log(provider);
-
     api
-      .post("/order/create", provider)
+      .post("/order", {
+        orders: rows.map((row) => ({
+          medicine: {
+            name: row.medicineName,
+            owner: currentProvider.id,
+          },
+          quantityToOrder: row.quantity,
+        })),
+      })
       .then(() => pushNotification("Bon de commande créé avec succès"))
       .catch((err) => {
         console.error(err);
