@@ -1,8 +1,6 @@
-import { lighten } from "polished";
 import { BsCheckLg } from "react-icons/bs";
-import { CgFileAdd } from "react-icons/cg";
 import { GoMoveToEnd } from "react-icons/go";
-import { MdEdit } from "react-icons/md";
+import { MdEdit, MdPostAdd } from "react-icons/md";
 import { RxCross2 } from "react-icons/rx";
 import { useNavigate } from "react-router-dom";
 import { styled } from "styled-components";
@@ -29,28 +27,16 @@ const StyledDiv = styled.div`
     }
 
     svg {
-      font-size: 1.5rem;
-      color: green;
-      fill: green;
       cursor: pointer;
-    }
 
-    button {
-      height: 2.5rem;
-      border: none;
-      padding: 10px;
-      color: white;
-      font-weight: 600;
-      border-radius: 5px;
-      cursor: pointer;
-      background-color: ${({ theme }) => theme.colors.buttons.add};
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      &:first-of-type {
+        fill: blue;
+        font-size: 1.75rem;
+      }
 
-      &:hover {
-        background-color: ${({ theme }) =>
-          lighten(0.1, theme.colors.buttons.add)};
+      &:last-of-type {
+        fill: green;
+        font-size: 1.5rem;
       }
     }
   }
@@ -316,10 +302,10 @@ export default function Kanban({
       <div className="header">
         <h1>{title}</h1>
         {title == "Commandes" ? (
-          <button onClick={() => navigate("/order/create")}>
-            <CgFileAdd />
-            <span>Créer</span>
-          </button>
+          <MdPostAdd
+            onClick={() => navigate("/order/create")}
+            title="Créer fournisseur"
+          />
         ) : null}
         {moveItems ? (
           <GoMoveToEnd
