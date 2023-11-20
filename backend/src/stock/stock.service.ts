@@ -403,7 +403,7 @@ export class StockService {
 
   async getNearLowMedicines() {
     const medicines: Medicine[] = await this.prisma
-      .$queryRaw`SELECT * FROM "Medicine" WHERE "quantity" <= "min";`;
+      .$queryRaw`SELECT * FROM "Medicine" WHERE "quantity" <= "alert";`;
     return medicines;
   }
 }
