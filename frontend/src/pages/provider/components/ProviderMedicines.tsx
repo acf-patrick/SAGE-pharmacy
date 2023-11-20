@@ -357,10 +357,12 @@ export default function ProviderMedicines() {
   };
 
   useEffect(() => {
+    console.log(provider);
     if (provider) {
       const tmp: string[] = [];
       provider.medicines.forEach((medicine) => {
-        if (medicine.matchingMedicine) tmp.push(medicine.matchingMedicine.name);
+        if (medicine.matchingMedicines.length > 0)
+          tmp.push(medicine.matchingMedicines[0].name);
         else tmp.push("none");
       });
       setCorrespondances(tmp);
@@ -468,19 +470,31 @@ export default function ProviderMedicines() {
                       name="correspondance"
                       id="correspondance"
                       defaultValue={
-                        medicine.matchingMedicine
-                          ? medicine.matchingMedicine.name
+                        medicine.matchingMedicines.length > 0
+                          ? medicine.matchingMedicines[0].name
                           : "none"
                       }
                       data-medicine-id={medicine.id}
                       onChange={handleChanges}
                     >
-                      <option value="none">Aucun</option>
-                      {medicineNames.map((name, i) => (
-                        <option key={i} value={name}>
-                          {name}
+                      {medicine.matchingMedicines.map((med, i) => (
+                        <option key={i} value={med.name}>
+                          {med.name}
                         </option>
                       ))}
+                      {medicineNames
+                        .filter((name) => {
+                          for (let med of medicine.matchingMedicines) {
+                            if (med.name == name) return false;
+                          }
+                          return true;
+                        })
+                        .map((name, i) => (
+                          <option key={i} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                      <option value="none">Aucun</option>
                     </select>
                   </td>
                 </tr>
