@@ -378,8 +378,7 @@ export default function ProviderMedicines() {
           <button
             disabled={!changedCorrespondances}
             className={changedCorrespondances ? "appear" : ""}
-            onClick={() => setShowChangeConfirmation(true)}
-          >
+            onClick={() => setShowChangeConfirmation(true)}>
             Enregistrer Modif.
           </button>
           <button onClick={() => setShowDeleteConfirmation(true)}>
@@ -420,11 +419,10 @@ export default function ProviderMedicines() {
                           : "none"
                       }
                       data-medicine-id={medicine.id}
-                      onChange={handleChanges}
-                    >
+                      onChange={handleChanges}>
                       <option value="none">Aucun</option>
-                      {medicineNames.map((name) => (
-                        <option key={name} value={name}>
+                      {medicineNames.map((name, i) => (
+                        <option key={i} value={name}>
                           {name}
                         </option>
                       ))}

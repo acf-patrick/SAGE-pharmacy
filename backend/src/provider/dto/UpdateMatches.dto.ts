@@ -6,9 +6,12 @@ class Match {
   @ApiProperty()
   id: string; // Medicine from provider ID
 
-  @IsString()
-  @ApiProperty()
-  name: string; // Medicine from stock name
+  @IsArray()
+  @ApiProperty({
+    isArray: true,
+    type: String,
+  })
+  medicineIds: string[]; // Medicine from stock IDs
 }
 
 export class UpdateMatchesDto {

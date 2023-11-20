@@ -33,9 +33,11 @@ const StyledModal = styled.div`
     place-items: center;
     backdrop-filter: blur(1.5px);
     background-color: #ffffff2a;
+    z-index: 2;
   }
 
   form {
+    z-index: 3;
     background-color: white;
     width: 100%;
     min-width: 400px;

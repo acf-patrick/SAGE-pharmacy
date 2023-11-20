@@ -42,13 +42,29 @@ type MedicineQuery =
       max: number;
     }
   | {
-      type: 'expirationDate';
-      expirationDate: Date;
+      type: 'alert';
+      alert: number;
+    }
+  | {
+      type: 'family';
+      family: string;
+    }
+  | {
+      type: 'nomenclature';
+      nomenclature: string;
+    }
+  | {
+      type: 'real';
+      real: number;
+    }
+  | {
+      type: 'reference';
+      reference: string;
     };
 
 @Injectable()
 export class StockService {
-  private pageLength = 20;
+  private pageLength = 100;
 
   constructor(private prisma: PrismaService) {}
 
@@ -73,13 +89,6 @@ export class StockService {
 
     if (query) {
       switch (query.type) {
-        case 'costPrice':
-          count = await this.prisma.medicine.count({
-            where: {
-              costPrice: query.costPrice,
-            },
-          });
-          break;
         case 'dci':
           count = await this.prisma.medicine.count({
             where: {
@@ -114,6 +123,16 @@ export class StockService {
             },
           });
           break;
+        case 'reference':
+          count = await this.prisma.medicine.count({
+            where: {
+              reference: {
+                contains: query.reference,
+                mode: 'insensitive',
+              },
+            },
+          });
+          break;
         case 'name':
           count = await this.prisma.medicine.count({
             where: {
@@ -135,6 +154,47 @@ export class StockService {
           count = await this.prisma.medicine.count({
             where: {
               sellingPrice: query.sellingPrice,
+            },
+          });
+          break;
+        case 'costPrice':
+          count = await this.prisma.medicine.count({
+            where: {
+              costPrice: query.costPrice,
+            },
+          });
+          break;
+        case 'alert':
+          count = await this.prisma.medicine.count({
+            where: {
+              alert: query.alert,
+            },
+          });
+          break;
+        case 'family':
+          count = await this.prisma.medicine.count({
+            where: {
+              family: {
+                contains: query.family,
+                mode: 'insensitive',
+              },
+            },
+          });
+          break;
+        case 'nomenclature':
+          count = await this.prisma.medicine.count({
+            where: {
+              nomenclature: {
+                contains: query.nomenclature,
+                mode: 'insensitive',
+              },
+            },
+          });
+          break;
+        case 'real':
+          count = await this.prisma.medicine.count({
+            where: {
+              real: query.real,
             },
           });
           break;
@@ -151,18 +211,9 @@ export class StockService {
   async getPage(page: number, query?: MedicineQuery) {
     const index = page ? page : 0;
     let medicines;
-
+    
     if (query) {
       switch (query.type) {
-        case 'costPrice':
-          medicines = await this.prisma.medicine.findMany({
-            skip: index * this.pageLength,
-            take: this.pageLength,
-            where: {
-              costPrice: query.costPrice,
-            },
-          });
-          break;
         case 'dci':
           medicines = await this.prisma.medicine.findMany({
             skip: index * this.pageLength,
@@ -232,6 +283,69 @@ export class StockService {
             take: this.pageLength,
             where: {
               sellingPrice: query.sellingPrice,
+            },
+          });
+          break;
+        case 'costPrice':
+          medicines = await this.prisma.medicine.findMany({
+            skip: index * this.pageLength,
+            take: this.pageLength,
+            where: {
+              costPrice: query.costPrice,
+            },
+          });
+          break;
+        case 'alert':
+          medicines = await this.prisma.medicine.findMany({
+            skip: index * this.pageLength,
+            take: this.pageLength,
+            where: {
+              alert: query.alert,
+            },
+          });
+          break;
+        case 'family':
+          medicines = await this.prisma.medicine.findMany({
+            skip: index * this.pageLength,
+            take: this.pageLength,
+            where: {
+              family: {
+                contains: query.family,
+                mode: 'insensitive',
+              },
+            },
+          });
+          break;
+        case 'reference':
+          medicines = await this.prisma.medicine.findMany({
+            skip: index * this.pageLength,
+            take: this.pageLength,
+            where: {
+              reference: {
+                contains: query.reference,
+                mode: 'insensitive',
+              },
+            },
+          });
+          break;
+        case 'nomenclature':
+          medicines = await this.prisma.medicine.findMany({
+            skip: index * this.pageLength,
+            take: this.pageLength,
+            where: {
+              nomenclature: {
+                contains: query.nomenclature,
+                mode: 'insensitive',
+              },
+            },
+          });
+          break;
+        case 'real':
+          medicines = await this.prisma.medicine.findMany({
+            skip: index * this.pageLength,
+            take: this.pageLength,
+            where: {
+              real: query.real,
             },
           });
           break;
@@ -251,12 +365,6 @@ export class StockService {
   getMedicine(id: string) {
     return this.prisma.medicine.findUnique({
       where: { id },
-    });
-  }
-
-  getMedicineByName(name: string) {
-    return this.prisma.medicine.findUnique({
-      where: { name },
     });
   }
 
