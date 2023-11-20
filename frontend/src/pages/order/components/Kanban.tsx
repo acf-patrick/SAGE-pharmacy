@@ -1,7 +1,8 @@
 import { BsCheckLg } from "react-icons/bs";
 import { GoMoveToEnd } from "react-icons/go";
-import { MdEdit } from "react-icons/md";
+import { MdEdit, MdPostAdd } from "react-icons/md";
 import { RxCross2 } from "react-icons/rx";
+import { useNavigate } from "react-router-dom";
 import { styled } from "styled-components";
 import { KanbanItemStatus, KanbanItemStatusObject, Order } from "../types";
 
@@ -26,10 +27,17 @@ const StyledDiv = styled.div`
     }
 
     svg {
-      font-size: 1.5rem;
-      color: green;
-      fill: green;
       cursor: pointer;
+
+      &:first-of-type {
+        fill: blue;
+        font-size: 1.75rem;
+      }
+
+      &:last-of-type {
+        fill: green;
+        font-size: 1.5rem;
+      }
     }
   }
 `;
@@ -287,10 +295,18 @@ export default function Kanban({
     return undefined;
   };
 
+  const navigate = useNavigate();
+
   return (
     <StyledDiv>
       <div className="header">
         <h1>{title}</h1>
+        {title == "Commandes" ? (
+          <MdPostAdd
+            onClick={() => navigate("/order/create")}
+            title="Créer fournisseur"
+          />
+        ) : null}
         {moveItems ? (
           <GoMoveToEnd
             title="Envoyer à la prochaine étape"

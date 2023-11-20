@@ -1,10 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsUUID } from 'class-validator';
+import {
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
+
+class Medicine {
+  @IsString()
+  name: string;
+
+  @IsUUID()
+  owner: string;
+}
 
 class Order {
   @ApiProperty()
+  @IsOptional()
   @IsUUID()
-  medicineId: string;
+  medicineId?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  medicine?: Medicine;
 
   @ApiProperty()
   @IsNumber()
