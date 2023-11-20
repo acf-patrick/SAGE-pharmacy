@@ -173,7 +173,8 @@ export default function AddMedicineToPurchaseOrder({
         console.error(err);
         onClose();
         pushNotification(
-          `Impossible de charger la liste des médicaments pour ${providerName}`
+          `Impossible de charger la liste des médicaments pour ${providerName}`,
+          "error"
         );
       });
   }, []);
@@ -205,7 +206,7 @@ export default function AddMedicineToPurchaseOrder({
         navigate(`/order/${orderId}`);
       })
       .catch(() => {
-        pushNotification("Une erreur s'est produite");
+        pushNotification("Une erreur s'est produite", "error");
       })
       .finally(onClose);
   };

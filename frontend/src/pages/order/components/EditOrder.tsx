@@ -203,7 +203,7 @@ export default function EditOrder() {
         })
         .catch((err) => {
           console.error(err);
-          pushNotification("Une erreur s'est produite");
+          pushNotification("Une erreur s'est produite", "error");
         });
     } else {
       setShowValidation(true);
@@ -221,7 +221,7 @@ export default function EditOrder() {
       })
       .catch((err) => {
         console.error(err);
-        pushNotification("Une erreur s'est produite");
+        pushNotification("Une erreur s'est produite", "error");
       });
   };
 

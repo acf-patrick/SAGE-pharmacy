@@ -23,17 +23,22 @@ export const theme = {
     kanban: {
       notReady: "#2398F1",
       ready: "#50AD54",
-      incomplete: "#e01c1c"
+      incomplete: "#e01c1c",
     },
-    error: "red"
+    error: "red",
+    notification: {
+      info: "green",
+      error: "red",
+      warning: "#ff9500",
+    },
   },
   sizes: {
     modalWidth: "400px",
     modalHeight: "250px",
     purchaseHeight: "85vh",
     login: {
-      width: "480px"
-    }
+      width: "480px",
+    },
   },
   error: {
     fontSize: "0.9rem",

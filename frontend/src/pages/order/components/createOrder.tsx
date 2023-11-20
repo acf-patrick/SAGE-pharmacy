@@ -264,7 +264,10 @@ function CreateOrder() {
       .then(() => pushNotification("Bon de commande créé avec succès"))
       .catch((err) => {
         console.error(err);
-        pushNotification("Erreur lors de la création du bon de commande");
+        pushNotification(
+          "Erreur lors de la création du bon de commande",
+          "error"
+        );
       })
       .finally(() => navigate("/order"));
   };
@@ -298,7 +301,7 @@ function CreateOrder() {
             <button
               onClick={() => {
                 if (rows.length > 0) setShowValidation(true);
-                else pushNotification("Bon de commande vide");
+                else pushNotification("Bon de commande vide", "error");
               }}
             >
               Valider

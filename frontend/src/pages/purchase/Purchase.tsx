@@ -330,12 +330,14 @@ const Purchase = () => {
             onClick={() => {
               if (selectedRowIndices.length === 0) {
                 pushNotification(
-                  "Sélectionner des lignes pour créer les bons de commande!"
+                  "Sélectionner des lignes pour créer les bons de commande!",
+                  "warning"
                 );
               } else {
                 setShowConfirmation(true);
               }
-            }}>
+            }}
+          >
             Commander
           </button>
         </div>
@@ -387,7 +389,8 @@ const Purchase = () => {
                         "checkbox",
                         "name",
                         i % 2 == 0 ? "even" : "odd",
-                      ].join(" ")}>
+                      ].join(" ")}
+                    >
                       <input
                         type="checkbox"
                         id={medicine.name}
@@ -414,7 +417,8 @@ const Purchase = () => {
                         <select
                           name={medicine.name}
                           id={medicine.name}
-                          onChange={(e) => selectedMedicineOnChange(i, e)}>
+                          onChange={(e) => selectedMedicineOnChange(i, e)}
+                        >
                           {medicine.providerMedicines.map((match, i) => (
                             <option
                               key={i}
@@ -423,7 +427,8 @@ const Purchase = () => {
                                 medicine: match.medicine,
                                 providerName: match.provider.name,
                                 order: match.quantityToOrder,
-                              })}>
+                              })}
+                            >
                               {match.medicine.name +
                                 " (" +
                                 match.provider.name +

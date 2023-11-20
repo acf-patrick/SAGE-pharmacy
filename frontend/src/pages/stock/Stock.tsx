@@ -120,7 +120,7 @@ const StyledStock = styled.div`
     left: 50%;
     transform: translateX(-50%);
   }
-  
+
   h2 {
     font-size: 4rem;
     font-weight: normal;
@@ -320,7 +320,8 @@ export default function Stock() {
               }
               onClick={() =>
                 toggleAllRows(selectedRows.length != medicines.length)
-              }>
+              }
+            >
               {selectedRows.length == medicines.length ? (
                 <MdOutlineTabUnselected />
               ) : (
@@ -339,7 +340,8 @@ export default function Stock() {
                 </button>
                 <button
                   className="delete-btn"
-                  onClick={() => setShowConfirmation(true)}>
+                  onClick={() => setShowConfirmation(true)}
+                >
                   <AiOutlineDelete />
                   <span>Supprimer</span>
                 </button>

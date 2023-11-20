@@ -1,8 +1,9 @@
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { AiOutlineCloseCircle } from "react-icons/ai";
 import { styled } from "styled-components";
 import { NotificationContext } from "../contexts";
+import { theme } from "../styles/theme";
 
 function useFirstRender() {
   const ref = useRef(true);
@@ -18,7 +19,7 @@ const StyledContainer = styled.div`
   }
 `;
 
-const StyledToastDiv = styled.div<{ $color?: string }>`
+const StyledToastDiv = styled.div<{ $color: string }>`
   opacity: 0;
   transform: translateY(1.5rem);
   transition: opacity 500ms, transform 500ms;
@@ -31,7 +32,7 @@ const StyledToastDiv = styled.div<{ $color?: string }>`
   .toast {
     width: 350px;
     height: 100px;
-    background-color: ${({ $color }) => ($color ? $color : "grey")};
+    background-color: ${({ $color }) => $color};
     border-radius: 5px;
     display: flex;
     align-items: center;
@@ -65,14 +66,17 @@ export default function ToastNotification() {
 
   const firstRender = useFirstRender();
   const notificationContext = useContext(NotificationContext);
-  const { notificationMessage, setNotificationMessage } = notificationContext!;
+  const { notification, setNotification } = notificationContext!;
 
   const innerRef = useRef<HTMLDivElement>(null);
 
   const close = () => {
     const inner = innerRef.current;
     if (inner) {
-      setNotificationMessage("");
+      setNotification((notification) => ({
+        message: "",
+        type: notification.type,
+      }));
       setTimeout(() => {
         inner.style.display = "none";
       }, 1000);
@@ -82,7 +86,7 @@ export default function ToastNotification() {
   useEffect(() => {
     const inner = innerRef.current;
     if (inner) {
-      if (notificationMessage) {
+      if (notification.message.length > 0) {
         inner.style.display = "block";
         setTimeout(() => {
           close();
@@ -93,17 +97,17 @@ export default function ToastNotification() {
       setTimeout(() => {
         inner.classList.toggle(
           "notification-appears",
-          notificationMessage.length > 0
+          notification.message.length > 0
         );
       }, 100);
     }
-  }, [notificationMessage]);
+  }, [notification]);
 
   return createPortal(
     <StyledContainer>
       <StyledToastDiv
         className="notification-appears"
-        $color="green"
+        $color={theme.colors.notification[notification.type]}
         style={{
           display: firstRender ? "none" : "block",
         }}
@@ -112,7 +116,7 @@ export default function ToastNotification() {
       >
         <div className="toast">
           <AiOutlineCloseCircle />
-          <p>{notificationMessage}</p>
+          <p>{notification.message}</p>
         </div>
       </StyledToastDiv>
     </StyledContainer>,
