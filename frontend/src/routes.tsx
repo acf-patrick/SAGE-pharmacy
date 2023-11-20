@@ -2,18 +2,18 @@ import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
 import { Login, Order, Provider, Purchase, Stock } from "./pages";
 import {
+  CreateOrder,
   EditOrder,
   ErrorOnOrderCreate,
   OrderList,
 } from "./pages/order/components";
 import { loader as orderLoader } from "./pages/order/components/EditOrder";
 import {
+  CreateProvider,
   ProviderList,
   ProviderMedicines,
   ProviderNotFound,
 } from "./pages/provider/components";
-import CreateProvider from "./pages/provider/components/CreateProvider";
-import CreateOrder from "./pages/order/components/createOrder";
 
 export const router = createBrowserRouter([
   {

@@ -183,7 +183,7 @@ const StyledContainer = styled.div`
   }
 `;
 
-function createOrder() {
+function CreateOrder() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [currentProvider, setCurrentProvider] = useState<Provider | null>(null);
   const [showAddMedicineModal, setShowAddMedicineModal] = useState(false);
@@ -439,4 +439,4 @@ function createOrder() {
   );
 }
 
-export default createOrder;
+export default CreateOrder;
