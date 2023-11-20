@@ -37,4 +37,8 @@ a {
   text-decoration: none;
 }
 
+#root {
+  overflow-x: hidden;
+}
+
 `;
