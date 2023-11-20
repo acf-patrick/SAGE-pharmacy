@@ -1,5 +1,6 @@
 import { lighten } from "polished";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { styled } from "styled-components";
 import { api } from "../../../api";
 import { useNotification } from "../../../hooks";
@@ -61,14 +62,16 @@ const StyledCreateProvider = styled.form`
   }
 `;
 
-function CreateProvider() {
+function EditProvider() {
   const { pushNotification } = useNotification();
   const navigate = useNavigate();
+  const { id: providerId } = useParams();
+  const [provider, setProvider] = useState<ProviderDto | null>(null);
 
-  const createNewProvider = (e: React.FormEvent<HTMLFormElement>) => {
+  const editProvider = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const newProvider: ProviderDto = {
+    const editedProvider: ProviderDto = {
       accountNumber: formData.get("account-number")?.toString(),
       abridgment: formData.get("abridgment")?.toString(),
       commonAccountNumber: formData.get("common-account-number")
@@ -97,29 +100,57 @@ function CreateProvider() {
     };
 
     api
-      .post("/provider", newProvider)
+      .patch("/provider", {
+        providerId: providerId,
+        data: editedProvider,
+      })
       .then((res) => {
-        pushNotification("Nouveau fournisseur ajouté");
+        pushNotification("Fournisseur modifié");
         navigate("/provider/" + res.data.id);
       })
       .catch((err) => console.error(err));
   };
 
+  useEffect(() => {
+    api
+      .get("/provider/" + providerId)
+      .then((res) => setProvider(res.data))
+      .catch((err) => console.log(err));
+  }, []);
+
   return (
-    <StyledCreateProvider onSubmit={createNewProvider}>
+    <StyledCreateProvider onSubmit={editProvider}>
       <h2>Nouveau Fournisseur</h2>
       <label htmlFor="name">
         Désignation<span>*</span>
       </label>
-      <input required type="text" name="name" id="name" />
+      <input
+        required
+        type="text"
+        name="name"
+        id="name"
+        defaultValue={provider?.name}
+      />
       <label htmlFor="account-number">
         Numéro de compte<span>*</span>
       </label>
-      <input required type="text" name="account-number" id="account-number" />
+      <input
+        required
+        type="text"
+        name="account-number"
+        id="account-number"
+        defaultValue={provider?.accountNumber}
+      />
       <label htmlFor="abridgment">
         Abrégé<span>*</span>
       </label>
-      <input required type="text" name="abridgment" id="abridgment" />
+      <input
+        required
+        type="text"
+        name="abridgment"
+        id="abridgment"
+        defaultValue={provider?.abridgment}
+      />
       <label htmlFor="common-account-number">
         Numéro de compte collectif<span>*</span>
       </label>
@@ -128,50 +159,106 @@ function CreateProvider() {
         type="text"
         name="common-account-number"
         id="common-account-number"
+        defaultValue={provider?.commonAccountNumber}
       />
       <label htmlFor="address">
         Adresse<span>*</span>
       </label>
-      <input required type="text" name="address" id="address" />
+      <input
+        required
+        type="text"
+        name="address"
+        id="address"
+        defaultValue={provider?.address}
+      />
       <label htmlFor="complement-address">Complément d'adresse</label>
-      <input type="text" name="complement-address" id="complement-address" />
+      <input
+        type="text"
+        name="complement-address"
+        id="complement-address"
+        defaultValue={provider?.complementAdress}
+      />
       <label htmlFor="postal-code">Code postal</label>
-      <input type="text" name="postal-code" id="postal-code" />
+      <input
+        type="text"
+        name="postal-code"
+        id="postal-code"
+        defaultValue={provider?.postalCode}
+      />
       <label htmlFor="city">
         Ville<span>*</span>
       </label>
-      <input required type="text" name="city" id="city" />
+      <input
+        required
+        type="text"
+        name="city"
+        id="city"
+        defaultValue={provider?.city}
+      />
       <label htmlFor="country">
         Pays<span>*</span>
       </label>
-      <input required type="text" name="country" id="country" />
+      <input
+        required
+        type="text"
+        name="country"
+        id="country"
+        defaultValue={provider?.country}
+      />
       <label htmlFor="telephone">
         Téléphone<span>*</span>
       </label>
-      <input required type="text" name="telephone" id="telephone" />
+      <input
+        required
+        type="text"
+        name="telephone"
+        id="telephone"
+        defaultValue={provider?.telephone}
+      />
       <label htmlFor="telecopie">Télécopie</label>
-      <input type="text" name="telecopie" id="telecopie" />
+      <input
+        type="text"
+        name="telecopie"
+        id="telecopie"
+        defaultValue={provider?.telecopie}
+      />
       <label htmlFor="email">Email</label>
-      <input type="text" name="email" id="email" />
+      <input
+        type="text"
+        name="email"
+        id="email"
+        defaultValue={provider?.email}
+      />
       <label htmlFor="contact-name">Nom de contact</label>
-      <input type="text" name="contact-name" id="contact-name" />
+      <input
+        type="text"
+        name="contact-name"
+        id="contact-name"
+        defaultValue={provider?.contactName}
+      />
       <label htmlFor="rc">RC</label>
-      <input type="text" name="rc" id="rc" />
+      <input type="text" name="rc" id="rc" defaultValue={provider?.rc} />
       <label htmlFor="nif">NIF</label>
-      <input type="text" name="nif" id="nif" />
+      <input type="text" name="nif" id="nif" defaultValue={provider?.nif} />
       <label htmlFor="stat">STAT</label>
-      <input type="text" name="stat" id="stat" />
+      <input type="text" name="stat" id="stat" defaultValue={provider?.stat} />
       <label htmlFor="cif">CIF</label>
-      <input type="text" name="cif" id="cif" />
+      <input type="text" name="cif" id="cif" defaultValue={provider?.cif} />
       <label htmlFor="collector">
         Collecteur<span>*</span>
       </label>
-      <input required type="text" name="collector" id="collector" />
+      <input
+        required
+        type="text"
+        name="collector"
+        id="collector"
+        defaultValue={provider?.collector}
+      />
       <label htmlFor="min">Achat Min</label>
-      <input type="text" name="min" id="min" />
-      <button type="submit">Ajouter</button>
+      <input type="text" name="min" id="min" defaultValue={provider?.min} />
+      <button type="submit">Mettre à jour</button>
     </StyledCreateProvider>
   );
 }
 
-export default CreateProvider;
+export default EditProvider;

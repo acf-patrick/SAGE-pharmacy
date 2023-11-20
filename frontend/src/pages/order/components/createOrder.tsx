@@ -9,8 +9,7 @@ import {
   ConfirmationDialog,
 } from "../../../components";
 import { useNotification } from "../../../hooks";
-import { MedicineFromProvider, Provider } from "../../../models";
-import { KanbanItemStatusObject, OrderDto } from "../types";
+import { Provider } from "../../../models";
 
 const StyledCreateOrder = styled.form`
   margin-left: 2rem;

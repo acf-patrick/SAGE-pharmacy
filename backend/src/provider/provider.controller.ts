@@ -9,6 +9,7 @@ import {
   UseGuards,
   Query,
   Delete,
+  Patch,
 } from '@nestjs/common';
 import { ProviderService } from './provider.service';
 import { StockService } from '../stock/stock.service';
@@ -97,5 +98,15 @@ export class ProviderController {
   })
   async deleteProvider(@Param('id') id: string) {
     return await this.providerService.deleteProvider(id);
+  }
+
+  @Patch()
+  @ApiOperation({
+    summary: 'Update a provider',
+  })
+  async updateProvider(
+    @Body() data: { providerId: string; data: CreateProviderDto },
+  ) {
+    return await this.providerService.updateProvider(data);
   }
 }

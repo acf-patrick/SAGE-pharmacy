@@ -1,100 +1,92 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsNumber,
-  IsOptional,
-  IsString,
-  isArray,
-} from 'class-validator';
-import { type } from 'os';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateProviderDto {
   @IsString()
   @ApiProperty()
-  accountNumber;
+  accountNumber: string;
 
   @IsString()
   @ApiProperty()
-  abridgment;
-
-  @IsNumber()
-  @ApiProperty()
-  commonAccountNumber;
+  abridgment: string;
 
   @IsString()
   @ApiProperty()
-  address;
+  commonAccountNumber: string;
+
+  @IsString()
+  @ApiProperty()
+  address: string;
 
   @IsOptional()
   @IsString()
   @ApiProperty()
-  complementAdress;
+  complementAdress?: string;
 
   @IsOptional()
   @IsNumber()
   @ApiProperty()
-  postalCode;
-
-  @IsString({
-    each: true,
-  })
-  @ApiProperty()
-  city;
+  postalCode?: number;
 
   @IsString()
   @ApiProperty()
-  country;
+  city: string;
+
+  @IsString()
+  @ApiProperty()
+  country: string;
 
   @IsArray()
   @ApiProperty({
     isArray: true,
     type: String,
   })
-  telephone;
+  telephone: string[];
 
   @IsOptional()
   @IsString()
   @ApiProperty()
-  telecopie;
+  telecopie?: string;
 
   @IsOptional()
   @IsString()
   @ApiProperty()
-  email;
+  email?: string;
 
   @IsOptional()
   @IsString()
   @ApiProperty()
-  contactName;
+  contactName?: string;
 
   @IsOptional()
   @IsString()
   @ApiProperty()
-  rc;
+  rc?: string;
+
   @IsString()
   @ApiProperty()
-  stat;
+  stat?: string;
 
   @IsOptional()
   @IsString()
   @ApiProperty()
-  nif;
+  nif?: string;
 
   @IsOptional()
   @IsString()
   @ApiProperty()
-  cif;
+  cif?: string;
 
   @IsString()
   @ApiProperty()
-  collector;
+  collector: string;
 
   @IsString()
   @ApiProperty()
-  name;
+  name: string;
 
   @IsOptional()
   @IsNumber()
   @ApiProperty()
-  min;
+  min?: number;
 }

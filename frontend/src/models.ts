@@ -54,7 +54,7 @@ export type Provider = {
 export type ProviderDto = {
   accountNumber: string;
   abridgment: string;
-  commonAccountNumber: number;
+  commonAccountNumber: string;
   address: string;
   complementAdress?: string;
   postalCode?: number;
