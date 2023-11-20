@@ -29,7 +29,10 @@ export class OrderController {
 
   @Post(':id/medicine')
   @ApiOperation({ summary: 'Add medicine to purchase order' })
-  async addMedicine(@Param('id') id: string, @Body() medicine: CreateMedicineOrderDto) {
+  async addMedicine(
+    @Param('id') id: string,
+    @Body() medicine: CreateMedicineOrderDto,
+  ) {
     const { medicineName, providerName } =
       await this.orderService.createMedicineOrder(
         id,
@@ -130,5 +133,14 @@ export class OrderController {
   @ApiOperation({ summary: 'Delete all orders' })
   clearOrders() {
     return this.orderService.clearOrders();
+  }
+
+  @Post('update/:id')
+  @ApiOperation({
+    summary:
+      'Update all order from a specific medicine because there was a medicines list update',
+  })
+  async updateAllOrders(@Param('id') id: string) {
+    await this.orderService.updateAllOrders(id);
   }
 }
