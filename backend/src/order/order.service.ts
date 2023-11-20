@@ -13,6 +13,7 @@ import {
   OrderStatus,
 } from '@prisma/client';
 import { OrderDto } from './dto/Order.dto';
+import { filter } from 'rxjs';
 
 @Injectable()
 export class OrderService {
@@ -349,14 +350,24 @@ export class OrderService {
 
   async updateAllOrders(id: string) {
     const orders = await this.prisma.order.findMany({
-     include: {
-      medicineOrders: true,
-      provider: true
-     }
+      include: {
+        medicineOrders: {
+          include: {
+            medicine: true,
+          },
+        },
+        provider: true,
+      },
     });
-    
-    orders.forEach((order) => {
-      order.;
+
+    const provider = await this.providerService.getOne(id);
+    const providerNewMedicines = provider.medicines;
+
+    const filteredOrders = orders.filter((order) => order.provider.id == id);
+    filteredOrders.forEach((order) => {
+      const medicinesThatAreAbsent = order.medicineOrders.filter(
+        (medicine) => {},
+      );
     });
   }
 }

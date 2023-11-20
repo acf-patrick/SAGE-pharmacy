@@ -98,6 +98,7 @@ const StyledPurchase = styled.div`
       padding: 0 1rem;
       overflow-x: auto;
       justify-content: flex-start;
+      min-width: max-content;
     }
 
     .header-item {
@@ -152,6 +153,27 @@ const StyledPurchase = styled.div`
     svg {
       font-size: 6rem;
     }
+  }
+
+  .medicine-name {
+    min-width: 350px;
+    text-align: center;
+  }
+
+  .quantity {
+    min-width: 120px;
+    text-align: center;
+  }
+
+  .provider-name {
+    min-width: 200px;
+    text-align: center;
+  }
+
+  .price-with-tax,
+  .price-without-tax {
+    min-width: 150px;
+    text-align: center;
   }
 `;
 
@@ -440,7 +462,7 @@ const Purchase = () => {
                     </div>
                     {/* quantity to purchase */}
                     <input
-                      className={i % 2 == 0 ? "even" : "odd"}
+                      className={`quantity ${i % 2 == 0 ? "even" : "odd"}`}
                       type="number"
                       key={currentMedicines[i].order}
                       value={currentMedicines[i].order}
@@ -449,16 +471,27 @@ const Purchase = () => {
                       onChange={(e) => orderInputValueOnChange(i, e)}
                     />
                     {/* provider's name */}
-                    <div className={i % 2 == 0 ? "even" : "odd"}>
+                    <div
+                      className={`provider-name ${i % 2 == 0 ? "even" : "odd"}`}
+                    >
                       {currentProviders[i]}
                     </div>
                     {/* price with taxes */}
-                    <div className={"unbold " + (i % 2 == 0 ? "even" : "odd")}>
+                    <div
+                      className={
+                        "price-with-tax unbold " + (i % 2 == 0 ? "even" : "odd")
+                      }
+                    >
                       {currentMedicines[i].order *
                         currentMedicines[i].unitPriceWithTax}
                     </div>
                     {/* price without taxes */}
-                    <div className={"unbold " + (i % 2 == 0 ? "even" : "odd")}>
+                    <div
+                      className={
+                        "price-without-tax unbold " +
+                        (i % 2 == 0 ? "even" : "odd")
+                      }
+                    >
                       {currentMedicines[i].order *
                         currentMedicines[i].unitPriceWithoutTax}
                     </div>

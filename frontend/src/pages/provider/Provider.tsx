@@ -1,8 +1,10 @@
 import { lighten } from "polished";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useParams } from "react-router-dom";
 import readXlsxFile from "read-excel-file";
 import styled from "styled-components";
 import { Header } from "../../components";
+import { useNotification } from "../../hooks";
+import { api } from "../../api";
 
 const StyledContainer = styled.div`
   padding: 0 2rem;
@@ -67,9 +69,24 @@ export default function Provider() {
       },
     };
     readXlsxFile(file, { schema }).then((rows) => console.log(rows));
+
+    updateOrders();
   };
 
   const location = useLocation();
+  const { id: providerId } = useParams();
+  const { pushNotification } = useNotification();
+
+  // Verify all medicines ordered that are not in provider new list anymore
+  const updateOrders = () => {
+    api
+      .post("/order/update/" + providerId)
+      .then(() => pushNotification("Cataloqgue du fournisseur importée"))
+      .catch((err) => {
+        console.log(err);
+        pushNotification("Erreur lors de l'importation du catalogue", "error");
+      });
+  };
 
   return (
     <>

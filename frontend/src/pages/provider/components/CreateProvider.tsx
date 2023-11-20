@@ -1,9 +1,8 @@
 import { lighten } from "polished";
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { styled } from "styled-components";
 import { api } from "../../../api";
-import { NotificationContext } from "../../../contexts";
+import { useNotification } from "../../../hooks";
 import { ProviderDto } from "../../../models";
 
 const StyledCreateProvider = styled.form`
@@ -64,8 +63,8 @@ const StyledCreateProvider = styled.form`
 
 function CreateProvider() {
   const navigate = useNavigate();
-  const notificationContext = useContext(NotificationContext);
-  const { setNotificationMessage } = notificationContext!;
+  const { pushNotification } = useNotification();
+
   const createNewProvider = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -102,7 +101,7 @@ function CreateProvider() {
     api
       .post("/provider", newProvider)
       .then((res) => {
-        setNotificationMessage("Nouveau fournisseur ajouté");
+        pushNotification("Nouveau fournisseur ajouté");
         navigate("/provider/" + res.data.id);
       })
       .catch((err) => console.error(err));
