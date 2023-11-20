@@ -8,6 +8,7 @@ import { Provider } from "../../../models";
 import { appear } from "../../../styles/animations";
 import { theme } from "../../../styles/theme";
 import { TbBasketCancel } from "react-icons/tb";
+import ProviderInfo from "./ProviderInfo";
 
 const StyledTitle = styled.div`
   display: flex;
@@ -34,7 +35,6 @@ const StyledTitle = styled.div`
       height: 3rem;
       padding: 5px 20px;
       border: none;
-      opacity: 0;
       color: white;
       font-weight: 600;
       border-radius: 5px;
@@ -43,6 +43,7 @@ const StyledTitle = styled.div`
 
       &:first-of-type {
         background-color: ${({ theme }) => theme.colors.tertiary};
+        opacity: 0;
 
         &:hover {
           background-color: ${({ theme }) =>
@@ -50,8 +51,16 @@ const StyledTitle = styled.div`
         }
       }
 
+      &:nth-of-type(2) {
+        background-color: ${({ theme }) => theme.colors.buttons.edit};
+
+        &:hover {
+          background-color: ${({ theme }) =>
+            lighten(0.1, theme.colors.buttons.edit)};
+        }
+      }
+
       &:last-of-type {
-        opacity: 1;
         background-color: ${({ theme }) => theme.colors.buttons.delete};
 
         &:hover {
@@ -275,6 +284,7 @@ export default function ProviderMedicines() {
   const [changedCorrespondances, setChangedCorrespondances] = useState(false);
   const [showChangeConfirmation, setShowChangeConfirmation] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [showProviderInfo, setShowProviderInfo] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -382,6 +392,9 @@ export default function ProviderMedicines() {
           >
             Enregistrer Modif.
           </button>
+          <button onClick={() => setShowProviderInfo(true)}>
+            Informations
+          </button>
           <button onClick={() => setShowDeleteConfirmation(true)}>
             Supprimer
           </button>
@@ -466,6 +479,9 @@ export default function ProviderMedicines() {
           message="Voulez-vous supprimer le fournisseur?"
           onClose={() => setShowDeleteConfirmation(false)}
         />
+      ) : null}
+      {showProviderInfo ? (
+        <ProviderInfo onClose={() => setShowProviderInfo(false)} />
       ) : null}
     </>
   );
