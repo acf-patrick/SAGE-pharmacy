@@ -94,9 +94,8 @@ const StyledTable = styled.div`
       min-width: 10rem;
       overflow-y: auto;
 
-      &:not(:last-of-type) {
-        border-right: solid 1px black;
-      }
+      border-right: solid 1px #7a7a7a;
+      border-bottom: solid 1px #7a7a7a;
 
       input[type="checkbox"] {
         cursor: pointer;
@@ -110,7 +109,7 @@ const StyledTable = styled.div`
         gap: 1rem;
         align-items: center;
         padding-left: 1rem;
-        min-width: 240px;
+        min-width: max-content;
 
         & > div {
           height: 100%;
@@ -207,7 +206,14 @@ type Field =
   | "isTaxed"
   | "min"
   | "max"
-  | "expirationDate";
+  | "expirationDate"
+  | "real"
+  | "nomenclature"
+  | "type"
+  | "family"
+  | "alert"
+  | "reference"
+  | "manufacturationDate";
 
 export default function Table({
   medicines,
@@ -235,19 +241,29 @@ export default function Table({
   );
 
   const headersMap = new Map<string, Field>([
-    ["Nom", "name"],
-    ["Prix d'achat", "sellingPrice"],
-    ["Prix de vente", "costPrice"],
-    ["Quantité", "quantity"],
+    ["Désignation", "name"],
+    ["Référence", "reference"],
+    ["Stock réel", "real"],
+    ["Stock à terme", "quantity"],
+    ["Stock d'alerte", "alert"],
+    ["Min", "min"],
+    ["Max", "max"],
+    ["Famille", "family"],
+    ["Nomenclature", "nomenclature"],
+    ["Prix d'achat", "costPrice"],
+    ["Prix de vente", "sellingPrice"],
     ["Emplacement", "location"],
     ["DCI", "dci"],
     ["Taxé", "isTaxed"],
-    ["Stock Min", "min"],
-    ["Stock Max", "max"],
     ["Expiration", "expirationDate"],
+    ["Fabrication", "manufacturationDate"],
   ]);
 
   const dateToLocaleFormat = (date: string) => {
+    if (!date) {
+      return "";
+    }
+
     let s = new Date(date).toLocaleDateString("fr-FR", {
       day: "numeric",
       month: "long",
@@ -262,7 +278,7 @@ export default function Table({
     let classValue = "";
     if (selectedRowIds.findIndex((id) => id === medicine.id) >= 0)
       classValue += " selected";
-    if (medicine.quantity <= medicine.min) classValue += " low";
+    if (medicine.quantity <= medicine.alert) classValue += " low";
 
     var diff = Math.abs(
       new Date(medicine.expirationDate).getTime() - new Date().getTime()
@@ -283,8 +299,7 @@ export default function Table({
                 onClick={() => {
                   setSortBy(headersMap.get(header)!);
                   setAscending(!ascending);
-                }}
-              >
+                }}>
                 <div className="inner-th">
                   <p>{header}</p>
                   {headersMap.get(header) == sortBy ? (
@@ -313,17 +328,23 @@ export default function Table({
                   <label htmlFor={medicine.name}>{medicine.name}</label>
                 </div>
               </td>
+              <td>{medicine.reference}</td>
+              <td>{medicine.real}</td>
+              <td>{medicine.quantity}</td>
+              <td>{medicine.alert}</td>
+              <td>{medicine.min}</td>
+              <td>{medicine.max}</td>
+              <td>{medicine.family}</td>
+              <td>{medicine.nomenclature}</td>
               <td>{medicine.costPrice}</td>
               <td>{medicine.sellingPrice}</td>
-              <td>{medicine.quantity}</td>
               <td>{medicine.location}</td>
               <td>{medicine.dci}</td>
               <td className="editable boolean">
                 {medicine.isTaxed ? "Oui" : "Non"}
               </td>
-              <td>{medicine.min}</td>
-              <td>{medicine.max}</td>
               <td>{dateToLocaleFormat(medicine.expirationDate)}</td>
+              <td>{dateToLocaleFormat(medicine.manufacturationDate)}</td>
             </tr>
           ))}
         </tbody>

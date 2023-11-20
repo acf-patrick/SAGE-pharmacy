@@ -187,8 +187,7 @@ export default function SideBar() {
                     to={path.to}
                     className={
                       location.pathname.includes(path.to) ? "active" : ""
-                    }
-                  >
+                    }>
                     <span>
                       {path.icon}
                       {path.name}
@@ -202,8 +201,7 @@ export default function SideBar() {
                       setUnfoldedProviderList(
                         (unfoldedProviderList) => !unfoldedProviderList
                       )
-                    }
-                  >
+                    }>
                     <span>
                       {path.icon}
                       {path.name}

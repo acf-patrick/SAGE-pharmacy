@@ -36,6 +36,12 @@ export class StockController {
     private prisma: PrismaService,
   ) {}
 
+  @Get('medicine-count')
+  @ApiOperation({ summary: 'Returns number of records in stock' })
+  getMedicineCount() {
+    return this.prisma.medicine.count();
+  }
+
   @Get('medicine-names')
   @ApiOperation({ summary: 'Returns all medicine names in stock' })
   async getAllMedicineNames() {
@@ -81,6 +87,11 @@ export class StockController {
     @Query('max', new ParseIntPipe({ optional: true })) max?: number,
     @Query('location') location?: string,
     @Query('dci') dci?: string,
+    @Query('alerte', new ParseIntPipe({ optional: true })) alert?: number,
+    @Query('family') family?: string,
+    @Query('nomenclature') nomenclature?: string,
+    @Query('reference') reference?: string,
+    @Query('real', new ParseIntPipe({ optional: true })) real?: number,
   ) {
     let query;
 
@@ -113,15 +124,40 @@ export class StockController {
           type: 'quantity',
           quantity,
         };
+      } else if (sellingPrice >= 0) {
+        query = {
+          type: 'sellingPrice',
+          sellingPrice,
+        };
       } else if (costPrice >= 0) {
         query = {
           type: 'costPrice',
           costPrice,
         };
-      } else if (sellingPrice >= 0) {
+      } else if (alert >= 0) {
         query = {
-          type: 'sellingPrice',
-          sellingPrice,
+          type: 'alert',
+          alert,
+        };
+      } else if (family) {
+        query = {
+          type: 'family',
+          family,
+        };
+      } else if (nomenclature) {
+        query = {
+          type: 'nomenclature',
+          nomenclature,
+        };
+      } else if (reference) {
+        query = {
+          type: 'reference',
+          reference,
+        };
+      } else if (real >= 0) {
+        query = {
+          type: 'real',
+          real,
         };
       } else {
         query = undefined;
