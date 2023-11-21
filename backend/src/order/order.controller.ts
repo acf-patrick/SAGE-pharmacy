@@ -38,12 +38,7 @@ export class OrderController {
     @Query('providerName') providerName: string,
     @Res() res: Response,
   ) {
-    try {
-      await this.orderService.createBillFile(providerName);
-    } catch (e) {
-      console.error(e);
-      throw new ServiceUnavailableException(`Failed to create PDF file`);
-    }
+    await this.orderService.createBillFile(providerName);
 
     const file = createReadStream(
       join(__dirname, 'bills', providerName + '.pdf'),

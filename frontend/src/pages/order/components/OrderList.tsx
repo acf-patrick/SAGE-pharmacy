@@ -75,35 +75,6 @@ export default function OrderList() {
       <Kanban
         orders={orders.ordered}
         title="Commandes"
-        moveItems={() => {
-          orders.ordered.forEach((order) => {
-            if (!(order.minPurchase <= order.totalPriceWithTax)) {
-              return;
-            }
-            api
-              .patch("/order/" + order.id, {
-                status: KanbanItemStatusObject.PENDING,
-              })
-              .then(() => {
-                setOrders({
-                  ...orders,
-                  pending: [
-                    ...orders.pending,
-                    ...orders.ordered
-                      .filter((order) => isValid(order))
-                      .map((order) => {
-                        order.status = KanbanItemStatusObject.PENDING;
-                        return order;
-                      }),
-                  ],
-                  ordered: orders.ordered.filter((order) => !isValid(order)),
-                });
-              })
-              .catch((err) => {
-                console.error(err);
-              });
-          });
-        }}
         moveItem={(index: number) => {
           const orderToMove = orders.ordered[index];
           if (isValid(orderToMove)) {

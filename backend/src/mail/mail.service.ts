@@ -5,7 +5,13 @@ import { Injectable } from '@nestjs/common';
 export class MailService {
   constructor(private mailerService: MailerService) {}
 
-  sendMail(options: Omit<ISendMailOptions, 'from'>) {
+  private sendMail(options: Omit<ISendMailOptions, 'from'>) {
     return this.mailerService.sendMail(options);
+  }
+
+  foo() {
+    this.sendMail({
+        
+    })
   }
 }

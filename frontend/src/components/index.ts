@@ -7,3 +7,4 @@ export { default as AddForm } from "./AddForm";
 export { default as ToastNotification } from "./ToastNotification";
 export { default as Header } from "./Header";
 export { default as AddMedicineToPurchaseOrder } from "./AddMedicineToPurchaseOrder";
+export { default as SendMail } from "./SendMail";

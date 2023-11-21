@@ -30,7 +30,7 @@ export class OrderService {
 
     if (!order) {
       throw new NotFoundException(
-        `No provider with given name : ${providerName}`,
+        `No order associated to ${providerName}`,
       );
     }
 
@@ -42,6 +42,12 @@ export class OrderService {
         medicine: true,
       },
     });
+
+    if (orders.length == 0) {
+      throw new BadRequestException(
+        `No order medicine set for provider ${providerName}`,
+      );
+    }
 
     let priceWithTax = 0;
     let priceWithoutTax = 0;
