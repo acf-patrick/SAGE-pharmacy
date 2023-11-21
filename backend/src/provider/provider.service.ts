@@ -263,4 +263,22 @@ export class ProviderService {
       throw new NotFoundException(`Provider with ${providerId} not found.`);
     }
   }
+
+  // update specific provider medicines
+  async updateProviderMedicines(
+    providerId: string,
+    newMedicines: Omit<MedicineFromProvider, 'id' | 'providerId'>[],
+  ) {
+    // delete all medicine associated with prpviderId
+    await this.prisma.medicineFromProvider.deleteMany({
+      where: {
+        providerId,
+      },
+    });
+
+    // add all new medicines to medicines from provider list
+    await this.prisma.medicineFromProvider.createMany({
+      data: newMedicines.map((medicine) => ({ ...medicine, providerId })),
+    });
+  }
 }
