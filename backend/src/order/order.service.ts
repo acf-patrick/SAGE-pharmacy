@@ -349,25 +349,29 @@ export class OrderService {
   }
 
   async updateAllOrders(id: string) {
-    const orders = await this.prisma.order.findMany({
-      include: {
-        medicineOrders: {
-          include: {
-            medicine: true,
+    const orderMedicines = await this.prisma.orderMedicine.findMany({
+      where: {
+        Order: {
+          provider: {
+            id,
           },
         },
-        provider: true,
       },
     });
 
-    const provider = await this.providerService.getOne(id);
-    const providerNewMedicines = provider.medicines;
-
-    const filteredOrders = orders.filter((order) => order.provider.id == id);
-    filteredOrders.forEach((order) => {
-      const medicinesThatAreAbsent = order.medicineOrders.filter(
-        (medicine) => {},
-      );
+    const provider = await this.prisma.provider.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        medicines: true,
+      },
     });
   }
 }
+
+// await this.prisma.medicineFromProvider.deleteMany({
+//   where: {
+//     id: '2f57b55f-c8df-4ac8-b7d6-4a01c89dabb2',
+//   },
+// });

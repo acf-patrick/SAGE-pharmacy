@@ -20,12 +20,16 @@ import { OrderService } from './order.service';
 import { UpdateMedicineQuantitiesDto } from './dto/UpdateMedicineQuantities.dto';
 import { DeleteMedicineOrderDto } from './dto/DeleteMedicineOrder.dto';
 import { CreateMedicineOrderDto } from './dto/CreateMedicineOrder.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Controller('api/order')
 @ApiTags('🛍️ Order')
 @UseGuards(new AccessTokenGuard())
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   @Post(':id/medicine')
   @ApiOperation({ summary: 'Add medicine to purchase order' })
