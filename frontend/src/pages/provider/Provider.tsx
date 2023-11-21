@@ -1,7 +1,7 @@
 import { lighten } from "polished";
 import { useRef, useState } from "react";
 import { FaFileCirclePlus } from "react-icons/fa6";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { api } from "../../api";
 import { Header } from "../../components";
@@ -67,6 +67,8 @@ export default function Provider() {
 
   const { pushNotification } = useNotification();
 
+  const navigate = useNavigate();
+
   const triggerFileInput = (_e: React.MouseEvent<HTMLButtonElement>) => {
     const fileInput = document.querySelector("#xlsx-file") as HTMLInputElement;
     fileInput.click();
@@ -83,13 +85,15 @@ export default function Provider() {
   const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const path = location.pathname.split("/");
     api
-      .post("/provider/import", formData)
+      .post("/provider/import/" + path[path.length - 1], formData)
       .then(() => pushNotification("Importation terminé"))
       .catch((err) => {
         console.log(err);
         pushNotification("Erreur lors de l'importation", "error");
-      });
+      })
+      .finally(() => navigate(0));
   };
 
   return (

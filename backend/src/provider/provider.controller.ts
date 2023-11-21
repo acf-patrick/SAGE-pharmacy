@@ -10,6 +10,7 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  Patch,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -101,25 +102,35 @@ export class ProviderController {
     return await this.providerService.deleteProvider(id);
   }
 
-  @Post('import')
+  @Post('import/:id')
   @UseInterceptors(FileInterceptor('xlsx-file'))
   @ApiOperation({
     summary: 'Import medicines for a provider from xlsx file',
   })
   async importMedicinesForProviderFromFile(
     @UploadedFile() file: Express.Multer.File,
-    @Body() { providerId }: { providerId: string },
+    @Param('id') id: string,
   ) {
     const wb = XLSX.read(file.buffer);
     const worksheet = wb.Sheets[wb.SheetNames[0]];
     const newMedicines: MedicineFromProvider[] =
       XLSX.utils.sheet_to_json(worksheet);
     this.providerService.updateProviderMedicines(
-      providerId,
+      id,
       newMedicines.map((medicine) => {
         const { id, providerId, ...others } = medicine;
         return others;
       }),
     );
+  }
+
+  @Patch()
+  @ApiOperation({
+    summary: 'Update a provider',
+  })
+  async updateProvider(
+    @Body() data: { providerId: string; data: CreateProviderDto },
+  ) {
+    return await this.providerService.updateProvider(data);
   }
 }

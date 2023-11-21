@@ -71,7 +71,7 @@ model Provider {
   id                  String                 @id @default(uuid())
   accountNumber       String
   abridgment          String
-  commonAccountNumber Int
+  commonAccountNumber String
   address             String
   complementAdress    String?
   postalCode          Int?

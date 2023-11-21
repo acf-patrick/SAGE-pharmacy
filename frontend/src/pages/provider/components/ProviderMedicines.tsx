@@ -1,5 +1,7 @@
 import { darken, lighten } from "polished";
 import { useEffect, useState } from "react";
+import { MdModeEdit } from "react-icons/md";
+import { TbBasketCancel } from "react-icons/tb";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { api } from "../../../api";
@@ -7,16 +9,45 @@ import { ConfirmationDialog } from "../../../components";
 import { Provider } from "../../../models";
 import { appear } from "../../../styles/animations";
 import { theme } from "../../../styles/theme";
-import { TbBasketCancel } from "react-icons/tb";
 import ProviderInfo from "./ProviderInfo";
 
 const StyledTitle = styled.div`
   display: flex;
   justify-content: space-between;
 
-  h1 {
-    color: ${({ theme }) => theme.colors.tertiary};
-    font-size: 2rem;
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    h1 {
+      color: ${({ theme }) => theme.colors.tertiary};
+      font-size: 2rem;
+    }
+
+    button {
+      height: 3rem;
+      padding: 5px 20px;
+      border: none;
+      color: white;
+      font-weight: 600;
+      border-radius: 5px;
+      transition: all 250ms;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background-color: chocolate;
+
+      span {
+        font-weight: bold;
+        color: white;
+      }
+      svg {
+        font-size: 1.25rem;
+        fill: white;
+      }
+    }
   }
 
   .buttons {
@@ -326,10 +357,12 @@ export default function ProviderMedicines() {
   };
 
   useEffect(() => {
+    console.log(provider);
     if (provider) {
       const tmp: string[] = [];
       provider.medicines.forEach((medicine) => {
-        if (medicine.matchingMedicine) tmp.push(medicine.matchingMedicine.name);
+        if (medicine.matchingMedicines.length > 0)
+          tmp.push(medicine.matchingMedicines[0].name);
         else tmp.push("none");
       });
       setCorrespondances(tmp);
@@ -383,7 +416,16 @@ export default function ProviderMedicines() {
   return (
     <>
       <StyledTitle>
-        <h1>{provider.name}</h1>
+        <div className="header">
+          <h1>{provider.name}</h1>
+          <button
+            title="Modifier"
+            onClick={() => navigate("/provider/edit/" + providerId)}
+          >
+            <MdModeEdit />
+            <span>Modifier</span>
+          </button>
+        </div>
         <div className="buttons">
           <button
             disabled={!changedCorrespondances}
@@ -428,8 +470,8 @@ export default function ProviderMedicines() {
                       name="correspondance"
                       id="correspondance"
                       defaultValue={
-                        medicine.matchingMedicine
-                          ? medicine.matchingMedicine.name
+                        medicine.matchingMedicines.length > 0
+                          ? medicine.matchingMedicines[0].name
                           : "none"
                       }
                       data-medicine-id={medicine.id}
@@ -441,6 +483,19 @@ export default function ProviderMedicines() {
                           {name}
                         </option>
                       ))}
+                      {medicineNames
+                        .filter((name) => {
+                          for (let med of medicine.matchingMedicines) {
+                            if (med.name == name) return false;
+                          }
+                          return true;
+                        })
+                        .map((name, i) => (
+                          <option key={i} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                      <option value="none">Aucun</option>
                     </select>
                   </td>
                 </tr>

@@ -246,6 +246,7 @@ export class ProviderService {
       });
       return res;
     } catch (e) {
+      console.error(e);
       throw new BadRequestException('Invalid data received as body data');
     }
   }
@@ -280,5 +281,24 @@ export class ProviderService {
     await this.prisma.medicineFromProvider.createMany({
       data: newMedicines.map((medicine) => ({ ...medicine, providerId })),
     });
+  }
+
+  async updateProvider({
+    providerId,
+    data,
+  }: {
+    providerId: string;
+    data: CreateProviderDto;
+  }) {
+    try {
+      return await this.prisma.provider.update({
+        data: data,
+        where: {
+          id: providerId,
+        },
+      });
+    } catch (err) {
+      throw new BadRequestException('Invalid body data passed');
+    }
   }
 }
