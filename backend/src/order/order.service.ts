@@ -1,16 +1,17 @@
 import {
   BadRequestException,
-  NotFoundException,
   Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
+import { MedicineFromProvider, OrderStatus } from '@prisma/client';
+import * as fs from 'fs';
+import * as puppeteer from 'puppeteer';
+import * as handlebars from 'handlebars';
+import { join } from 'path';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateOrdersDto } from './dto/CreateOrders.dto';
 import { ProviderService } from 'src/provider/provider.service';
-import {
-  MedicineFromProvider,
-  OrderMedicine,
-  OrderStatus,
-} from '@prisma/client';
+import { CreateOrdersDto } from './dto/CreateOrders.dto';
 
 @Injectable()
 export class OrderService {
@@ -18,6 +19,79 @@ export class OrderService {
     private providerService: ProviderService,
     private prisma: PrismaService,
   ) {}
+
+  // Generate PDF file with orderMedicine list
+  async createBillFile(providerName: string) {
+    const order = await this.prisma.order.findUnique({
+      where: {
+        providerName,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(
+        `No provider with given name : ${providerName}`,
+      );
+    }
+
+    const orders = await this.prisma.orderMedicine.findMany({
+      where: {
+        orderId: order.id,
+      },
+      include: {
+        medicine: true,
+      },
+    });
+
+    let priceWithTax = 0;
+    let priceWithoutTax = 0;
+
+    for (let order of orders) {
+      priceWithTax += order.quantity * order.medicine.priceWithTax;
+      priceWithoutTax += order.quantity * order.medicine.priceWithoutTax;
+    }
+
+    try {
+      const templateHtml = fs.readFileSync(
+        join(__dirname, 'templates', 'bill.hbs'),
+        'utf-8',
+      );
+      const template = handlebars.compile(templateHtml);
+      const html = template({
+        providerName,
+        createdAt: order.createdAt.toLocaleDateString(),
+        orders: orders.map((order) => ({
+          medicineName: order.medicine.name,
+          quantity: order.quantity,
+          priceWithTax: order.medicine.priceWithTax,
+          priceWithoutTax: order.medicine.priceWithoutTax,
+        })),
+        priceWithoutTax,
+        priceWithTax,
+      });
+
+      const browser = await puppeteer.launch({
+        args: ['--no-sandbox'],
+        headless: 'new',
+      });
+
+      const page = await browser.newPage();
+      await page.setContent(html, {
+        waitUntil: 'networkidle0',
+      });
+
+      await page.pdf({
+        width: '1080px',
+        printBackground: true,
+        path: join(__dirname, 'bills', providerName + '.pdf'),
+      });
+
+      await browser.close();
+    } catch (e) {
+      console.error(e);
+      throw new ServiceUnavailableException(`Failed to create PDF file`);
+    }
+  }
 
   async createMedicineOrder(
     orderId: string,

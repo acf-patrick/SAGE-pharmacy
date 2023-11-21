@@ -8,6 +8,9 @@ import {
   Param,
   Patch,
   Post,
+  Query,
+  Res,
+  ServiceUnavailableException,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -20,6 +23,9 @@ import { OrderService } from './order.service';
 import { UpdateMedicineQuantitiesDto } from './dto/UpdateMedicineQuantities.dto';
 import { DeleteMedicineOrderDto } from './dto/DeleteMedicineOrder.dto';
 import { CreateMedicineOrderDto } from './dto/CreateMedicineOrder.dto';
+import { Response } from 'express';
+import { createReadStream } from 'fs';
+import { join } from 'path';
 
 @Controller('api/order')
 @ApiTags('🛍️ Order')
@@ -27,9 +33,30 @@ import { CreateMedicineOrderDto } from './dto/CreateMedicineOrder.dto';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
+  @Get('bill')
+  async getBillFile(
+    @Query('providerName') providerName: string,
+    @Res() res: Response,
+  ) {
+    try {
+      await this.orderService.createBillFile(providerName);
+    } catch (e) {
+      console.error(e);
+      throw new ServiceUnavailableException(`Failed to create PDF file`);
+    }
+
+    const file = createReadStream(
+      join(__dirname, 'bills', providerName + '.pdf'),
+    );
+    file.pipe(res);
+  }
+
   @Post(':id/medicine')
   @ApiOperation({ summary: 'Add medicine to purchase order' })
-  async addMedicine(@Param('id') id: string, @Body() medicine: CreateMedicineOrderDto) {
+  async addMedicine(
+    @Param('id') id: string,
+    @Body() medicine: CreateMedicineOrderDto,
+  ) {
     const { medicineName, providerName } =
       await this.orderService.createMedicineOrder(
         id,
