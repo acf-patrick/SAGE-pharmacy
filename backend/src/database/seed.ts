@@ -36,7 +36,7 @@ function randInt() {
 type Provider = {
   accountNumber: string;
   abridgment: string;
-  commonAccountNumber: number;
+  commonAccountNumber: string;
   address: string;
   postalCode?: number;
   city: string;
