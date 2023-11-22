@@ -20,7 +20,7 @@ export class OrderService {
     private prisma: PrismaService,
   ) {}
 
-  // Generate PDF file with orderMedicine list
+  // Generate PDF file with orderMedicine list and return path to file
   async createBillFile(providerName: string) {
     const order = await this.prisma.order.findUnique({
       where: {
@@ -29,9 +29,7 @@ export class OrderService {
     });
 
     if (!order) {
-      throw new NotFoundException(
-        `No order associated to ${providerName}`,
-      );
+      throw new NotFoundException(`No order associated to ${providerName}`);
     }
 
     const orders = await this.prisma.orderMedicine.findMany({
@@ -86,13 +84,16 @@ export class OrderService {
         waitUntil: 'networkidle0',
       });
 
+      const path = join(__dirname, 'bills', providerName + '.pdf');
       await page.pdf({
         width: '1080px',
         printBackground: true,
-        path: join(__dirname, 'bills', providerName + '.pdf'),
+        path,
       });
 
       await browser.close();
+
+      return path;
     } catch (e) {
       console.error(e);
       throw new ServiceUnavailableException(`Failed to create PDF file`);
@@ -162,6 +163,7 @@ export class OrderService {
     });
 
     const order = {
+      provider: record.provider,
       providerName: record.provider.name,
       minPurchase: record.provider.min,
       status: record.status,
@@ -320,6 +322,7 @@ export class OrderService {
         id: true,
       },
     });
+
     for (let { id } of records) {
       const order = await this.getOrder(id);
       orders.push(order);

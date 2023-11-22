@@ -34,6 +34,7 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Get('bill')
+  @ApiOperation({ summary: "Generate PDF file as bill for order" })
   async getBillFile(
     @Query('providerName') providerName: string,
     @Res() res: Response,
