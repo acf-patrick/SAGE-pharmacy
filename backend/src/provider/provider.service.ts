@@ -276,6 +276,7 @@ export class ProviderService {
         provider: {
           id: providerId,
         },
+        status: 'ORDERED',
       },
     });
     const res = await this.prisma.orderMedicine.deleteMany({
@@ -306,7 +307,7 @@ export class ProviderService {
     providerId: string,
     newMedicines: Omit<MedicineFromProvider, 'id' | 'providerId'>[],
   ) {
-    // delete all orders, order's medicines and mecicine from provider of the provider provided (prevent foreign key error)
+    // delete all orders in ORDERED, order's medicines and mecicine from provider of the provider provided (prevent foreign key error)
     await this.deleteOrderAssociatedWithProvider(providerId);
 
     // add all new medicines to medicines from provider list

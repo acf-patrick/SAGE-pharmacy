@@ -8,9 +8,12 @@ import { CreateOrdersDto } from './dto/CreateOrders.dto';
 import { ProviderService } from 'src/provider/provider.service';
 import {
   MedicineFromProvider,
+  Order,
   OrderMedicine,
   OrderStatus,
 } from '@prisma/client';
+import { OrderDto } from './dto/Order.dto';
+import { filter } from 'rxjs';
 
 @Injectable()
 export class OrderService {
@@ -344,4 +347,31 @@ export class OrderService {
       await this.verifyOrdersValidity();
     }
   }
+
+  async updateAllOrders(id: string) {
+    const orderMedicines = await this.prisma.orderMedicine.findMany({
+      where: {
+        Order: {
+          provider: {
+            id,
+          },
+        },
+      },
+    });
+
+    const provider = await this.prisma.provider.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        medicines: true,
+      },
+    });
+  }
 }
+
+// await this.prisma.medicineFromProvider.deleteMany({
+//   where: {
+//     id: '2f57b55f-c8df-4ac8-b7d6-4a01c89dabb2',
+//   },
+// });

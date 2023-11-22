@@ -94,7 +94,7 @@ model Provider {
 
 model OrderMedicine {
   id                     String               @id @default(uuid())
-  medicine               MedicineFromProvider @relation(fields: [medicineFromProviderId], references: [id])
+  medicine               MedicineFromProvider @relation(fields: [medicineFromProviderId], references: [id], onDelete: Cascade)
   quantity               Int
   medicineFromProviderId String               @unique
   Order                  Order                @relation(fields: [orderId], references: [id])

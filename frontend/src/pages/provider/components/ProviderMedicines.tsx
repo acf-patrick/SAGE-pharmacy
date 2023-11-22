@@ -470,7 +470,7 @@ export default function ProviderMedicines() {
               </tr>
             </thead>
             <tbody>
-              {provider.medicines.map((medicine, i) => (
+              {provider.medicines.map((medicine) => (
                 <tr key={medicine.id}>
                   <td>{medicine.name}</td>
                   <td>{medicine.priceWithoutTax}</td>
