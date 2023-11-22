@@ -20,16 +20,23 @@ import { OrderService } from './order.service';
 import { UpdateMedicineQuantitiesDto } from './dto/UpdateMedicineQuantities.dto';
 import { DeleteMedicineOrderDto } from './dto/DeleteMedicineOrder.dto';
 import { CreateMedicineOrderDto } from './dto/CreateMedicineOrder.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Controller('api/order')
 @ApiTags('🛍️ Order')
 @UseGuards(new AccessTokenGuard())
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   @Post(':id/medicine')
   @ApiOperation({ summary: 'Add medicine to purchase order' })
-  async addMedicine(@Param('id') id: string, @Body() medicine: CreateMedicineOrderDto) {
+  async addMedicine(
+    @Param('id') id: string,
+    @Body() medicine: CreateMedicineOrderDto,
+  ) {
     const { medicineName, providerName } =
       await this.orderService.createMedicineOrder(
         id,
@@ -130,5 +137,14 @@ export class OrderController {
   @ApiOperation({ summary: 'Delete all orders' })
   clearOrders() {
     return this.orderService.clearOrders();
+  }
+
+  @Post('update/:id')
+  @ApiOperation({
+    summary:
+      'Update all order from a specific medicine because there was a medicines list update',
+  })
+  async updateAllOrders(@Param('id') id: string) {
+    await this.orderService.updateAllOrders(id);
   }
 }

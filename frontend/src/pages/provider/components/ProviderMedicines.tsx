@@ -1,5 +1,5 @@
 import { darken, lighten } from "polished";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MdModeEdit } from "react-icons/md";
 import { TbBasketCancel } from "react-icons/tb";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -108,7 +108,7 @@ const StyledList = styled.div`
   border-radius: 5px;
   animation: ${appear} both 500ms;
   overflow: auto;
-  height: 80vh;
+  max-height: 80vh;
   margin-bottom: 1rem;
 
   table {
@@ -413,6 +413,19 @@ export default function ProviderMedicines() {
 
   if (!provider) return null;
 
+  const appendOtherMedicines = (e: React.MouseEvent<HTMLSelectElement>) => {
+    for (let name of medicineNames) {
+      if (name == e.currentTarget.value) {
+        console.log(e.currentTarget.value);
+        continue;
+      }
+      let option = document.createElement("option");
+      option.innerText = name;
+      option.value = name;
+      e.currentTarget.appendChild(option);
+    }
+  };
+
   return (
     <>
       <StyledTitle>
@@ -476,25 +489,18 @@ export default function ProviderMedicines() {
                       }
                       data-medicine-id={medicine.id}
                       onChange={handleChanges}
+                      onClick={appendOtherMedicines}
                     >
-                      {medicine.matchingMedicines.map((med, i) => (
-                        <option key={i} value={med.name}>
-                          {med.name}
+                      <option value="none">Aucun</option>
+                      {medicine.matchingMedicines.map((medicine, i) => (
+                        <option
+                          key={i}
+                          value={medicine.name}
+                          className="appended"
+                        >
+                          {medicine.name}
                         </option>
                       ))}
-                      {medicineNames
-                        .filter((name) => {
-                          for (let med of medicine.matchingMedicines) {
-                            if (med.name == name) return false;
-                          }
-                          return true;
-                        })
-                        .map((name, i) => (
-                          <option key={i} value={name}>
-                            {name}
-                          </option>
-                        ))}
-                      <option value="none">Aucun</option>
                     </select>
                   </td>
                 </tr>

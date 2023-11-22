@@ -9,6 +9,7 @@ import { MedicineFromProvider, Provider } from '@prisma/client';
 import { StockService } from 'src/stock/stock.service';
 import { cpSync } from 'fs';
 import { CreateProviderDto } from './dto/CreateProviderDto';
+import { OrderService } from 'src/order/order.service';
 
 // Utility type used for stock medicine and provider's medicine matching
 type MedicineMapRecord = {
@@ -254,6 +255,7 @@ export class ProviderService {
   // delete provider
   async deleteProvider(providerId: string) {
     try {
+      await this.deleteOrderAssociatedWithProvider(providerId);
       const res = await this.prisma.provider.delete({
         where: {
           id: providerId,
@@ -261,9 +263,72 @@ export class ProviderService {
       });
       return res;
     } catch (e) {
-      throw new NotFoundException(`Provider with ${providerId} not found.`);
+      throw new NotFoundException(
+        `Provider with ${providerId} not found. Error: ${e}`,
+      );
     }
   }
+
+  async deleteOrderAssociatedWithProvider(providerId: string) {
+    // delete all order that are associated with the provider
+    const orders = await this.prisma.order.findMany({
+      where: {
+        provider: {
+          id: providerId,
+        },
+        status: {
+          in: ['ORDERED', 'PENDING'],
+        },
+      },
+    });
+    const res = await this.prisma.orderMedicine.deleteMany({
+      where: {
+        orderId: {
+          in: orders.map((order) => order.id),
+        },
+        Order: {
+          status: {
+            in: ['ORDERED', 'PENDING'],
+          },
+        },
+      },
+    });
+    await this.prisma.order.deleteMany({
+      where: {
+        provider: {
+          id: providerId,
+        },
+        status: {
+          in: ['ORDERED', 'PENDING'],
+        },
+      },
+    });
+
+    // quit function if no order with status "ORDERED" or "PENDING" where found
+    if (orders.length == 0) return;
+
+    // delete all medicine associated with prpviderId
+    await this.prisma.medicineFromProvider.deleteMany({
+      where: {
+        providerId,
+      },
+    });
+  }
+
+  // update specific provider medicines
+  async updateProviderMedicines(
+    providerId: string,
+    newMedicines: Omit<MedicineFromProvider, 'id' | 'providerId'>[],
+  ) {
+    // delete all orders in ORDERED, order's medicines and mecicine from provider of the provider provided (prevent foreign key error)
+    await this.deleteOrderAssociatedWithProvider(providerId);
+
+    // add all new medicines to medicines from provider list
+    await this.prisma.medicineFromProvider.createMany({
+      data: newMedicines.map((medicine) => ({ ...medicine, providerId })),
+    });
+  }
+
   async updateProvider({
     providerId,
     data,
