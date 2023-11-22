@@ -67,6 +67,7 @@ const StyledKanban = styled.div<{ $size: number }>`
   overflow-x: hidden;
   gap: 1rem;
   position: relative;
+  padding-bottom: 1rem;
 
   &::-webkit-scrollbar-track {
     display: none;

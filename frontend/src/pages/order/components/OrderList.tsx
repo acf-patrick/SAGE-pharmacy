@@ -35,6 +35,7 @@ export default function OrderList() {
   const [mailModal, setMailModal] = useState<
     | {
         show: true;
+        action: () => void;
         order: Order & {
           providerEmail: string;
         };
@@ -45,6 +46,7 @@ export default function OrderList() {
   const [emailMissingConfirmation, setEmailMissingConfirmation] = useState<
     | {
         show: true;
+        action: () => void;
         order: Order & {
           providerEmail: string;
         };
@@ -114,12 +116,33 @@ export default function OrderList() {
       });
   };
 
+  const moveOrderToAvoir = (order: Order) => {
+    api
+      .patch("/order/" + order.id, {
+        status: KanbanItemStatusObject.AVOIR,
+      })
+      .then(() => {
+        setOrders((orders) => {
+          order.status = KanbanItemStatusObject.AVOIR;
+
+          return {
+            ...orders,
+            received: orders.received.filter((record) => record.id != order.id),
+            finished: [...orders.finished, order],
+          };
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   return (
     <>
       {emailMissingConfirmation?.show ? (
         <ConfirmationDialog
           action={() => {
-            moveOrderToPending(emailMissingConfirmation.order);
+            emailMissingConfirmation.action()
             setEmailMissingConfirmation({
               show: false,
             });
@@ -149,7 +172,7 @@ export default function OrderList() {
         mailModal?.show && (
           <SendMail
             order={mailModal.order}
-            onValidate={() => moveOrderToPending(mailModal.order)}
+            onValidate={mailModal.action}
             onClose={() => setMailModal({ show: false })}
           />
         )
@@ -160,13 +183,15 @@ export default function OrderList() {
           title="Commandes"
           moveItem={(index: number) => {
             const orderToMove = orders.ordered[index];
-            console.log(orderToMove);
+
             if (isValid(orderToMove)) {
               api.get(`/provider/${orderToMove.provider.id}`).then((res) => {
                 const provider: ProviderDto = res.data;
+                const order = { ...orderToMove, providerEmail: provider.email };
                 const state = {
                   show: true,
-                  order: { ...orderToMove, providerEmail: provider.email },
+                  action: () => moveOrderToPending(order),
+                  order,
                 };
 
                 if (!provider.email) {
@@ -327,26 +352,23 @@ export default function OrderList() {
               });
           }}
           onOrderSelect={(order) => {
-            api
-              .patch("/order/" + order.id, {
-                status: KanbanItemStatusObject.AVOIR,
-              })
-              .then(() => {
-                setOrders((orders) => {
-                  order.status = KanbanItemStatusObject.AVOIR;
+            const provider = order.provider as unknown as ProviderDto;
+            const orderDatas = {
+              ...order,
+              providerEmail: provider.email,
+            };
 
-                  return {
-                    ...orders,
-                    received: orders.received.filter(
-                      (record) => record.id != order.id
-                    ),
-                    finished: [...orders.finished, order],
-                  };
-                });
-              })
-              .catch((err) => {
-                console.log(err);
-              });
+            const state = {
+              show: true,
+              action: () => moveOrderToAvoir(orderDatas),
+              order: orderDatas,
+            };
+
+            if (!provider.email) {
+              setEmailMissingConfirmation(state);
+            } else {
+              setMailModal(state);
+            }
           }}
         />
         <Kanban

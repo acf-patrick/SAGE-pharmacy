@@ -32,7 +32,6 @@ export class OrderService {
     const records = await this.prisma.order.findMany({
       where: {
         providerName,
-        status: 'ORDERED',
       },
     });
 
