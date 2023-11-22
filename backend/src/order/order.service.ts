@@ -90,7 +90,6 @@ export class OrderService {
       status: record.status,
       totalPriceWithoutTax: 0,
       totalPriceWithTax: 0,
-      isValid: record.isValid,
       createdAt: record.createdAt,
       id: record.id,
       orderMedicines: [],
@@ -127,34 +126,6 @@ export class OrderService {
     order.orderMedicines = medicinesFromProviderInOrder;
 
     return order;
-  }
-
-  async verifyOrdersValidity() {
-    const orders = await this.getAllOrders();
-    for (let order of orders) {
-      if (
-        order.status === 'ORDERED' &&
-        order.totalPriceWithTax < order.minPurchase
-      ) {
-        await this.prisma.order.update({
-          where: {
-            providerName: order.providerName,
-          },
-          data: {
-            isValid: false,
-          },
-        });
-      } else if (order.status !== 'ORDERED') {
-        await this.prisma.order.update({
-          where: {
-            providerName: order.providerName,
-          },
-          data: {
-            isValid: true,
-          },
-        });
-      }
-    }
   }
 
   async setOrderQuantity(orderId: string, quantity: number) {
@@ -221,15 +192,12 @@ export class OrderService {
         status,
       },
     });
-
-    return await this.verifyOrdersValidity();
   }
 
   async getAllOrders() {
     const orders: {
       providerName: string;
       minPurchase: number;
-      isValid: boolean;
       status: OrderStatus;
       totalPriceWithTax: number;
       totalPriceWithoutTax: number;
@@ -310,22 +278,13 @@ export class OrderService {
     }
 
     for (let [providerName, medicines] of orders) {
-      const record = await this.prisma.order.findUnique({
+      const records = await this.prisma.order.findMany({
         where: {
           providerName,
         },
       });
 
-      if (record) {
-        // existing order, push new medicine to order
-        await this.prisma.orderMedicine.createMany({
-          data: medicines.map((medicine) => ({
-            medicineFromProviderId: medicine.medicineId,
-            quantity: medicine.quantity,
-            orderId: record.id,
-          })),
-        });
-      } else {
+      if (records.length == 0) {
         // create new order
         await this.prisma.order.create({
           data: {
@@ -342,9 +301,18 @@ export class OrderService {
             },
           },
         });
+      } else {
+        for (let record of records) {
+          // existing order, push new medicine to order
+          await this.prisma.orderMedicine.createMany({
+            data: medicines.map((medicine) => ({
+              medicineFromProviderId: medicine.medicineId,
+              quantity: medicine.quantity,
+              orderId: record.id,
+            })),
+          });
+        }
       }
-
-      await this.verifyOrdersValidity();
     }
   }
 

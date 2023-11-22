@@ -276,13 +276,20 @@ export class ProviderService {
         provider: {
           id: providerId,
         },
-        status: 'ORDERED',
+        status: {
+          in: ['ORDERED', 'PENDING'],
+        },
       },
     });
     const res = await this.prisma.orderMedicine.deleteMany({
       where: {
         orderId: {
           in: orders.map((order) => order.id),
+        },
+        Order: {
+          status: {
+            in: ['ORDERED', 'PENDING'],
+          },
         },
       },
     });
@@ -291,8 +298,14 @@ export class ProviderService {
         provider: {
           id: providerId,
         },
+        status: {
+          in: ['ORDERED', 'PENDING'],
+        },
       },
     });
+
+    // quit function if no order with status "ORDERED" or "PENDING" where found
+    if (orders.length == 0) return;
 
     // delete all medicine associated with prpviderId
     await this.prisma.medicineFromProvider.deleteMany({

@@ -263,10 +263,14 @@ function CreateOrder() {
       .then(() => pushNotification("Bon de commande créé avec succès"))
       .catch((err) => {
         console.error(err);
-        pushNotification(
-          "Erreur lors de la création du bon de commande",
-          "error"
-        );
+        if (err.response.status == 409) {
+          pushNotification("Commande déjà existante", "error");
+        } else {
+          pushNotification(
+            "Erreur lors de la création du bon de commande",
+            "error"
+          );
+        }
       })
       .finally(() => navigate("/order"));
   };

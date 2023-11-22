@@ -1,12 +1,12 @@
 import { darken, lighten } from "polished";
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MdModeEdit } from "react-icons/md";
 import { TbBasketCancel } from "react-icons/tb";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { api } from "../../../api";
 import { ConfirmationDialog } from "../../../components";
-import { MedicineFromProvider, Provider } from "../../../models";
+import { Provider } from "../../../models";
 import { appear } from "../../../styles/animations";
 import { theme } from "../../../styles/theme";
 import ProviderInfo from "./ProviderInfo";
