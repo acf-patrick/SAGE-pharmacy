@@ -90,7 +90,7 @@ const StyledModal = styled.div`
 `;
 
 function ProviderInfo({ onClose }: { onClose: () => void }) {
-  const [provider, setProvider] = useState<ProviderDto | null>(null);
+  const [provider, setProvider] = useState<ProviderDto>(null);
   const { id: providerId } = useParams();
 
   useEffect(() => {

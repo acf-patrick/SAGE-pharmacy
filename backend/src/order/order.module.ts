@@ -8,6 +8,7 @@ import { ProviderModule } from 'src/provider/provider.module';
   controllers: [OrderController],
   providers: [OrderService],
   imports: [PrismaModule, ProviderModule],
+  exports: [OrderService],
 })
 export class OrderModule {
   constructor(private orderService: OrderService) {}

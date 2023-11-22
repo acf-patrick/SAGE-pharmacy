@@ -8,6 +8,9 @@ import {
   Param,
   Patch,
   Post,
+  Query,
+  Res,
+  ServiceUnavailableException,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -20,16 +23,45 @@ import { OrderService } from './order.service';
 import { UpdateMedicineQuantitiesDto } from './dto/UpdateMedicineQuantities.dto';
 import { DeleteMedicineOrderDto } from './dto/DeleteMedicineOrder.dto';
 import { CreateMedicineOrderDto } from './dto/CreateMedicineOrder.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Response } from 'express';
+import { createReadStream } from 'fs';
+import { join } from 'path';
 
 @Controller('api/order')
 @ApiTags('🛍️ Order')
 @UseGuards(new AccessTokenGuard())
 export class OrderController {
-  constructor(
-    private readonly orderService: OrderService,
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly orderService: OrderService) {}
+
+  @Get('bill')
+  @ApiOperation({ summary: 'Generate PDF file as bill for order' })
+  async getBillFile(
+    @Query('providerName') providerName: string,
+    @Res() res: Response,
+  ) {
+    await this.orderService.createBillFile(providerName);
+
+    const file = createReadStream(
+      join(__dirname, 'bills', providerName + '.pdf'),
+    );
+    file.pipe(res);
+  }
+  
+  @Post(':id/medicine')
+  @ApiOperation({ summary: 'Add medicine to purchase order' })
+  async addMedicine(
+    @Param('id') id: string,
+    @Body() medicine: CreateMedicineOrderDto,
+  ) {
+    const { medicineName, providerName } =
+      await this.orderService.createMedicineOrder(
+        id,
+        medicine.medicineFromProviderId,
+        medicine.quantity,
+      );
+
+    return `${medicineName} added to purchase order for ${providerName}`;
+  }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get one order by ID' })
@@ -91,22 +123,6 @@ export class OrderController {
     await this.orderService.setOrderStatus(id, status);
 
     return `${id} status updated to ${status}`;
-  }
-
-  @Post(':id/medicine')
-  @ApiOperation({ summary: 'Add medicine to purchase order' })
-  async addMedicine(
-    @Param('id') id: string,
-    @Body() medicine: CreateMedicineOrderDto,
-  ) {
-    const { medicineName, providerName } =
-      await this.orderService.createMedicineOrder(
-        id,
-        medicine.medicineFromProviderId,
-        medicine.quantity,
-      );
-
-    return `${medicineName} added to purchase order for ${providerName}`;
   }
 
   @Post()

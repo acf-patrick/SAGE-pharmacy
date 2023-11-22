@@ -1,12 +1,17 @@
 import {
   BadRequestException,
-  NotFoundException,
   Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
   Post,
 } from '@nestjs/common';
+import * as fs from 'fs';
+import * as puppeteer from 'puppeteer';
+import * as handlebars from 'handlebars';
+import { join } from 'path';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateOrdersDto } from './dto/CreateOrders.dto';
 import { ProviderService } from 'src/provider/provider.service';
+import { CreateOrdersDto } from './dto/CreateOrders.dto';
 import {
   MedicineFromProvider,
   Order,
@@ -14,7 +19,6 @@ import {
   OrderStatus,
 } from '@prisma/client';
 import { OrderDto } from './dto/Order.dto';
-import { filter } from 'rxjs';
 
 @Injectable()
 export class OrderService {
@@ -22,6 +26,87 @@ export class OrderService {
     private providerService: ProviderService,
     private prisma: PrismaService,
   ) {}
+
+  // Generate PDF file with orderMedicine list and return path to file
+  async createBillFile(providerName: string) {
+    const records = await this.prisma.order.findMany({
+      where: {
+        providerName,
+      },
+    });
+
+    if (records.length == 0) {
+      throw new NotFoundException(`No order associated to ${providerName}`);
+    }
+
+    const order = records[0];
+    const orders = await this.prisma.orderMedicine.findMany({
+      where: {
+        orderId: order.id,
+      },
+      include: {
+        medicine: true,
+      },
+    });
+
+    if (orders.length == 0) {
+      throw new BadRequestException(
+        `No order medicine set for provider ${providerName}`,
+      );
+    }
+
+    let priceWithTax = 0;
+    let priceWithoutTax = 0;
+
+    for (let order of orders) {
+      priceWithTax += order.quantity * order.medicine.priceWithTax;
+      priceWithoutTax += order.quantity * order.medicine.priceWithoutTax;
+    }
+
+    try {
+      const templateHtml = fs.readFileSync(
+        join(__dirname, 'templates', 'bill.hbs'),
+        'utf-8',
+      );
+      const template = handlebars.compile(templateHtml);
+      const html = template({
+        providerName,
+        createdAt: order.createdAt.toLocaleDateString(),
+        orders: orders.map((order) => ({
+          medicineName: order.medicine.name,
+          quantity: order.quantity,
+          priceWithTax: order.medicine.priceWithTax,
+          priceWithoutTax: order.medicine.priceWithoutTax,
+        })),
+        priceWithoutTax,
+        priceWithTax,
+      });
+
+      const browser = await puppeteer.launch({
+        args: ['--no-sandbox'],
+        headless: 'new',
+      });
+
+      const page = await browser.newPage();
+      await page.setContent(html, {
+        waitUntil: 'networkidle0',
+      });
+
+      const path = join(__dirname, 'bills', providerName + '.pdf');
+      await page.pdf({
+        width: '1080px',
+        printBackground: true,
+        path,
+      });
+
+      await browser.close();
+
+      return path;
+    } catch (e) {
+      console.error(e);
+      throw new ServiceUnavailableException(`Failed to create PDF file`);
+    }
+  }
 
   async createMedicineOrder(
     orderId: string,
@@ -86,6 +171,7 @@ export class OrderService {
     });
 
     const order = {
+      provider: record.provider,
       providerName: record.provider.name,
       minPurchase: record.provider.min,
       status: record.status,
@@ -212,6 +298,7 @@ export class OrderService {
         id: true,
       },
     });
+
     for (let { id } of records) {
       const order = await this.getOrder(id);
       orders.push(order);

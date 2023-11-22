@@ -5,6 +5,7 @@ import { RxCross2 } from "react-icons/rx";
 import { useNavigate } from "react-router-dom";
 import { styled } from "styled-components";
 import { KanbanItemStatus, KanbanItemStatusObject, Order } from "../types";
+import { appear } from "../../../styles/animations";
 
 type KanbanProps = {
   title: string;
@@ -16,26 +17,38 @@ type KanbanProps = {
 };
 
 const StyledDiv = styled.div`
-  .header {
+  header {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
+    padding: 0 1rem;
 
     h1 {
       margin: 1rem 0;
       font-size: 18px;
     }
 
-    svg {
-      cursor: pointer;
+    .buttons {
+      display: flex;
+      gap: 1rem;
+      align-items: baseline;
 
-      &:first-of-type {
-        fill: blue;
+      button {
+        all: unset;
+        cursor: pointer;
+      }
+
+      .add {
+        svg {
+          fill: blue;
+        }
         font-size: 1.75rem;
       }
 
-      &:last-of-type {
-        fill: green;
+      .move-all {
+        svg {
+          fill: green;
+        }
         font-size: 1.5rem;
       }
     }
@@ -54,6 +67,7 @@ const StyledKanban = styled.div<{ $size: number }>`
   overflow-x: hidden;
   gap: 1rem;
   position: relative;
+  padding-bottom: 1rem;
 
   &::-webkit-scrollbar-track {
     display: none;
@@ -77,6 +91,9 @@ const StyledKanban = styled.div<{ $size: number }>`
       display: ${({ $size }) => ($size == 0 ? "none" : "block")};
     }
   }
+
+  .buttons {
+  }
 `;
 
 const StyledKanbanItemDiv = styled.div<{
@@ -97,6 +114,7 @@ const StyledKanbanItemDiv = styled.div<{
   transition: transform 250ms, box-shadow 250ms;
   position: relative;
   overflow: hidden;
+  animation: ${appear} 500ms both;
 
   &:first-of-type {
     margin-top: 2rem;
@@ -148,6 +166,7 @@ const StyledKanbanItemDiv = styled.div<{
 
   h1 {
     font-size: 13px;
+    text-align: center;
   }
 
   .buttons {
@@ -299,21 +318,27 @@ export default function Kanban({
 
   return (
     <StyledDiv>
-      <div className="header">
+      <header>
         <h1>{title}</h1>
-        {title == "Commandes" ? (
-          <MdPostAdd
-            onClick={() => navigate("/order/create")}
-            title="Créer fournisseur"
-          />
-        ) : null}
-        {moveItems ? (
-          <GoMoveToEnd
-            title="Envoyer à la prochaine étape"
-            onClick={moveItems}
-          />
-        ) : null}
-      </div>
+        <div className="buttons">
+          {title == "Commandes" ? (
+            <button className="add">
+              <MdPostAdd
+                onClick={() => navigate("/order/create")}
+                title="Créer fournisseur"
+              />
+            </button>
+          ) : null}
+          {moveItems ? (
+            <button className="move-all">
+              <GoMoveToEnd
+                title="Envoyer à la prochaine étape"
+                onClick={moveItems}
+              />
+            </button>
+          ) : null}
+        </div>
+      </header>
       <StyledKanban $size={orders.length}>
         {orders.map((order, i) => (
           <KanbanItemComponent
