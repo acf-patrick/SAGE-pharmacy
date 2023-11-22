@@ -71,7 +71,7 @@ model Provider {
   id                  String                 @id @default(uuid())
   accountNumber       String
   abridgment          String
-  commonAccountNumber Int
+  commonAccountNumber String
   address             String
   complementAdress    String?
   postalCode          Int?
@@ -94,19 +94,18 @@ model Provider {
 
 model OrderMedicine {
   id                     String               @id @default(uuid())
-  medicine               MedicineFromProvider @relation(fields: [medicineFromProviderId], references: [id])
+  medicine               MedicineFromProvider @relation(fields: [medicineFromProviderId], references: [id], onDelete: Cascade)
   quantity               Int
-  medicineFromProviderId String               @unique
-  Order                  Order?               @relation(fields: [orderId], references: [id])
-  orderId                String?
+  medicineFromProviderId String
+  Order                  Order                @relation(fields: [orderId], references: [id])
+  orderId                String
 }
 
 model Order {
   id             String          @id @default(uuid())
   provider       Provider        @relation(fields: [providerName], references: [name])
-  providerName   String          @unique
+  providerName   String
   createdAt      DateTime        @default(now())
-  isValid        Boolean         @default(true)
   status         OrderStatus     @default(ORDERED)
   medicineOrders OrderMedicine[]
 }

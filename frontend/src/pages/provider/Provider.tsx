@@ -1,8 +1,12 @@
 import { lighten } from "polished";
-import { Outlet, useLocation } from "react-router-dom";
-import readXlsxFile from "read-excel-file";
+import { useRef, useState } from "react";
+import { FaFileCirclePlus } from "react-icons/fa6";
+import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import { Header } from "../../components";
+import { api } from "../../api";
+import { ConfirmationDialog, Header } from "../../components";
+import { useNotification } from "../../hooks";
+import { Order } from "../order/types";
 
 const StyledContainer = styled.div`
   padding: 0 2rem;
@@ -13,81 +17,153 @@ const StyledHeader = styled(Header)`
   justify-content: space-between;
   align-items: center;
 
-  button {
-    margin-right: 2rem;
-    height: 3rem;
-    padding: 5px 25px;
-    background-color: ${({ theme }) => theme.colors.buttons.add};
-    color: white;
-    font-weight: 600;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+  .import {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 
-    &:hover {
-      background-color: ${({ theme }) =>
-        lighten(0.1, theme.colors.buttons.add)};
+    svg {
+      font-size: 2rem;
+      fill: ${({ theme }) => theme.colors.buttons.add};
+      cursor: pointer;
     }
-  }
 
-  input {
-    display: none;
+    button {
+      margin-right: 2rem;
+      height: 3rem;
+      padding: 5px 25px;
+      background-color: ${({ theme }) => theme.colors.buttons.add};
+      color: white;
+      font-weight: 600;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: ${({ theme }) =>
+          lighten(0.1, theme.colors.buttons.add)};
+      }
+
+      &.disabled {
+        cursor: not-allowed;
+        background-color: #80808081;
+
+        &:hover {
+          background-color: #80808081;
+        }
+      }
+    }
+
+    input {
+      display: none;
+    }
   }
 `;
 
 export default function Provider() {
+  const location = useLocation();
+  const formRef = useRef<HTMLFormElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [fileLoaded, setFileLoaded] = useState(false);
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [formData, setFormData] = useState<FormData>();
+
+  const { pushNotification } = useNotification();
+
+  const navigate = useNavigate();
+  const { id: providerId } = useParams();
+
   const triggerFileInput = (_e: React.MouseEvent<HTMLButtonElement>) => {
     const fileInput = document.querySelector("#xlsx-file") as HTMLInputElement;
     fileInput.click();
+    formRef.current.cli;
   };
 
-  const importXlsxFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.currentTarget!.files) return;
-    const file = e.currentTarget!.files[0];
-    const schema: any = {
-      Nom: {
-        type: String,
-        prop: "name",
-      },
-      PHT: {
-        type: Number,
-        prop: "priceWithoutTax",
-      },
-      PTTC: {
-        type: Number,
-        prop: "priceWithTax",
-      },
-      DCI: {
-        type: String,
-        prop: "dci",
-      },
-      Expiration: {
-        type: Date,
-        prop: "expirationDate",
-      },
-    };
-    readXlsxFile(file, { schema }).then((rows) => console.log(rows));
+  const enableButton = () => {
+    setFileLoaded(true);
+    const button = formRef.current.querySelector("button") as HTMLElement;
+    console.log(button);
+    button.classList.remove("disabled");
   };
 
-  const location = useLocation();
+  const prepareSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+
+    const orders: Order[] = (await api.get("/order/provider/" + providerId))
+      .data;
+    if (orders.length > 0) {
+      setShowConfirmationDialog(true);
+      setFormData(formData);
+    }
+  };
+
+  const importProviderXlsx = () => {
+    const path = location.pathname.split("/");
+    api
+      .post("/provider/import/" + path[path.length - 1], formData)
+      .then(() => {
+        pushNotification("Importation terminé");
+        setTimeout(() => navigate(0), 750);
+      })
+      .catch((err) => {
+        console.log(err);
+        pushNotification("Erreur lors de l'importation", "error");
+        setTimeout(() => navigate(0), 750);
+      });
+  };
 
   return (
     <>
       <StyledHeader headerTitle="Fournisseurs 🏭">
-        {location.pathname.includes("create") ? null : (
-          <button onClick={triggerFileInput}>Importer</button>
-        )}
-        <input
-          onChange={importXlsxFile}
-          type="file"
-          name="xlsx-file"
-          id="xlsx-file"
-          accept=".xlsx"
-        />
+        <form ref={formRef} onSubmit={prepareSubmit}>
+          {location.pathname.includes("create") ? null : (
+            <div className="import">
+              <FaFileCirclePlus
+                onClick={triggerFileInput}
+                title="importer liste pour fournisseur"
+              />
+              <input
+                ref={inputRef}
+                type="file"
+                name="xlsx-file"
+                id="xlsx-file"
+                accept=".xlsx"
+                onChange={enableButton}
+              />
+              <button
+                disabled={!fileLoaded}
+                className="disabled"
+                title={!fileLoaded ? "Sélectionner un fichier d'abord" : ""}
+              >
+                Importer
+              </button>
+            </div>
+          )}
+        </form>
       </StyledHeader>
       <StyledContainer>
         <Outlet />
       </StyledContainer>
+      {showConfirmationDialog ? (
+        <ConfirmationDialog
+          title={"Bon de commande encore en cours"}
+          message={
+            "Il y a encore des bons en cours de traitement. Importer des médicaments pour le fournisseur actuel effacera tous les bon de commandes associés au fournisseur actuelle. Voulez vous continuer?"
+          }
+          cancel={{
+            text: "Annuler",
+            buttonColor: "green",
+          }}
+          confirm={{
+            text: "Importer",
+            buttonColor: "#0084ff",
+          }}
+          onClose={() => setShowConfirmationDialog(false)}
+          action={importProviderXlsx}
+        />
+      ) : null}
     </>
   );
 }

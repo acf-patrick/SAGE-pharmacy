@@ -34,7 +34,7 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Get('bill')
-  @ApiOperation({ summary: "Generate PDF file as bill for order" })
+  @ApiOperation({ summary: 'Generate PDF file as bill for order' })
   async getBillFile(
     @Query('providerName') providerName: string,
     @Res() res: Response,
@@ -46,7 +46,7 @@ export class OrderController {
     );
     file.pipe(res);
   }
-
+  
   @Post(':id/medicine')
   @ApiOperation({ summary: 'Add medicine to purchase order' })
   async addMedicine(
@@ -67,6 +67,29 @@ export class OrderController {
   @ApiOperation({ summary: 'Get one order by ID' })
   getOneOrder(@Param('id') id: string) {
     return this.orderService.getOrder(id);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Returns all orders' })
+  @ApiOkResponse({ type: AllOrders })
+  getOrders() {
+    return this.orderService.getAllOrders();
+  }
+
+  @Get('count')
+  @ApiOperation({
+    summary: 'Returns orders count',
+  })
+  getOrderCount() {
+    return this.orderService.getOrderCount();
+  }
+
+  @Get('/provider/:id')
+  @ApiOperation({
+    summary: 'Get specific provider orders',
+  })
+  async getOrderOfProvider(providerId: string) {
+    return await this.orderService.getOrdersOfProvider(providerId);
   }
 
   @Patch(':id/medicine')
@@ -102,21 +125,6 @@ export class OrderController {
     return `${id} status updated to ${status}`;
   }
 
-  @Get()
-  @ApiOperation({ summary: 'Returns all orders' })
-  @ApiOkResponse({ type: AllOrders })
-  getOrders() {
-    return this.orderService.getAllOrders();
-  }
-
-  @Get('count')
-  @ApiOperation({
-    summary: 'Returns orders count',
-  })
-  getOrderCount() {
-    return this.orderService.getOrderCount();
-  }
-
   @Post()
   @ApiOperation({
     summary:
@@ -140,6 +148,15 @@ export class OrderController {
     }
 
     return `${medicineName} remove from order ${orderId}`;
+  }
+
+  @Post('update/:id')
+  @ApiOperation({
+    summary:
+      'Update all order from a specific medicine because there was a medicines list update',
+  })
+  async updateAllOrders(@Param('id') id: string) {
+    await this.orderService.updateAllOrders(id);
   }
 
   @Delete(':id')

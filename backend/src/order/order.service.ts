@@ -3,8 +3,8 @@ import {
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
+  Post,
 } from '@nestjs/common';
-import { MedicineFromProvider, OrderStatus } from '@prisma/client';
 import * as fs from 'fs';
 import * as puppeteer from 'puppeteer';
 import * as handlebars from 'handlebars';
@@ -12,6 +12,13 @@ import { join } from 'path';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ProviderService } from 'src/provider/provider.service';
 import { CreateOrdersDto } from './dto/CreateOrders.dto';
+import {
+  MedicineFromProvider,
+  Order,
+  OrderMedicine,
+  OrderStatus,
+} from '@prisma/client';
+import { OrderDto } from './dto/Order.dto';
 
 @Injectable()
 export class OrderService {
@@ -22,16 +29,18 @@ export class OrderService {
 
   // Generate PDF file with orderMedicine list and return path to file
   async createBillFile(providerName: string) {
-    const order = await this.prisma.order.findUnique({
+    const records = await this.prisma.order.findMany({
       where: {
         providerName,
+        status: 'ORDERED',
       },
     });
 
-    if (!order) {
+    if (records.length == 0) {
       throw new NotFoundException(`No order associated to ${providerName}`);
     }
 
+    const order = records[0];
     const orders = await this.prisma.orderMedicine.findMany({
       where: {
         orderId: order.id,
@@ -169,7 +178,6 @@ export class OrderService {
       status: record.status,
       totalPriceWithoutTax: 0,
       totalPriceWithTax: 0,
-      isValid: record.isValid,
       createdAt: record.createdAt,
       id: record.id,
       orderMedicines: [],
@@ -206,34 +214,6 @@ export class OrderService {
     order.orderMedicines = medicinesFromProviderInOrder;
 
     return order;
-  }
-
-  async verifyOrdersValidity() {
-    const orders = await this.getAllOrders();
-    for (let order of orders) {
-      if (
-        order.status === 'ORDERED' &&
-        order.totalPriceWithTax < order.minPurchase
-      ) {
-        await this.prisma.order.update({
-          where: {
-            providerName: order.providerName,
-          },
-          data: {
-            isValid: false,
-          },
-        });
-      } else if (order.status !== 'ORDERED') {
-        await this.prisma.order.update({
-          where: {
-            providerName: order.providerName,
-          },
-          data: {
-            isValid: true,
-          },
-        });
-      }
-    }
   }
 
   async setOrderQuantity(orderId: string, quantity: number) {
@@ -300,15 +280,12 @@ export class OrderService {
         status,
       },
     });
-
-    return await this.verifyOrdersValidity();
   }
 
   async getAllOrders() {
     const orders: {
       providerName: string;
       minPurchase: number;
-      isValid: boolean;
       status: OrderStatus;
       totalPriceWithTax: number;
       totalPriceWithoutTax: number;
@@ -337,7 +314,7 @@ export class OrderService {
   }
 
   async createOrders(createOrdersDto: CreateOrdersDto) {
-    // provider's name -> medicine IDs
+    // provider's name -> medicine orders
     const orders = new Map<
       string,
       {
@@ -390,22 +367,14 @@ export class OrderService {
     }
 
     for (let [providerName, medicines] of orders) {
-      const record = await this.prisma.order.findUnique({
+      const records = await this.prisma.order.findMany({
         where: {
           providerName,
+          status: 'ORDERED',
         },
       });
 
-      if (record) {
-        // existing order, push new medicine to order
-        await this.prisma.orderMedicine.createMany({
-          data: medicines.map((medicine) => ({
-            medicineFromProviderId: medicine.medicineId,
-            quantity: medicine.quantity,
-            orderId: record.id,
-          })),
-        });
-      } else {
+      if (records.length == 0) {
         // create new order
         await this.prisma.order.create({
           data: {
@@ -422,9 +391,49 @@ export class OrderService {
             },
           },
         });
+      } else {
+        for (let record of records) {
+          // existing order, push new medicine to order
+          await this.prisma.orderMedicine.createMany({
+            data: medicines.map((medicine) => ({
+              medicineFromProviderId: medicine.medicineId,
+              quantity: medicine.quantity,
+              orderId: record.id,
+            })),
+          });
+        }
       }
-
-      await this.verifyOrdersValidity();
     }
+  }
+
+  async updateAllOrders(id: string) {
+    const orderMedicines = await this.prisma.orderMedicine.findMany({
+      where: {
+        Order: {
+          provider: {
+            id,
+          },
+        },
+      },
+    });
+
+    const provider = await this.prisma.provider.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        medicines: true,
+      },
+    });
+  }
+
+  async getOrdersOfProvider(providerId: string) {
+    return await this.prisma.order.findMany({
+      where: {
+        provider: {
+          id: providerId,
+        },
+      },
+    });
   }
 }

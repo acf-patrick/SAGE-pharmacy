@@ -9,8 +9,7 @@ import {
   ConfirmationDialog,
 } from "../../../components";
 import { useNotification } from "../../../hooks";
-import { MedicineFromProvider, Provider } from "../../../models";
-import { KanbanItemStatusObject, OrderDto } from "../types";
+import { Provider } from "../../../models";
 
 const StyledCreateOrder = styled.form`
   margin-left: 2rem;
@@ -264,10 +263,14 @@ function CreateOrder() {
       .then(() => pushNotification("Bon de commande créé avec succès"))
       .catch((err) => {
         console.error(err);
-        pushNotification(
-          "Erreur lors de la création du bon de commande",
-          "error"
-        );
+        if (err.response.status == 409) {
+          pushNotification("Commande déjà existante", "error");
+        } else {
+          pushNotification(
+            "Erreur lors de la création du bon de commande",
+            "error"
+          );
+        }
       })
       .finally(() => navigate("/order"));
   };

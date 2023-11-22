@@ -41,7 +41,12 @@ export class MailService {
       await this.sendMail({
         to: email,
         subject: subject ? subject : `Commande pour ${providerName}`,
-        text: mail,
+        template: './order',
+        context: {
+          paragraphs: mail.split('\n').map((paragraph) => ({
+            text: paragraph,
+          })),
+        },
         attachments: [
           {
             path: billPath,

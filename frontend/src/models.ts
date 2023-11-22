@@ -41,7 +41,7 @@ export type MedicineFromProvider = {
   dci?: string;
   providerId: string;
   expirationDate: string;
-  matchingMedicine: Medicine;
+  matchingMedicines: Medicine[];
 };
 
 export type Provider = {
@@ -54,7 +54,7 @@ export type Provider = {
 export type ProviderDto = {
   accountNumber: string;
   abridgment: string;
-  commonAccountNumber: number;
+  commonAccountNumber: string;
   address: string;
   complementAdress?: string;
   postalCode?: number;

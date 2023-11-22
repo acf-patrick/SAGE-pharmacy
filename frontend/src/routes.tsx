@@ -14,6 +14,8 @@ import {
   ProviderMedicines,
   ProviderNotFound,
 } from "./pages/provider/components";
+import NotFound from "./pages/provider/components/NotFound";
+import EditProvider from "./pages/provider/components/EditProvider";
 
 export const router = createBrowserRouter([
   {
@@ -65,6 +67,11 @@ export const router = createBrowserRouter([
             path: "create",
             element: <CreateProvider />,
             errorElement: <ProviderNotFound />,
+          },
+          {
+            path: "edit/:id",
+            element: <EditProvider />,
+            errorElement: <NotFound />,
           },
         ],
       },

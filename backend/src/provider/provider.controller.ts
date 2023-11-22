@@ -1,27 +1,31 @@
 import {
-  Get,
   Body,
-  Post,
-  Param,
-  HttpCode,
-  NotFoundException,
   Controller,
-  UseGuards,
-  Query,
   Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Query,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+  Patch,
 } from '@nestjs/common';
-import { ProviderService } from './provider.service';
-import { StockService } from '../stock/stock.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiProperty,
   ApiTags,
 } from '@nestjs/swagger';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
-import { UpdateMatchesDto } from './dto/UpdateMatches.dto';
+import { StockService } from '../stock/stock.service';
 import { CreateProviderDto } from './dto/CreateProviderDto';
+import { UpdateMatchesDto } from './dto/UpdateMatches.dto';
+import { ProviderService } from './provider.service';
+import * as XLSX from 'xlsx';
+import { MedicineFromProvider } from '@prisma/client';
 
 @ApiTags('🏭 Provider')
 @Controller('api/provider')
@@ -96,5 +100,37 @@ export class ProviderController {
   })
   async deleteProvider(@Param('id') id: string) {
     return await this.providerService.deleteProvider(id);
+  }
+
+  @Post('import/:id')
+  @UseInterceptors(FileInterceptor('xlsx-file'))
+  @ApiOperation({
+    summary: 'Import medicines for a provider from xlsx file',
+  })
+  async importMedicinesForProviderFromFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('id') id: string,
+  ) {
+    const wb = XLSX.read(file.buffer);
+    const worksheet = wb.Sheets[wb.SheetNames[0]];
+    const newMedicines: MedicineFromProvider[] =
+      XLSX.utils.sheet_to_json(worksheet);
+    this.providerService.updateProviderMedicines(
+      id,
+      newMedicines.map((medicine) => {
+        const { id, providerId, ...others } = medicine;
+        return others;
+      }),
+    );
+  }
+
+  @Patch()
+  @ApiOperation({
+    summary: 'Update a provider',
+  })
+  async updateProvider(
+    @Body() data: { providerId: string; data: CreateProviderDto },
+  ) {
+    return await this.providerService.updateProvider(data);
   }
 }

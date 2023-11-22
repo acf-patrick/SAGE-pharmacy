@@ -79,12 +79,15 @@ const StyledContainer = styled.div`
     select {
       flex-grow: 1;
       padding: 5px 10px;
+      max-width: 80%;
     }
 
     input,
     select {
       border: 1px solid ${({ theme }) => theme.colors.primary};
       font-size: 1rem;
+      height: 2rem;
+      border-radius: 3px;
     }
   }
 
