@@ -97,8 +97,8 @@ model OrderMedicine {
   medicine               MedicineFromProvider @relation(fields: [medicineFromProviderId], references: [id])
   quantity               Int
   medicineFromProviderId String               @unique
-  Order                  Order?               @relation(fields: [orderId], references: [id])
-  orderId                String?
+  Order                  Order                @relation(fields: [orderId], references: [id])
+  orderId                String
 }
 
 model Order {
