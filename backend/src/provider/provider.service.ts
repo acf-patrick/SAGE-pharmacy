@@ -79,13 +79,17 @@ export class ProviderService {
   }
 
   async hasMedicineFromProviderBeenOrdered(id: string) {
-    const record = await this.prisma.orderMedicine.findUnique({
+    const records = await this.prisma.orderMedicine.findMany({
       where: {
         medicineFromProviderId: id,
       },
     });
 
-    return record ? true : false;
+    for (let record of records) {
+      if (record.medicineFromProviderId == id) return true;
+    }
+
+    return false;
   }
 
   async getOwner(medicineId: string) {
@@ -322,6 +326,13 @@ export class ProviderService {
   ) {
     // delete all orders in ORDERED, order's medicines and mecicine from provider of the provider provided (prevent foreign key error)
     await this.deleteOrderAssociatedWithProvider(providerId);
+
+    // delete all provider's medicines
+    const { count } = await this.prisma.medicineFromProvider.deleteMany({
+      where: {
+        providerId,
+      },
+    });
 
     // add all new medicines to medicines from provider list
     await this.prisma.medicineFromProvider.createMany({

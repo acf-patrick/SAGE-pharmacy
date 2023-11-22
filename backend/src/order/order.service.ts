@@ -2,6 +2,7 @@ import {
   BadRequestException,
   NotFoundException,
   Injectable,
+  Post,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrdersDto } from './dto/CreateOrders.dto';
@@ -225,7 +226,7 @@ export class OrderService {
   }
 
   async createOrders(createOrdersDto: CreateOrdersDto) {
-    // provider's name -> medicine IDs
+    // provider's name -> medicine orders
     const orders = new Map<
       string,
       {
@@ -281,6 +282,7 @@ export class OrderService {
       const records = await this.prisma.order.findMany({
         where: {
           providerName,
+          status: 'ORDERED',
         },
       });
 
@@ -336,10 +338,14 @@ export class OrderService {
       },
     });
   }
-}
 
-// await this.prisma.medicineFromProvider.deleteMany({
-//   where: {
-//     id: '2f57b55f-c8df-4ac8-b7d6-4a01c89dabb2',
-//   },
-// });
+  async getOrdersOfProvider(providerId: string) {
+    return await this.prisma.order.findMany({
+      where: {
+        provider: {
+          id: providerId,
+        },
+      },
+    });
+  }
+}

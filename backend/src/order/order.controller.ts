@@ -31,26 +31,33 @@ export class OrderController {
     private readonly prisma: PrismaService,
   ) {}
 
-  @Post(':id/medicine')
-  @ApiOperation({ summary: 'Add medicine to purchase order' })
-  async addMedicine(
-    @Param('id') id: string,
-    @Body() medicine: CreateMedicineOrderDto,
-  ) {
-    const { medicineName, providerName } =
-      await this.orderService.createMedicineOrder(
-        id,
-        medicine.medicineFromProviderId,
-        medicine.quantity,
-      );
-
-    return `${medicineName} added to purchase order for ${providerName}`;
-  }
-
   @Get(':id')
   @ApiOperation({ summary: 'Get one order by ID' })
   getOneOrder(@Param('id') id: string) {
     return this.orderService.getOrder(id);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Returns all orders' })
+  @ApiOkResponse({ type: AllOrders })
+  getOrders() {
+    return this.orderService.getAllOrders();
+  }
+
+  @Get('count')
+  @ApiOperation({
+    summary: 'Returns orders count',
+  })
+  getOrderCount() {
+    return this.orderService.getOrderCount();
+  }
+
+  @Get('/provider/:id')
+  @ApiOperation({
+    summary: 'Get specific provider orders',
+  })
+  async getOrderOfProvider(providerId: string) {
+    return await this.orderService.getOrdersOfProvider(providerId);
   }
 
   @Patch(':id/medicine')
@@ -86,19 +93,20 @@ export class OrderController {
     return `${id} status updated to ${status}`;
   }
 
-  @Get()
-  @ApiOperation({ summary: 'Returns all orders' })
-  @ApiOkResponse({ type: AllOrders })
-  getOrders() {
-    return this.orderService.getAllOrders();
-  }
+  @Post(':id/medicine')
+  @ApiOperation({ summary: 'Add medicine to purchase order' })
+  async addMedicine(
+    @Param('id') id: string,
+    @Body() medicine: CreateMedicineOrderDto,
+  ) {
+    const { medicineName, providerName } =
+      await this.orderService.createMedicineOrder(
+        id,
+        medicine.medicineFromProviderId,
+        medicine.quantity,
+      );
 
-  @Get('count')
-  @ApiOperation({
-    summary: 'Returns orders count',
-  })
-  getOrderCount() {
-    return this.orderService.getOrderCount();
+    return `${medicineName} added to purchase order for ${providerName}`;
   }
 
   @Post()
@@ -126,6 +134,15 @@ export class OrderController {
     return `${medicineName} remove from order ${orderId}`;
   }
 
+  @Post('update/:id')
+  @ApiOperation({
+    summary:
+      'Update all order from a specific medicine because there was a medicines list update',
+  })
+  async updateAllOrders(@Param('id') id: string) {
+    await this.orderService.updateAllOrders(id);
+  }
+
   @Delete(':id')
   @ApiOperation({ summary: 'Delete order with given ID' })
   async deleteOrder(@Param('id') id: string) {
@@ -137,14 +154,5 @@ export class OrderController {
   @ApiOperation({ summary: 'Delete all orders' })
   clearOrders() {
     return this.orderService.clearOrders();
-  }
-
-  @Post('update/:id')
-  @ApiOperation({
-    summary:
-      'Update all order from a specific medicine because there was a medicines list update',
-  })
-  async updateAllOrders(@Param('id') id: string) {
-    await this.orderService.updateAllOrders(id);
   }
 }
