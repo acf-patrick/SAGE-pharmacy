@@ -5,6 +5,9 @@ import { api } from "../../api";
 import { ArchivedOrder } from "../../models";
 import { lighten } from "polished";
 import { HiOutlineViewfinderCircle } from "react-icons/hi2";
+import { MoonLoader } from "react-spinners";
+import { RiFileForbidLine } from "react-icons/ri";
+import { theme } from "../../styles/theme";
 
 const StyledArchives = styled.div`
   display: grid;
@@ -71,14 +74,56 @@ const StyledArchives = styled.div`
   }
 `;
 
+const StyleHeaderContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+
+  .empty {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+
+    h2 {
+      font-size: 3rem;
+    }
+
+    svg {
+      font-size: 4rem;
+    }
+  }
+`;
+
+const StyledContainer = styled.div`
+  display: flex;
+  justify-content: center;
+
+  .empty {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+
+    h2 {
+      font-size: 3rem;
+    }
+
+    svg {
+      font-size: 4rem;
+    }
+  }
+`;
+
 function Archive() {
   const [archivedOrders, setArchivedOrders] = useState<ArchivedOrder[]>([]);
+  const [pending, setPending] = useState(true);
 
   useEffect(() => {
     api
       .get("/archived-order")
       .then((res) => {
         setArchivedOrders(res.data);
+        setPending(false);
       })
       .catch((err) => {
         console.error(err);
@@ -88,29 +133,47 @@ function Archive() {
   return (
     <>
       <Header headerTitle="Factures 🎫" />
-      <StyledArchives>
-        <div className="header">Nom du fournisseur</div>
-        <div className="header">Date de création</div>
-        <div className="header">Date de création de la commande</div>
-        <div className="header"></div>
-        {archivedOrders.map((order, i) => (
-          <>
-            <div className={i % 2 ? "odd" : ""}>{order.providerName}</div>
-            <div className={i % 2 ? "odd" : ""}>
-              {new Date(order.createdAt).toLocaleString()}
-            </div>
-            <div className={i % 2 ? "odd" : ""}>
-              {new Date(order.orderCreationDate).toLocaleString()}
-            </div>
-            <div className={i % 2 ? " odd" : ""}>
-              <button>
-                <HiOutlineViewfinderCircle />
-                <span>Voir</span>
-              </button>
-            </div>
-          </>
-        ))}
-      </StyledArchives>
+
+      {pending ? (
+        <StyleHeaderContainer>
+          <MoonLoader color={theme.colors.secondary} />
+        </StyleHeaderContainer>
+      ) : (
+        <>
+          {archivedOrders.length > 0 ? (
+            <StyledArchives>
+              <div className="header">Nom du fournisseur</div>
+              <div className="header">Date de création</div>
+              <div className="header">Date de création de la commande</div>
+              <div className="header"></div>
+              {archivedOrders.map((order, i) => (
+                <>
+                  <div className={i % 2 ? "odd" : ""}>{order.providerName}</div>
+                  <div className={i % 2 ? "odd" : ""}>
+                    {new Date(order.createdAt).toLocaleString()}
+                  </div>
+                  <div className={i % 2 ? "odd" : ""}>
+                    {new Date(order.orderCreationDate).toLocaleString()}
+                  </div>
+                  <div className={i % 2 ? " odd" : ""}>
+                    <button>
+                      <HiOutlineViewfinderCircle />
+                      <span>Voir</span>
+                    </button>
+                  </div>
+                </>
+              ))}
+            </StyledArchives>
+          ) : (
+            <StyleHeaderContainer>
+              <div className="empty">
+                <h2>Aucune facture archivée </h2>
+                <RiFileForbidLine />
+              </div>
+            </StyleHeaderContainer>
+          )}
+        </>
+      )}
     </>
   );
 }
