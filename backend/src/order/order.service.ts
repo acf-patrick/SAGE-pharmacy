@@ -19,6 +19,8 @@ import {
   OrderStatus,
 } from '@prisma/client';
 import { OrderDto } from './dto/Order.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { unlink, readdir } from 'fs/promises';
 
 @Injectable()
 export class OrderService {
@@ -26,6 +28,19 @@ export class OrderService {
     private providerService: ProviderService,
     private prisma: PrismaService,
   ) {}
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async clearBillFolder() {
+    try {
+      const bills = await readdir(join(__dirname, 'bills'));
+      for (let file of bills) {
+        const bill = join(__dirname, 'bills', file);
+        await unlink(bill);
+      }
+    } catch {
+      console.error('Unable to clear bill folder');
+    }
+  }
 
   // Generate PDF file with orderMedicine list and return path to file
   async createBillFile(providerName: string) {
