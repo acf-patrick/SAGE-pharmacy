@@ -149,7 +149,6 @@ export default function Login() {
       })
       .then((res) => {
         const { accessToken, refreshToken } = res.data;
-        console.log(res.data)
         localStorage.setItem("access-token", accessToken);
         localStorage.setItem("refresh-token", refreshToken);
         navigate("/");

@@ -117,11 +117,6 @@ export default function OrderList() {
       });
   }, []);
 
-  useEffect(() => {
-    console.log("Orders:");
-    console.log(orders);
-  }, [orders]);
-
   const moveOrderToPending = (orderToMove: Order) => {
     api
       .patch("/order/" + orderToMove.id, {

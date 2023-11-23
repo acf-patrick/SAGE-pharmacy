@@ -35,9 +35,20 @@ export class ArchivedOrderService {
 
   async createArchivedOrder(newArhivedOrderDto: NewArchivedOrderDto) {
     try {
+      const order = await this.prisma.order.findUnique({
+        where: {
+          id: newArhivedOrderDto.providerId
+        }
+      })
+
       return await this.prisma.archivedOrder.create({
-        data: newArhivedOrderDto,
-      });
+        data: {
+          orderCreationDate: order.createdAt,
+          providerName: order.providerName,
+          createdAt: new Date(),
+          evidences: newArhivedOrderDto.evidences
+        }
+      }
     } catch (err) {
       console.log(err);
       throw new BadRequestException('Error creating new archived order.');

@@ -357,7 +357,6 @@ export default function ProviderMedicines() {
   };
 
   useEffect(() => {
-    console.log(provider);
     if (provider) {
       const tmp: string[] = [];
       provider.medicines.forEach((medicine) => {
@@ -388,8 +387,6 @@ export default function ProviderMedicines() {
       });
     });
 
-    console.log(correspondancesToChange);
-
     api
       .post("/provider/medicine/update-matches", {
         matches: correspondancesToChange,
@@ -416,7 +413,6 @@ export default function ProviderMedicines() {
   const appendOtherMedicines = (e: React.MouseEvent<HTMLSelectElement>) => {
     for (let name of medicineNames) {
       if (name == e.currentTarget.value) {
-        console.log(e.currentTarget.value);
         continue;
       }
       let option = document.createElement("option");

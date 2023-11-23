@@ -113,17 +113,18 @@ model Order {
 }
 
 model Evidence {
-  id              String  @id @default(uuid())
+  id              String         @id @default(uuid())
   filename        String
-  Order           Order?  @relation(fields: [orderId], references: [id])
+  Order           Order?         @relation(fields: [orderId], references: [id])
   orderId         String?
   archivedOrderId String?
+  ArchivedOrder   ArchivedOrder? @relation(fields: [archivedOrderId], references: [id])
 }
 
 model ArchivedOrder {
-  id                String   @id @default(uuid())
-  createdAt         DateTime @default(now())
+  id                String     @id @default(uuid())
+  createdAt         DateTime   @default(now())
   providerName      String
   orderCreationDate DateTime
-  evidences         String[]
+  evidences         Evidence[]
 }

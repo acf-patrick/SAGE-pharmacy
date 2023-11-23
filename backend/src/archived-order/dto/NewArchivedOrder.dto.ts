@@ -1,20 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Evidence } from '@prisma/client';
 import { IsArray, IsDate, IsDateString, IsString } from 'class-validator';
 
 export class NewArchivedOrderDto {
   @ApiProperty()
-  @IsDateString()
-  createdAt: Date;
-
-  @ApiProperty()
   @IsString()
-  providerName: string;
-
-  @ApiProperty()
-  @IsDateString()
-  orderCreationDate: Date;
+  providerId: string;
 
   @ApiProperty()
   @IsArray()
-  evidences: string[];
+  evidences: Evidence[];
 }
