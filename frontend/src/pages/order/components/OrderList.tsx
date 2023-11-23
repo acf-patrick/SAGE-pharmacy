@@ -9,6 +9,28 @@ import { useNotification } from "../../../hooks";
 import { ProviderDto } from "../../../models";
 import { ConfirmationDialog } from "../../../components";
 
+export const getTotalQuantityOrdered = (order: Order) => {
+  let quantity = 0;
+  order.orderMedicines.forEach(
+    (medicine) => (quantity += medicine.quantityToOrder)
+  );
+  return quantity;
+};
+
+export const isValid = (order: Order) => {
+  if (order.minPurchase) {
+    if (!order.minQuantity) {
+      return order.minPurchase <= order.totalPriceWithTax;
+    }
+    return (
+      order.minPurchase <= order.totalPriceWithTax &&
+      order.minQuantity <= getTotalQuantityOrdered(order)
+    );
+  } else {
+    return order.minQuantity <= getTotalQuantityOrdered(order);
+  }
+};
+
 const StyledContainer = styled.div`
   display: flex;
   gap: 2rem;
@@ -95,8 +117,10 @@ export default function OrderList() {
       });
   }, []);
 
-  const isValid = (order: Order) =>
-    order.minPurchase <= order.totalPriceWithTax;
+  useEffect(() => {
+    console.log("Orders:");
+    console.log(orders);
+  }, [orders]);
 
   const moveOrderToPending = (orderToMove: Order) => {
     api
@@ -142,7 +166,7 @@ export default function OrderList() {
       {emailMissingConfirmation?.show ? (
         <ConfirmationDialog
           action={() => {
-            emailMissingConfirmation.action()
+            emailMissingConfirmation.action();
             setEmailMissingConfirmation({
               show: false,
             });
