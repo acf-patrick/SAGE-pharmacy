@@ -117,11 +117,6 @@ export default function OrderList() {
       });
   }, []);
 
-  useEffect(() => {
-    console.log("Orders:");
-    console.log(orders);
-  }, [orders]);
-
   const moveOrderToPending = (orderToMove: Order) => {
     api
       .patch("/order/" + orderToMove.id, {
@@ -181,7 +176,11 @@ export default function OrderList() {
               `/provider/edit/${emailMissingConfirmation.order.provider.id}`
             );
           }}
-          title="Validation de la commande"
+          title={
+            emailMissingConfirmation.order.status === "ORDERED"
+              ? "Validation de la commande"
+              : "Mettre en avoir"
+          }
           confirm={{
             buttonColor: "#3333ff",
             text: "Oui",
@@ -190,7 +189,7 @@ export default function OrderList() {
             buttonColor: "green",
             text: "Editer email",
           }}
-          message={`Aucun adresse email associé à ${emailMissingConfirmation.order.providerName}. Voulez-vous tout de même passer la commande ?`}
+          message={`Aucun adresse email associé à ${emailMissingConfirmation.order.providerName}. Confirmer l'action ?`}
         />
       ) : (
         mailModal?.show && (

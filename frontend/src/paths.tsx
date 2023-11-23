@@ -1,5 +1,5 @@
 import { AiTwotoneContainer } from "react-icons/ai";
-import { BiPurchaseTag } from "react-icons/bi";
+import { MdOutlineViewKanban } from "react-icons/md";
 import { PiFactoryBold } from "react-icons/pi";
 import { SlBasket } from "react-icons/sl";
 
@@ -17,7 +17,7 @@ const paths = [
   {
     to: "/order",
     name: "Commande",
-    icon: <BiPurchaseTag />,
+    icon: <MdOutlineViewKanban />,
   },
   {
     to: "/provider",
