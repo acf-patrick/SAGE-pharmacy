@@ -95,25 +95,6 @@ const StyleHeaderContainer = styled.div`
   }
 `;
 
-const StyledContainer = styled.div`
-  display: flex;
-  justify-content: center;
-
-  .empty {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-
-    h2 {
-      font-size: 3rem;
-    }
-
-    svg {
-      font-size: 4rem;
-    }
-  }
-`;
-
 function Archive() {
   const [archivedOrders, setArchivedOrders] = useState<ArchivedOrder[]>([]);
   const [pending, setPending] = useState(true);
