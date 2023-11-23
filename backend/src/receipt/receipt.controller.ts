@@ -34,10 +34,14 @@ export class ReceiptController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get receipt file with given ID' })
+  @ApiOperation({
+    summary:
+      'Get receipt file with given ID and add file-type into response headers',
+  })
   async getReceipt(@Param('id') id: string, @Res() res: Response) {
-    const out = await this.evidenceService.getReceipt(id);
-    out.pipe(res);
+    const file = await this.evidenceService.getReceipt(id);
+    res.set('file-type', file.type);
+    file.stream.pipe(res);
   }
 
   @Post()

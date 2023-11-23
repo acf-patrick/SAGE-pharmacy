@@ -11,6 +11,8 @@ import { MdOutlineUploadFile } from "react-icons/md";
 import { HiOutlineViewfinderCircle } from "react-icons/hi2";
 import { api } from "../../../api";
 import { useNotification } from "../../../hooks";
+import { useState } from "react";
+import ReceiptsCaroussel from "./ReceiptsCaroussel";
 
 type KanbanProps = {
   title: string;
@@ -251,6 +253,7 @@ function KanbanItemComponent({
   onOrderEdit?: (order: Order) => void;
 }) {
   const { pushNotification } = useNotification();
+  const [showReceiptsCaroussel, setShowReceiptsCaroussel] = useState(false);
 
   const map = new Map<KanbanItemStatus, string>([
     [KanbanItemStatusObject.PENDING, "En cours"],
@@ -265,105 +268,114 @@ function KanbanItemComponent({
   };
 
   return (
-    <StyledKanbanItemDiv $isValid={isValid(order)} $status={order.status}>
-      <div className="ticket">
-        {order.status == "ORDERED"
-          ? isValid(order)
-            ? "Prêt"
-            : "Pas prêt"
-          : map.get(order.status)}
-      </div>
-      <h1>
-        {order.providerName +
-          "_" +
-          new Date(order.createdAt).toLocaleDateString().replace(/\//g, "_")}
-      </h1>
-      <div className="buttons">
-        <div>
-          {moveItem ? (
-            <button
-              title="Passer au suivant"
-              className="validate"
-              onClick={moveItem}
-            >
-              <BsCheckLg />
-            </button>
-          ) : null}
-          {deleteItem ? (
-            <button
-              title="Revenir au précédent"
-              className="delete"
-              onClick={deleteItem}
-            >
-              <RxCross2 />
-            </button>
-          ) : null}
-          {onOrderEdit ? (
-            <button
-              title={
-                order.status == KanbanItemStatusObject.RECEIVED
-                  ? 'Mettre en "Avoir"'
-                  : "Modifier"
-              }
-              className="edit"
-              onClick={() => onOrderEdit(order)}
-            >
-              <MdEdit />
-            </button>
-          ) : null}
+    <>
+      {showReceiptsCaroussel && (
+        <ReceiptsCaroussel onClose={() => setShowReceiptsCaroussel(false)} />
+      )}
+      <StyledKanbanItemDiv $isValid={isValid(order)} $status={order.status}>
+        <div className="ticket">
+          {order.status == "ORDERED"
+            ? isValid(order)
+              ? "Prêt"
+              : "Pas prêt"
+            : map.get(order.status)}
         </div>
-        {order.status === "RECEIVED" && (
+        <h1>
+          {order.providerName +
+            "_" +
+            new Date(order.createdAt).toLocaleDateString().replace(/\//g, "_")}
+        </h1>
+        <div className="buttons">
           <div>
-            <button title="Voir les factures associées" className="view">
-              <HiOutlineViewfinderCircle />
-            </button>
-            <button
-              title="Importer facture"
-              onClick={importButtonOnClick}
-              className="upload"
-            >
-              <MdOutlineUploadFile />
-            </button>
-            <form
-              className="import-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const form = e.currentTarget;
-                const data = new FormData(form);
-                data.set("orderId", order.id);
-
-                api
-                  .post("/receipt", data)
-                  .then((res) => {
-                    console.log(res.data);
-                  })
-                  .catch((e) => {
-                    console.error(e);
-                    pushNotification(
-                      "Une erreur s'est produite. Impossible d'envoyer le fichier au serveur",
-                      "error"
-                    );
-                  });
-              }}
-            >
-              <input
-                onChange={() => {
-                  const submitBtn = document.querySelector(
-                    "#submit-import-form"
-                  ) as HTMLButtonElement;
-                  submitBtn.click();
-                }}
-                type="file"
-                name="file"
-                className="import-input"
-                accept="image/png, image/jpeg, image/gif, application/pdf"
-              />
-              <button id="submit-import-form"></button>
-            </form>
+            {moveItem ? (
+              <button
+                title="Passer au suivant"
+                className="validate"
+                onClick={moveItem}
+              >
+                <BsCheckLg />
+              </button>
+            ) : null}
+            {deleteItem ? (
+              <button
+                title="Revenir au précédent"
+                className="delete"
+                onClick={deleteItem}
+              >
+                <RxCross2 />
+              </button>
+            ) : null}
+            {onOrderEdit ? (
+              <button
+                title={
+                  order.status == KanbanItemStatusObject.RECEIVED
+                    ? 'Mettre en "Avoir"'
+                    : "Modifier"
+                }
+                className="edit"
+                onClick={() => onOrderEdit(order)}
+              >
+                <MdEdit />
+              </button>
+            ) : null}
           </div>
-        )}
-      </div>
-    </StyledKanbanItemDiv>
+          {order.status === "RECEIVED" && (
+            <div>
+              <button
+                title="Voir les factures associées"
+                onClick={() => setShowReceiptsCaroussel(true)}
+                className="view"
+              >
+                <HiOutlineViewfinderCircle />
+              </button>
+              <button
+                title="Importer facture"
+                onClick={importButtonOnClick}
+                className="upload"
+              >
+                <MdOutlineUploadFile />
+              </button>
+              <form
+                className="import-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = e.currentTarget;
+                  const data = new FormData(form);
+                  data.set("orderId", order.id);
+
+                  api
+                    .post("/receipt", data)
+                    .then((res) => {
+                      console.log(res.data);
+                    })
+                    .catch((e) => {
+                      console.error(e);
+                      pushNotification(
+                        "Une erreur s'est produite. Impossible d'envoyer le fichier au serveur",
+                        "error"
+                      );
+                    });
+                }}
+              >
+                <input
+                  onChange={() => {
+                    const submitBtn = document.querySelector(
+                      "#submit-import-form"
+                    ) as HTMLButtonElement;
+                    submitBtn.click();
+                  }}
+                  type="file"
+                  name="file"
+                  className="import-input"
+                  accept="image/png, image/jpeg, image/gif, application/pdf"
+                />
+                <button id="submit-import-form"></button>
+              </form>
+            </div>
+          )}
+        </div>
+      </StyledKanbanItemDiv>
+    </>
   );
 }
 
