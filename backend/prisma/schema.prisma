@@ -109,4 +109,12 @@ model Order {
   createdAt      DateTime        @default(now())
   status         OrderStatus     @default(ORDERED)
   medicineOrders OrderMedicine[]
+  evidences      Evidence[]
+}
+
+model Evidence {
+  id       String  @id @default(uuid())
+  filename String
+  Order    Order?  @relation(fields: [orderId], references: [id])
+  orderId  String?
 }
