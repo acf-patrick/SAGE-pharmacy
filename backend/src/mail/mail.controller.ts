@@ -1,12 +1,11 @@
 import {
-  ServiceUnavailableException,
   Body,
-  Post,
   Controller,
+  Post
 } from '@nestjs/common';
-import { MailService } from './mail.service';
-import { SendOrderBillDto } from './dto/SendOrderBill.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SendOrderBillDto } from './dto/SendOrderBill.dto';
+import { MailService } from './mail.service';
 
 @Controller('api/mail')
 @ApiTags('📧 Mail')
