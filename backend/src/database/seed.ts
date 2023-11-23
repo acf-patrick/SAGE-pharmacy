@@ -165,11 +165,19 @@ async function createProviders() {
 
   for (let i = 0; i < providers.length; i++) {
     const currentProvider: Provider = providers[i];
+    const minAddOn =
+      Math.random() < 0.5
+        ? {
+            min: Math.floor(Math.random() * 80001) + 20000, // Random min value between [20.000 - 100.000],
+          }
+        : {
+            minQuantity: Math.floor(Math.random() * 11), // Random minQuantity value between [0 - 10]
+          };
     const provider = await prisma.provider.create({
       data: {
         ...currentProvider,
         commonAccountNumber: currentProvider.commonAccountNumber.toString(),
-        min: Math.floor(Math.random() * 80001) + 20000, // Random min value between [20.000 - 100.000],
+        ...minAddOn,
       },
     });
 
