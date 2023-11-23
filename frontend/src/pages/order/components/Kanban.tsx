@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { styled } from "styled-components";
 import { KanbanItemStatus, KanbanItemStatusObject, Order } from "../types";
 import { appear } from "../../../styles/animations";
+import { isValid } from "./OrderList";
 
 type KanbanProps = {
   title: string;
@@ -221,13 +222,10 @@ function KanbanItemComponent({
   ]);
 
   return (
-    <StyledKanbanItemDiv
-      $isValid={order.minPurchase <= order.totalPriceWithTax}
-      $status={order.status}
-    >
+    <StyledKanbanItemDiv $isValid={isValid(order)} $status={order.status}>
       <div className="ticket">
         {order.status == "ORDERED"
-          ? order.minPurchase <= order.totalPriceWithTax
+          ? isValid(order)
             ? "Prêt"
             : "Pas prêt"
           : map.get(order.status)}
@@ -280,7 +278,7 @@ export default function Kanban({
     const order = orders[i];
     switch (order.status) {
       case KanbanItemStatusObject.ORDERED:
-        if (order.minPurchase <= order.totalPriceWithTax) {
+        if (isValid(order)) {
           return () => moveItem(i);
         }
         return undefined;

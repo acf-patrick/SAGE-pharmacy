@@ -174,6 +174,7 @@ export class OrderService {
       provider: record.provider,
       providerName: record.provider.name,
       minPurchase: record.provider.min,
+      minQuantity: record.provider.minQuantity,
       status: record.status,
       totalPriceWithoutTax: 0,
       totalPriceWithTax: 0,
@@ -284,7 +285,8 @@ export class OrderService {
   async getAllOrders() {
     const orders: {
       providerName: string;
-      minPurchase: number;
+      minPurchase?: number;
+      minQuantity?: number;
       status: OrderStatus;
       totalPriceWithTax: number;
       totalPriceWithoutTax: number;

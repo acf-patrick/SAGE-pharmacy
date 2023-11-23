@@ -15,7 +15,8 @@ export type Order = {
   providerName: string;
   createdAt: string;
   status: KanbanItemStatus;
-  minPurchase: number;
+  minPurchase?: number;
+  minQuantity?: number;
   totalPriceWithTax: number;
   totalPriceWithoutTax: number;
   orderMedicines: (MedicineFromProvider & {
@@ -28,7 +29,8 @@ export type OrderDto = {
   providerName: string;
   createdAt: string;
   status: KanbanItemStatus;
-  minPurchase: number;
+  minPurchase?: number;
+  minQuantity?: number;
   totalPriceWithTax: number;
   totalPriceWithoutTax: number;
   orderMedicines: (MedicineFromProvider & {
