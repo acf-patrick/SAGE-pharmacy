@@ -109,10 +109,10 @@ model Order {
   createdAt      DateTime        @default(now())
   status         OrderStatus     @default(ORDERED)
   medicineOrders OrderMedicine[]
-  evidences      Evidence[]
+  receipts       Receipt[]
 }
 
-model Evidence {
+model Receipt {
   id       String  @id @default(uuid())
   filename String
   Order    Order?  @relation(fields: [orderId], references: [id])

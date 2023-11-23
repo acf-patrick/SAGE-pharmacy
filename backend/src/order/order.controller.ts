@@ -10,22 +10,21 @@ import {
   Post,
   Query,
   Res,
-  ServiceUnavailableException,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OrderStatus } from '@prisma/client';
-import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
-import { AllOrders } from './dto/AllOrders.dto';
-import { CreateOrdersDto } from './dto/CreateOrders.dto';
-import { UpdateOrderDto } from './dto/UpdateOrder.dto';
-import { OrderService } from './order.service';
-import { UpdateMedicineQuantitiesDto } from './dto/UpdateMedicineQuantities.dto';
-import { DeleteMedicineOrderDto } from './dto/DeleteMedicineOrder.dto';
-import { CreateMedicineOrderDto } from './dto/CreateMedicineOrder.dto';
 import { Response } from 'express';
 import { createReadStream } from 'fs';
 import { join } from 'path';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { AllOrders } from './dto/AllOrders.dto';
+import { CreateMedicineOrderDto } from './dto/CreateMedicineOrder.dto';
+import { CreateOrdersDto } from './dto/CreateOrders.dto';
+import { DeleteMedicineOrderDto } from './dto/DeleteMedicineOrder.dto';
+import { UpdateMedicineQuantitiesDto } from './dto/UpdateMedicineQuantities.dto';
+import { UpdateOrderDto } from './dto/UpdateOrder.dto';
+import { OrderService } from './order.service';
 
 @Controller('api/order')
 @ApiTags('🛍️ Order')
@@ -46,7 +45,7 @@ export class OrderController {
     );
     file.pipe(res);
   }
-  
+
   @Post(':id/medicine')
   @ApiOperation({ summary: 'Add medicine to purchase order' })
   async addMedicine(
