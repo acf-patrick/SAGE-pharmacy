@@ -78,55 +78,61 @@ async function fillStock() {
     locations: Location[];
   } = JSON.parse(fs.readFileSync(join(__dirname, 'datas.json'), 'utf-8'));
 
-  await Promise.all(
-    medicines.map(async (record) => {
-      const medicine = {
-        ...record,
-        quantity: record.quantity ? parseInt(record.quantity) : 0,
-        real: record.real ? parseInt(record.real) : 0,
-        sellingPrice: parseInt(record.sellingPrice),
-      };
+  const createRecord = async (record: Medicine) => {
+    const medicine = {
+      ...record,
+      quantity: record.quantity ? parseInt(record.quantity) : 0,
+      real: record.real ? parseInt(record.real) : 0,
+      sellingPrice: parseInt(record.sellingPrice),
+    };
 
-      const location = locations.find(
-        (location) => location.reference === medicine.reference,
-      );
-      if (location) {
-        let min = randInt(),
+    const location = locations.find(
+      (location) => location.reference === medicine.reference,
+    );
+    if (location) {
+      let min = randInt(),
+        max = randInt();
+
+      if (min == 20) {
+        min = 10;
+        max = 20;
+      } else {
+        while (max <= min) {
           max = randInt();
-
-        if (min == 20) {
-          min = 10;
-          max = 20;
-        } else {
-          while (max <= min) {
-            max = randInt();
-          }
         }
-
-        let alert = Math.round(min + (max - min) / 4);
-        if (alert < min) {
-          alert = min;
-        }
-
-        const record = await prisma.medicine.create({
-          data: {
-            ...medicine,
-            costPrice: parseInt(location.costPrice),
-            location: location.location,
-            manufacturationDate: location.manufacturationDate
-              ? new Date(location.manufacturationDate).toISOString()
-              : undefined,
-            expirationDate: location.expirationDate
-              ? new Date(location.expirationDate).toISOString()
-              : undefined,
-            alert,
-            min,
-            max,
-          },
-        });
       }
-    }),
-  );
+
+      let alert = Math.round(min + (max - min) / 4);
+      if (alert < min) {
+        alert = min;
+      }
+
+      await prisma.medicine.create({
+        data: {
+          ...medicine,
+          costPrice: parseInt(location.costPrice),
+          location: location.location,
+          manufacturationDate: location.manufacturationDate
+            ? new Date(location.manufacturationDate).toISOString()
+            : undefined,
+          expirationDate: location.expirationDate
+            ? new Date(location.expirationDate).toISOString()
+            : undefined,
+          alert,
+          min,
+          max,
+        },
+      });
+    }
+  };
+
+  if (process.env.NODE_ENV == 'production') {
+    for (let record of medicines) {
+      await createRecord(record);
+    }
+  } else {
+    await Promise.all(medicines.map((record) => createRecord(record)));
+  }
 }
 
 async function createMockUser() {
