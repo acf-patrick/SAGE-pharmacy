@@ -11,7 +11,7 @@ import { ArchivedOrderService } from './archived-order.service';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { NewArchivedOrderDto } from './dto/NewArchivedOrder.dto';
 
-@Controller('archived-order')
+@Controller('/api/archived-order')
 @ApiTags('🛕 Archive')
 export class ArchivedOrderController {
   constructor(private readonly archivedOrderService: ArchivedOrderService) {}

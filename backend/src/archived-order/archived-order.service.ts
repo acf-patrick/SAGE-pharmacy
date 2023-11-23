@@ -12,7 +12,8 @@ export class ArchivedOrderService {
 
   async getAllArchivedOrders() {
     try {
-      return await this.prisma.archivedOrder.findMany();
+      const res = await this.prisma.archivedOrder.findMany();
+      return res;
     } catch (err) {
       console.log(err);
       throw new NotFoundException('Error getting archived orders.');

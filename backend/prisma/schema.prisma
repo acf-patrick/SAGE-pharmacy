@@ -122,7 +122,7 @@ model Evidence {
 
 model ArchivedOrder {
   id                String   @id @default(uuid())
-  createdAt         DateTime
+  createdAt         DateTime @default(now())
   providerName      String
   orderCreationDate DateTime
   evidences         String[]
