@@ -333,7 +333,9 @@ function CreateOrder() {
                       max={row.maxQuantity}
                       value={row.quantity}
                       onChange={(e) => {
-                        const value = parseInt(e.currentTarget.value);
+                        let value = parseInt(e.currentTarget.value);
+                        if (value > row.maxQuantity) value = row.maxQuantity;
+                        else if (value <= 0) value = 1;
                         setRows((rows) => {
                           const row = rows[i];
                           row.quantity = value;
