@@ -35,20 +35,31 @@ export class ArchivedOrderService {
 
   async createArchivedOrder(newArhivedOrderDto: NewArchivedOrderDto) {
     try {
-      const order = await this.prisma.order.findUnique({
+      const { providerName, createdAt } = await this.prisma.order.findUnique({
         where: {
-          id: newArhivedOrderDto.providerId
-        }
-      })
+          id: newArhivedOrderDto.orderId,
+        },
+        select: {
+          providerName: true,
+          createdAt: true,
+        },
+      });
 
       return await this.prisma.archivedOrder.create({
         data: {
-          orderCreationDate: order.createdAt,
-          providerName: order.providerName,
+          orderCreationDate: createdAt,
+          providerName: providerName,
           createdAt: new Date(),
-          evidences: newArhivedOrderDto.evidences
-        }
-      }
+          receipts: {
+            connect: newArhivedOrderDto.receipts.map((receipt) => {
+              return { id: receipt.id };
+            }),
+          },
+        },
+        include: {
+          receipts: true,
+        },
+      });
     } catch (err) {
       console.log(err);
       throw new BadRequestException('Error creating new archived order.');
@@ -60,11 +71,43 @@ export class ArchivedOrderService {
     updatedArchiveData: NewArchivedOrderDto,
   ) {
     try {
+      const { providerName, createdAt } = await this.prisma.order.findUnique({
+        where: {
+          id: updatedArchiveData.orderId,
+        },
+        select: {
+          providerName: true,
+          createdAt: true,
+        },
+      });
+
+      const archivedOrderReceipts = (
+        await this.prisma.archivedOrder.findUnique({
+          where: {
+            id,
+          },
+          select: {
+            receipts: true,
+          },
+        })
+      ).receipts;
+
       return await this.prisma.archivedOrder.update({
         where: {
           id,
         },
-        data: updatedArchiveData,
+        data: {
+          providerName,
+          orderCreationDate: createdAt,
+          receipts: {
+            connect: updatedArchiveData.receipts.map((receipt) => {
+              return { id: receipt.id };
+            }),
+            disconnect: archivedOrderReceipts.map((receipt) => {
+              return { id: receipt.id };
+            }),
+          },
+        },
       });
     } catch (err) {
       console.log(err);

@@ -3,24 +3,17 @@ import {
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
-  Post,
 } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { MedicineFromProvider, OrderStatus } from '@prisma/client';
 import * as fs from 'fs';
-import * as puppeteer from 'puppeteer';
+import { readdir, unlink } from 'fs/promises';
 import * as handlebars from 'handlebars';
-import { join } from 'path';
+import * as path from 'path';
+import * as puppeteer from 'puppeteer';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ProviderService } from 'src/provider/provider.service';
 import { CreateOrdersDto } from './dto/CreateOrders.dto';
-import {
-  MedicineFromProvider,
-  Order,
-  OrderMedicine,
-  OrderStatus,
-} from '@prisma/client';
-import { OrderDto } from './dto/Order.dto';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { unlink, readdir } from 'fs/promises';
 
 @Injectable()
 export class OrderService {
@@ -29,21 +22,24 @@ export class OrderService {
     private prisma: PrismaService,
   ) {}
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_SECOND)
   async clearBillFolder() {
     try {
-      const bills = await readdir(join(__dirname, 'bills'));
+      const bills = await readdir(path.join(__dirname, 'bills'));
       for (let file of bills) {
-        const bill = join(__dirname, 'bills', file);
-        await unlink(bill);
+        const extension = path.extname(file);
+        if (extension == '.pdf') {
+          const bill = path.join(__dirname, 'bills', file);
+          await unlink(bill);
+        }
       }
-    } catch {
-      console.error('Unable to clear bill folder');
+    } catch (e) {
+      console.error('Unable to clear bill folder : ', e);
     }
   }
 
   // Generate PDF file with orderMedicine list and return path to file
-  async createBillFile(providerName: string) {
+  async createBillFile(providerName: string): Promise<string> {
     const records = await this.prisma.order.findMany({
       where: {
         providerName,
@@ -80,7 +76,7 @@ export class OrderService {
 
     try {
       const templateHtml = fs.readFileSync(
-        join(__dirname, 'templates', 'bill.hbs'),
+        path.join(__dirname, 'templates', 'bill.hbs'),
         'utf-8',
       );
       const template = handlebars.compile(templateHtml);
@@ -107,16 +103,16 @@ export class OrderService {
         waitUntil: 'networkidle0',
       });
 
-      const path = join(__dirname, 'bills', providerName + '.pdf');
+      const filePath = path.join(__dirname, 'bills', providerName + '.pdf');
       await page.pdf({
         width: '1080px',
         printBackground: true,
-        path,
+        path: filePath,
       });
 
       await browser.close();
 
-      return path;
+      return filePath;
     } catch (e) {
       console.error(e);
       throw new ServiceUnavailableException(`Failed to create PDF file`);
@@ -184,6 +180,10 @@ export class OrderService {
         medicineOrders: true,
       },
     });
+
+    if (!record) {
+      throw new NotFoundException(`No order with ID : ${id}`);
+    }
 
     const order = {
       provider: record.provider,

@@ -109,10 +109,10 @@ model Order {
   createdAt      DateTime        @default(now())
   status         OrderStatus     @default(ORDERED)
   medicineOrders OrderMedicine[]
-  evidences      Evidence[]
+  receipts       Receipt[]
 }
 
-model Evidence {
+model Receipt {
   id              String         @id @default(uuid())
   filename        String
   Order           Order?         @relation(fields: [orderId], references: [id])
@@ -122,9 +122,9 @@ model Evidence {
 }
 
 model ArchivedOrder {
-  id                String     @id @default(uuid())
-  createdAt         DateTime   @default(now())
+  id                String    @id @default(uuid())
+  createdAt         DateTime  @default(now())
   providerName      String
   orderCreationDate DateTime
-  evidences         Evidence[]
+  receipts          Receipt[]
 }

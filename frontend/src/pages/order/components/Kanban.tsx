@@ -7,6 +7,10 @@ import { styled } from "styled-components";
 import { KanbanItemStatus, KanbanItemStatusObject, Order } from "../types";
 import { appear } from "../../../styles/animations";
 import { isValid } from "./OrderList";
+import { MdOutlineUploadFile } from "react-icons/md";
+import { HiOutlineViewfinderCircle } from "react-icons/hi2";
+import { api } from "../../../api";
+import { useNotification } from "../../../hooks";
 
 type KanbanProps = {
   title: string;
@@ -170,34 +174,66 @@ const StyledKanbanItemDiv = styled.div<{
     text-align: center;
   }
 
+  .import-form {
+    display: none;
+  }
+
   .buttons {
-    display: flex;
-    justify-content: flex-end;
     width: 100%;
-    gap: 0.5rem;
-    padding-right: 1rem;
     font-size: 1.25rem;
     position: absolute;
     bottom: 0.5rem;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: baseline;
 
-    .validate {
-      fill: green;
-    }
+    div {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: flex-end;
 
-    .delete {
-      * {
-        fill: red;
+      &:first-of-type {
+        padding-right: 0.5rem;
+      }
+
+      &:last-of-type {
+        padding-left: 0.5rem;
       }
     }
-    .edit {
-      fill: orange;
-    }
 
-    svg {
-      transition: transform 250ms;
+    button {
+      all: unset;
 
-      &:hover {
-        transform: translateY(-0.25rem);
+      &.upload svg {
+        fill: #da8e00;
+      }
+
+      &.view svg {
+        stroke: #5656ff;
+      }
+
+      &.validate svg {
+        fill: green;
+      }
+
+      &.delete svg {
+        * {
+          fill: red;
+        }
+      }
+
+      &.edit svg {
+        fill: orange;
+      }
+
+      svg {
+        transition: transform 250ms;
+
+        &:hover {
+          transform: translateY(-0.25rem);
+        }
       }
     }
   }
@@ -214,12 +250,19 @@ function KanbanItemComponent({
   deleteItem?: () => void;
   onOrderEdit?: (order: Order) => void;
 }) {
+  const { pushNotification } = useNotification();
+
   const map = new Map<KanbanItemStatus, string>([
     [KanbanItemStatusObject.PENDING, "En cours"],
     [KanbanItemStatusObject.RECEIVED, "Reçu"],
     [KanbanItemStatusObject.FINISHED, "Fini"],
     [KanbanItemStatusObject.AVOIR, "Avoir"],
   ]);
+
+  const importButtonOnClick = () => {
+    const input = document.querySelector(".import-input") as HTMLInputElement;
+    input.click();
+  };
 
   return (
     <StyledKanbanItemDiv $isValid={isValid(order)} $status={order.status}>
@@ -236,31 +279,89 @@ function KanbanItemComponent({
           new Date(order.createdAt).toLocaleDateString().replace(/\//g, "_")}
       </h1>
       <div className="buttons">
-        {moveItem ? (
-          <BsCheckLg
-            title="Passer au suivant"
-            className="validate"
-            onClick={moveItem}
-          />
-        ) : null}
-        {deleteItem ? (
-          <RxCross2
-            title="Revenir au précédent"
-            className="delete"
-            onClick={deleteItem}
-          />
-        ) : null}
-        {onOrderEdit ? (
-          <MdEdit
-            title={
-              order.status == KanbanItemStatusObject.RECEIVED
-                ? 'Mettre en "Avoir"'
-                : "Modifier"
-            }
-            className="edit"
-            onClick={() => onOrderEdit(order)}
-          />
-        ) : null}
+        <div>
+          {moveItem ? (
+            <button
+              title="Passer au suivant"
+              className="validate"
+              onClick={moveItem}
+            >
+              <BsCheckLg />
+            </button>
+          ) : null}
+          {deleteItem ? (
+            <button
+              title="Revenir au précédent"
+              className="delete"
+              onClick={deleteItem}
+            >
+              <RxCross2 />
+            </button>
+          ) : null}
+          {onOrderEdit ? (
+            <button
+              title={
+                order.status == KanbanItemStatusObject.RECEIVED
+                  ? 'Mettre en "Avoir"'
+                  : "Modifier"
+              }
+              className="edit"
+              onClick={() => onOrderEdit(order)}
+            >
+              <MdEdit />
+            </button>
+          ) : null}
+        </div>
+        {order.status === "RECEIVED" && (
+          <div>
+            <button title="Voir les factures associées" className="view">
+              <HiOutlineViewfinderCircle />
+            </button>
+            <button
+              title="Importer facture"
+              onClick={importButtonOnClick}
+              className="upload"
+            >
+              <MdOutlineUploadFile />
+            </button>
+            <form
+              className="import-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const data = new FormData(form);
+                data.set("orderId", order.id);
+
+                api
+                  .post("/receipt", data)
+                  .then((res) => {
+                    console.log(res.data);
+                  })
+                  .catch((e) => {
+                    console.error(e);
+                    pushNotification(
+                      "Une erreur s'est produite. Impossible d'envoyer le fichier au serveur",
+                      "error"
+                    );
+                  });
+              }}
+            >
+              <input
+                onChange={() => {
+                  const submitBtn = document.querySelector(
+                    "#submit-import-form"
+                  ) as HTMLButtonElement;
+                  submitBtn.click();
+                }}
+                type="file"
+                name="file"
+                className="import-input"
+                accept="image/png, image/jpeg, image/gif, application/pdf"
+              />
+              <button id="submit-import-form"></button>
+            </form>
+          </div>
+        )}
       </div>
     </StyledKanbanItemDiv>
   );
