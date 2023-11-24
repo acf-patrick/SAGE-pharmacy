@@ -12,6 +12,8 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ArchivedOrderModule } from './archived-order/archived-order.module';
+import { ReceiptModule } from './receipt/receipt.module';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     UserModule,
     AuthModule,
     MailModule,
+    ArchivedOrderModule,
+    ReceiptModule,
   ],
   controllers: [AppController],
   providers: [AppService],

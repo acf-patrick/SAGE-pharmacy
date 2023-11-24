@@ -22,10 +22,18 @@ const StyledHeader = styled(Header)`
     align-items: center;
     gap: 1rem;
 
-    svg {
+    .import-btn {
+      all: unset;
       font-size: 2rem;
-      fill: ${({ theme }) => theme.colors.buttons.add};
       cursor: pointer;
+
+      svg {
+        fill: ${({ theme }) => theme.colors.buttons.add};
+      }
+
+      &:hover {
+        background: transparent;
+      }
     }
 
     button {
@@ -82,7 +90,6 @@ export default function Provider() {
   const enableButton = () => {
     setFileLoaded(true);
     const button = formRef.current.querySelector("button") as HTMLElement;
-    console.log(button);
     button.classList.remove("disabled");
   };
 
@@ -120,10 +127,14 @@ export default function Provider() {
         <form ref={formRef} onSubmit={prepareSubmit}>
           {location.pathname.includes("create") ? null : (
             <div className="import">
-              <FaFileCirclePlus
-                onClick={triggerFileInput}
+              <button
+                type="button"
+                className="import-btn"
                 title="importer liste pour fournisseur"
-              />
+                onClick={triggerFileInput}
+              >
+                <FaFileCirclePlus />
+              </button>
               <input
                 ref={inputRef}
                 type="file"

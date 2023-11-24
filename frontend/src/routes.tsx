@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
 import { Login, Order, Provider, Purchase, Stock } from "./pages";
+import Archive from "./pages/archives/Archive";
 import {
   CreateOrder,
   EditOrder,
@@ -14,8 +15,8 @@ import {
   ProviderMedicines,
   ProviderNotFound,
 } from "./pages/provider/components";
-import NotFound from "./pages/provider/components/NotFound";
 import EditProvider from "./pages/provider/components/EditProvider";
+import NotFound from "./pages/provider/components/NotFound";
 
 export const router = createBrowserRouter([
   {
@@ -74,6 +75,11 @@ export const router = createBrowserRouter([
             errorElement: <NotFound />,
           },
         ],
+      },
+      {
+        path: "archive",
+        element: <Archive />,
+        errorElement: <NotFound />,
       },
     ],
   },
