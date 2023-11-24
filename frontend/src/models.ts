@@ -72,3 +72,18 @@ export type ProviderDto = {
   name: string;
   min: number;
 };
+
+export type ArchivedOrder = {
+  id: string;
+  createdAt: string;
+  providerName: string;
+  orderCreationDate: string;
+  evidences: string[];
+};
+
+export type ArchivedOrderDto = {
+  createdAt: string;
+  providerName: string;
+  orderCreationDate: string;
+  evidences: string[];
+};

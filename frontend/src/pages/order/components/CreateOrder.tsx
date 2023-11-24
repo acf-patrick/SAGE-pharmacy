@@ -220,13 +220,9 @@ function CreateOrder() {
     medicineName: string;
     quantity: number;
   }) => {
-    console.log(medicineName + "," + quantity);
-
     let maxQuantity = 0;
     let priceWithoutTax = 0;
     let priceWithTax = 0;
-
-    console.log(currentProvider);
 
     currentProvider.medicines.forEach((medicine) => {
       if (medicine.name == medicineName) {

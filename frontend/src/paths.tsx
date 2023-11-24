@@ -2,6 +2,7 @@ import { AiTwotoneContainer } from "react-icons/ai";
 import { MdOutlineViewKanban } from "react-icons/md";
 import { PiFactoryBold } from "react-icons/pi";
 import { SlBasket } from "react-icons/sl";
+import { RiBillLine } from "react-icons/ri";
 
 const paths = [
   {
@@ -23,6 +24,11 @@ const paths = [
     to: "/provider",
     name: "Fournisseurs",
     icon: <PiFactoryBold />,
+  },
+  {
+    to: "/archive",
+    name: "Factures",
+    icon: <RiBillLine />,
   },
 ];
 

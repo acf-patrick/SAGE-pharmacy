@@ -15,6 +15,7 @@ export const theme = {
       edit: "#ff7700",
       delete: "red",
       add: "blue",
+      view: "#0055ffbf",
     },
     lowStock: "#ff7e7e",
     nearExpiration: "orange",

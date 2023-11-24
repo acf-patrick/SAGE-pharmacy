@@ -90,7 +90,6 @@ export default function Provider() {
   const enableButton = () => {
     setFileLoaded(true);
     const button = formRef.current.querySelector("button") as HTMLElement;
-    console.log(button);
     button.classList.remove("disabled");
   };
 

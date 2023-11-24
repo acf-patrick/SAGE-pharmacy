@@ -113,8 +113,18 @@ model Order {
 }
 
 model Receipt {
-  id       String  @id @default(uuid())
-  filename String
-  Order    Order?  @relation(fields: [orderId], references: [id])
-  orderId  String?
+  id              String         @id @default(uuid())
+  filename        String
+  Order           Order?         @relation(fields: [orderId], references: [id])
+  orderId         String?
+  archivedOrderId String?
+  ArchivedOrder   ArchivedOrder? @relation(fields: [archivedOrderId], references: [id])
+}
+
+model ArchivedOrder {
+  id                String    @id @default(uuid())
+  createdAt         DateTime  @default(now())
+  providerName      String
+  orderCreationDate DateTime
+  receipts          Receipt[]
 }
