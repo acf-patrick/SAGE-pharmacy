@@ -3,9 +3,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { NewArchivedOrderDto } from './dto/NewArchivedOrder.dto';
-import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class ArchivedOrderService {
@@ -13,7 +13,11 @@ export class ArchivedOrderService {
 
   async getAllArchivedOrders() {
     try {
-      const res = await this.prisma.archivedOrder.findMany();
+      const res = await this.prisma.archivedOrder.findMany({
+        include: {
+          receipts: true,
+        },
+      });
       return res;
     } catch (err) {
       console.log(err);

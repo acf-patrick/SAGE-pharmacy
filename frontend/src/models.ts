@@ -78,12 +78,19 @@ export type ArchivedOrder = {
   createdAt: string;
   providerName: string;
   orderCreationDate: string;
-  evidences: string[];
+  receipts: Receipt[];
 };
 
 export type ArchivedOrderDto = {
   createdAt: string;
   providerName: string;
   orderCreationDate: string;
-  evidences: string[];
+  receipts: string[];
+};
+
+export type Receipt = {
+  id: string;
+  filename: string;
+  orderId: string;
+  archivedOrderId: string;
 };
