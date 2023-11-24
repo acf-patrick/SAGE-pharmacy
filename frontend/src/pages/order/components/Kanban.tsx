@@ -264,7 +264,7 @@ function KanbanItemComponent({
         console.error(e);
         pushNotification(
           "Impossible de récupérer les reçus associées au commande",
-          "info"
+          "error"
         );
       });
   }, [order]);
@@ -338,13 +338,15 @@ function KanbanItemComponent({
           </div>
           {order.status === "RECEIVED" && (
             <div>
-              <button
-                title="Voir les factures associées"
-                onClick={() => setShowReceiptsCaroussel(true)}
-                className="view"
-              >
-                <HiOutlineViewfinderCircle />
-              </button>
+              {receiptIds.length > 0 ? (
+                <button
+                  title="Voir les factures associées"
+                  onClick={() => setShowReceiptsCaroussel(true)}
+                  className="view"
+                >
+                  <HiOutlineViewfinderCircle />
+                </button>
+              ) : null}
               <button
                 title="Importer facture"
                 onClick={importButtonOnClick}
