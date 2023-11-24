@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
 import { Login, Order, Provider, Purchase, Stock } from "./pages";
-import Archive from "./pages/archives/Archive";
+import Archive from "./pages/archive/Archive";
 import {
   CreateOrder,
   EditOrder,

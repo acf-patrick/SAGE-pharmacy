@@ -277,7 +277,7 @@ export class OrderService {
     map.set(OrderStatus.ORDERED, [OrderStatus.PENDING]);
     map.set(OrderStatus.PENDING, [OrderStatus.ORDERED, OrderStatus.RECEIVED]);
     map.set(OrderStatus.RECEIVED, [OrderStatus.FINISHED, OrderStatus.AVOIR]);
-    map.set(OrderStatus.FINISHED, [OrderStatus.RECEIVED]);
+    map.set(OrderStatus.FINISHED, [OrderStatus.RECEIVED, OrderStatus.ARCHIVED]);
     map.set(OrderStatus.AVOIR, [OrderStatus.RECEIVED, OrderStatus.FINISHED]);
 
     const value = map.get(order.status);

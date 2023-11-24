@@ -1,13 +1,14 @@
-import styled from "styled-components";
-import { Header } from "../../components";
-import { useEffect, useState } from "react";
-import { api } from "../../api";
-import { ArchivedOrder } from "../../models";
 import { lighten } from "polished";
+import React, { useEffect, useState } from "react";
 import { HiOutlineViewfinderCircle } from "react-icons/hi2";
-import { MoonLoader } from "react-spinners";
 import { RiFileForbidLine } from "react-icons/ri";
+import { MoonLoader } from "react-spinners";
+import styled from "styled-components";
+import { api } from "../../api";
+import { Header } from "../../components";
+import { ArchivedOrder } from "../../models";
 import { theme } from "../../styles/theme";
+import ReceiptsCaroussel from "../order/components/ReceiptsCaroussel";
 
 const StyledArchives = styled.div`
   display: grid;
@@ -72,6 +73,15 @@ const StyledArchives = styled.div`
       font-size: 2rem;
     }
   }
+
+  .disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+
+    &:hover {
+      background-color: ${({ theme }) => theme.colors.buttons.view};
+    }
+  }
 `;
 
 const StyleHeaderContainer = styled.div`
@@ -98,11 +108,14 @@ const StyleHeaderContainer = styled.div`
 function Archive() {
   const [archivedOrders, setArchivedOrders] = useState<ArchivedOrder[]>([]);
   const [pending, setPending] = useState(true);
+  const [showReceiptsCaroussel, setShowReceiptsCaroussel] = useState(false);
+  const [receiptIds, setReceiptIds] = useState<string[]>([]);
 
   useEffect(() => {
     api
       .get("/archived-order")
       .then((res) => {
+        console.table(res.data);
         setArchivedOrders(res.data);
         setPending(false);
       })
@@ -110,6 +123,15 @@ function Archive() {
         console.error(err);
       });
   }, []);
+
+  useEffect(() => {
+    console.log(archivedOrders);
+  }, [archivedOrders]);
+
+  const showCaroussel = (archivedOrder: ArchivedOrder) => {
+    setReceiptIds(archivedOrder.receipts.map((receipt) => receipt.id));
+    setShowReceiptsCaroussel(true);
+  };
 
   return (
     <>
@@ -128,7 +150,7 @@ function Archive() {
               <div className="header">Date de création de la commande</div>
               <div className="header"></div>
               {archivedOrders.map((order, i) => (
-                <>
+                <React.Fragment key={i}>
                   <div className={i % 2 ? "odd" : ""}>{order.providerName}</div>
                   <div className={i % 2 ? "odd" : ""}>
                     {new Date(order.createdAt).toLocaleString()}
@@ -137,12 +159,23 @@ function Archive() {
                     {new Date(order.orderCreationDate).toLocaleString()}
                   </div>
                   <div className={i % 2 ? " odd" : ""}>
-                    <button>
+                    <button
+                      className={
+                        order.receipts && order.receipts.length == 0
+                          ? "disabled"
+                          : ""
+                      }
+                      onClick={() => {
+                        if (order.receipts && order.receipts.length > 0) {
+                          showCaroussel(order);
+                        }
+                      }}
+                    >
                       <HiOutlineViewfinderCircle />
                       <span>Voir</span>
                     </button>
                   </div>
-                </>
+                </React.Fragment>
               ))}
             </StyledArchives>
           ) : (
@@ -154,6 +187,12 @@ function Archive() {
             </StyleHeaderContainer>
           )}
         </>
+      )}
+      {showReceiptsCaroussel && (
+        <ReceiptsCaroussel
+          receiptIds={receiptIds}
+          onClose={() => setShowReceiptsCaroussel(false)}
+        />
       )}
     </>
   );

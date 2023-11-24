@@ -10,7 +10,7 @@ import {
   Post,
   Query,
   Res,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OrderStatus } from '@prisma/client';
@@ -113,6 +113,7 @@ export class OrderController {
       OrderStatus.RECEIVED,
       OrderStatus.FINISHED,
       OrderStatus.AVOIR,
+      OrderStatus.ARCHIVED,
     ];
 
     if (!statusList.includes(status)) {
