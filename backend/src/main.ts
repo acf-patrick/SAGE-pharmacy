@@ -1,9 +1,9 @@
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import { PrismaClientExceptionFilter } from './prisma-client-exception/prisma-client-exception.filter';
 import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AppModule } from './app.module';
+import { PrismaClientExceptionFilter } from './prisma-client-exception/prisma-client-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,7 +11,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   const configs = app.get<ConfigService>(ConfigService);
-  const prod = configs.get<string>('NODE_ENV') === 'production'
+  const prod = configs.get<string>('NODE_ENV') === 'production';
 
   if (!prod) {
     app.enableCors();
@@ -21,7 +21,7 @@ async function bootstrap() {
       .setDescription('Logiciel pharmacie Hasimbola')
       .setVersion('0.1')
       .build();
-  
+
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document);
   }

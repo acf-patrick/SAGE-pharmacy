@@ -11,6 +11,15 @@ import { join } from 'path';
 export class ReceiptService {
   constructor(private prisma: PrismaService) {}
 
+  async getFileType(id: string) {
+    const { filename } = await this.prisma.receipt.findUnique({
+      where: { id },
+      select: { filename: true },
+    });
+
+    return filename.split('.')[1];
+  }
+
   async getReceipt(id: string) {
     const record = await this.prisma.receipt.findUnique({
       where: {
@@ -25,8 +34,11 @@ export class ReceiptService {
       throw new NotFoundException(`No receipt with ID : ${id}`);
     }
 
-    const file = createReadStream(join(__dirname, 'files', record.filename));
-    return file;
+    const stream = createReadStream(join(__dirname, 'files', record.filename));
+    return {
+      stream,
+      type: record.filename.split('.')[1],
+    };
   }
 
   getReceipts(orderId: string) {
