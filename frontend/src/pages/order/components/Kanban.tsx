@@ -11,7 +11,7 @@ import { MdOutlineUploadFile } from "react-icons/md";
 import { HiOutlineViewfinderCircle } from "react-icons/hi2";
 import { api } from "../../../api";
 import { useNotification } from "../../../hooks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReceiptsCaroussel from "./ReceiptsCaroussel";
 
 type KanbanProps = {
@@ -254,6 +254,20 @@ function KanbanItemComponent({
 }) {
   const { pushNotification } = useNotification();
   const [showReceiptsCaroussel, setShowReceiptsCaroussel] = useState(false);
+  const [receiptIds, setReceiptIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    api
+      .get(`/receipt?orderId=${order.id}`)
+      .then((res) => setReceiptIds(res.data.ids))
+      .catch((e) => {
+        console.error(e);
+        pushNotification(
+          "Impossible de récupérer les reçus associées au commande",
+          "info"
+        );
+      });
+  }, [order]);
 
   const map = new Map<KanbanItemStatus, string>([
     [KanbanItemStatusObject.PENDING, "En cours"],
@@ -270,7 +284,10 @@ function KanbanItemComponent({
   return (
     <>
       {showReceiptsCaroussel && (
-        <ReceiptsCaroussel onClose={() => setShowReceiptsCaroussel(false)} />
+        <ReceiptsCaroussel
+          receiptIds={receiptIds}
+          onClose={() => setShowReceiptsCaroussel(false)}
+        />
       )}
       <StyledKanbanItemDiv $isValid={isValid(order)} $status={order.status}>
         <div className="ticket">
@@ -283,7 +300,7 @@ function KanbanItemComponent({
         <h1>
           {order.providerName +
             "_" +
-            new Date(order.createdAt).toLocaleDateString().replace(/\//g, "_")}
+            new Date(order.createdAt).toLocaleDateString().replace(/\//g, "-")}
         </h1>
         <div className="buttons">
           <div>
@@ -346,7 +363,7 @@ function KanbanItemComponent({
                   api
                     .post("/receipt", data)
                     .then((res) => {
-                      console.log(res.data);
+                      setReceiptIds((ids) => [...ids, res.data.id]);
                     })
                     .catch((e) => {
                       console.error(e);
