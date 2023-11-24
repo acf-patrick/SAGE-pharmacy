@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { NewArchivedOrderDto } from './dto/NewArchivedOrder.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class ArchivedOrderService {
@@ -130,6 +131,40 @@ export class ArchivedOrderService {
       throw new NotFoundException(
         "Can't find archived order with id: " + id + '.',
       );
+    }
+  }
+
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async convertFinishedOrdersToArchivedOrders() {
+    // get all order with status FINISHED
+    const finishedOrders = await this.prisma.order.findMany({
+      where: {
+        status: 'FINISHED',
+      },
+      select: {
+        id: true,
+        receipts: true,
+      },
+    });
+
+    // Update all order from FINISHED to ARCHIVED
+    await this.prisma.order.updateMany({
+      where: {
+        id: {
+          in: finishedOrders.map((order) => order.id),
+        },
+      },
+      data: {
+        status: 'ARCHIVED',
+      },
+    });
+
+    // Create for each finished order an archived order equivalent
+    for (let order of finishedOrders) {
+      await this.createArchivedOrder({
+        orderId: order.id,
+        receipts: order.receipts,
+      });
     }
   }
 }

@@ -44,6 +44,7 @@ export const KanbanItemStatusObject = {
   RECEIVED: "RECEIVED",
   FINISHED: "FINISHED",
   AVOIR: "AVOIR",
+  ARCHIVED: "ARCHIVED",
 } as const;
 
 export type KanbanItemStatus =
@@ -51,4 +52,5 @@ export type KanbanItemStatus =
   | "PENDING"
   | "RECEIVED"
   | "FINISHED"
-  | "AVOIR";
+  | "AVOIR"
+  | "ARCHIVED";
