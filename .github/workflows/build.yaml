@@ -27,6 +27,7 @@ jobs:
           rm .gitignore
       - name: commit changes
         run: |
+          ls -lha
           git config --local user.name ${{ secrets.USER_NAME }}
           git config --local user.email ${{ secrets.USER_EMAIL }}
           git add .
