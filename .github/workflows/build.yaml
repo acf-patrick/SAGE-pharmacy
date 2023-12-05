@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     container: node:20
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: build frontend
         run: |
           cd frontend
@@ -27,11 +27,9 @@ jobs:
           rm .gitignore
       - name: commit changes
         run: |
-          ls -lha
-          git config --local user.name ${{ secrets.USER_NAME }}
-          git config --local user.email ${{ secrets.USER_EMAIL }}
-          git add .
-          git commit -m "Build ✨"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -am "Build ✨"
           git push origin --delete build
           git checkout -b build
       - name: push changes
