@@ -1,4 +1,4 @@
-name: Reduce to server app only
+name: Build and deploy
 
 on:
   push:
