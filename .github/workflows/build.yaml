@@ -11,6 +11,8 @@ jobs:
     container: node:20
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: build frontend
         run: |
           cd frontend
@@ -26,10 +28,13 @@ jobs:
           rm -rf backend/
           rm .gitignore
       - name: commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: github-actions[bot]
+          author_email: github-actions[bot]@users.noreply.github.com
+          message: Build ✨
+      - name: checkout to build branch
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git commit -am "Build ✨"
           git push origin --delete build
           git checkout -b build
       - name: push changes
