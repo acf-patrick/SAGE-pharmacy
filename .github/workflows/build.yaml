@@ -35,7 +35,7 @@ jobs:
           git commit -am "Build ✨"
       - name: checkout to build branch
         run: |
-          git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ secrets.USER_NAME }}/${{ github.repository }}.git
+          git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ secrets.USER_NAME }}/${{ github.event.repository.name }}.git
           git push origin --delete build
           git checkout -b build
       - name: push changes
