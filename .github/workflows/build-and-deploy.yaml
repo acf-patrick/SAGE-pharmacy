@@ -48,6 +48,7 @@ jobs:
           branch: preview
 
   deploy:
+    needs: build
     runs-on: self-hosted
     steps:
       - name: checkout prebuilt code
