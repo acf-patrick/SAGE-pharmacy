@@ -26,7 +26,7 @@ jobs:
         run: |
           mv backend/* .
           rm -rf backend/
-          rm .gitignore
+          rm -r test/ .gitignore 
       - name: commit changes
         run: |
           git config --global --add safe.directory $(pwd)
