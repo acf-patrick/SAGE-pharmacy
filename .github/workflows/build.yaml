@@ -24,7 +24,7 @@ jobs:
         run: |
           mv backend/* .
           rm -rf backend/
-          rm .gitignore .env*
+          rm .gitignore
       - name: commit changes
         run: |
           git config --local user.name ${{ secrets.USER_NAME }}
