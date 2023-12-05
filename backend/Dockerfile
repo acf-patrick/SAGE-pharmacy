@@ -18,6 +18,8 @@ RUN apt-get update -y && apt-get install -y openssl
 
 COPY . .
 
+ADD docker.env .env
+
 RUN yarn config set strict-ssl false -g
 
 # Install dependencies and build
