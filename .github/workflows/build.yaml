@@ -37,9 +37,9 @@ jobs:
       - name: checkout to build branch
         run: |
           git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ secrets.USER_NAME }}/${{ github.event.repository.name }}.git
-          git push origin --delete build
-          git checkout -b build
+          git push origin --delete preview
+          git checkout -b preview
       - name: push changes
         uses: ad-m/github-push-action@master
         with:
-          branch: build
+          branch: preview
