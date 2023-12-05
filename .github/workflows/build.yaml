@@ -1,8 +1,11 @@
-name: Build
+name: Reduce to server app only
 
 on:
   push:
     branches:
+      - main
+  pull_request: 
+    branches: 
       - main
 
 jobs:
