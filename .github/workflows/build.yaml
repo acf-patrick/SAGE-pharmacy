@@ -1,0 +1,39 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: node:20
+    steps:
+      - uses: actions/checkout@v2
+      - name: build frontend
+        run: |
+          cd frontend
+          yarn install
+          yarn build
+          mkdir ../client
+          cp -r dist/* ../client
+          cd ..
+          rm -rf frontend
+      - name: regroup sources
+        run: |
+          mv backend/* .
+          rm -rf backend/
+          rm .gitignore .env*
+      - name: commit changes
+        run: |
+          git config --local user.name ${{ secrets.USER_NAME }}
+          git config --local user.email ${{ secrets.USER_EMAIL }}
+          git add .
+          git commit -m "Build ✨"
+          git push origin --delete build
+          git checkout -b build
+      - name: push changes
+        uses: ad-m/github-push-action@master
+        with:
+          branch: build
