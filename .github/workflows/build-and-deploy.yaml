@@ -26,6 +26,7 @@ jobs:
           mkdir backend/client
           mv frontend/dist/* backend/client
           rm -rf frontend
+          cd backend
           mv backend app
           rm -r test/ .gitignore README.md
       - name: build backend
