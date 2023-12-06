@@ -24,10 +24,10 @@ jobs:
       - name: regroup sources
         run: |
           mkdir backend/client
-          cp -r frontend/dist/* backend/client
+          mv frontend/dist/* backend/client
           rm -rf frontend
-          cd backend
           mv backend app
+          cd app
           rm -r test/ .gitignore README.md
       - name: build backend
         run: |
