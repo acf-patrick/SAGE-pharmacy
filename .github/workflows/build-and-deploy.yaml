@@ -21,21 +21,21 @@ jobs:
           cd frontend
           yarn install
           yarn build
-          mkdir ../client
-          cp -r dist/* ../client
-          cd ..
-          rm -rf frontend
       - name: regroup sources
         run: |
-          mv backend/* .
-          rm -rf backend/
+          mkdir backend/client
+          mv client/dist/* backend/client
+          rm -rf frontend
+          mv backend app
           rm -r test/ .gitignore README.md
       - name: build backend
         run: |
+          cd app
           yarn install
           yarn build
       - name: create env file
         run: |
+          cd app
           touch docker.env
           echo PORT=${{ env.PORT }} >> docker.env
           echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> docker.env
@@ -47,7 +47,7 @@ jobs:
           echo MAILER_PASSWORD=${{ env.MAILER_PASSWORD }} >> docker.env
       - name: create build artifact
         run: |
-          tar -czvf build.tar.gz .
+          tar -czvf build.tar.gz app
       - name: upload build artifact
         uses: actions/upload-artifact@v3
         with:
@@ -66,7 +66,7 @@ jobs:
         run: |
           tar -xvf build.tar.gz
           rm build.tar.gz
-          ls
+          ll app
 
       # - name: run Docker image
       #   run: |
