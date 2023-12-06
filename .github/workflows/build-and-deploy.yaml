@@ -46,10 +46,13 @@ jobs:
           echo MAILER_USER=${{ env.MAILER_USER }} >> docker.env
           echo MAILER_PASSWORD=${{ env.MAILER_PASSWORD }} >> docker.env
       - name: create build artifact
+        run: |
+          tar -czvf build.tar.gz .
+      - name: upload build artifact
         uses: actions/upload-artifact@v3
         with:
           name: app
-          path: .
+          path: build.tar.gz
 
   deploy:
     needs: build
@@ -60,7 +63,11 @@ jobs:
         with:
           name: app
       - name: show artifact content
-        run: ls
+        run: |
+          tar -xvf build.tar.gz
+          rm build.tar.gz
+          ls
+
       # - name: run Docker image
       #   run: |
       #     export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
