@@ -46,6 +46,9 @@ jobs:
           echo MAILER_HOST=${{ env.MAILER_HOST }} >> docker.env
           echo MAILER_USER=${{ env.MAILER_USER }} >> docker.env
           echo MAILER_PASSWORD=${{ env.MAILER_PASSWORD }} >> docker.env
+          echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> docker.env
+          echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> docker.env
+          echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> docker.env
       - name: create build artifact
         run: tar -czvf build.tar.gz app
       - name: upload build artifact
@@ -73,9 +76,6 @@ jobs:
           rm -r app build.tar.gz
       - name: run Docker image
         run: |
-          export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-          export POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-          export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
           sudo docker compose down
           sudo docker compose build
           sudo docker compose up -d
