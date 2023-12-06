@@ -22,9 +22,6 @@ ADD docker.env .env
 
 RUN yarn config set strict-ssl false -g
 
-# Install dependencies and build
-RUN yarn && yarn build
-
 EXPOSE 3000
 
 CMD [ "sh", "-c", "yarn migrate_db;yarn start" ]
