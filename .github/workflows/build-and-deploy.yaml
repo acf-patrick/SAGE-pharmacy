@@ -47,8 +47,7 @@ jobs:
           echo MAILER_USER=${{ env.MAILER_USER }} >> docker.env
           echo MAILER_PASSWORD=${{ env.MAILER_PASSWORD }} >> docker.env
       - name: create build artifact
-        run: |
-          tar -czvf build.tar.gz app
+        run: tar -czvf build.tar.gz app
       - name: upload build artifact
         uses: actions/upload-artifact@v3
         with:
@@ -65,7 +64,7 @@ jobs:
           name: app
       - name: show artifact content
         run: |
-          tar -xvf build.tar.gz
+          tar -xf build.tar.gz
           rm build.tar.gz
           ll app
 
