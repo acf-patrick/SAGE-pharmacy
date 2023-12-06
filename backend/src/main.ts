@@ -2,11 +2,23 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as fs from 'fs';
+import { join } from 'path';
 import { AppModule } from './app.module';
 import { PrismaClientExceptionFilter } from './prisma-client-exception/prisma-client-exception.filter';
 
+const httpsOptions =
+  process.env.NODE_ENV === 'production'
+    ? {
+        key: fs.readFileSync(join(__dirname, '..', 'secrets', 'cert.key')),
+        cert: fs.readFileSync(join(__dirname, '..', 'secrets', 'cert.crt')),
+      }
+    : undefined;
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    httpsOptions,
+  });
 
   app.useGlobalPipes(new ValidationPipe());
 
