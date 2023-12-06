@@ -56,23 +56,22 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: download build artifact
         uses: actions/download-artifact@v3
         with:
           name: app
-      - name: show artifact content
+      - name: extract build from artifact
         run: |
           tar -xf build.tar.gz
-          rm build.tar.gz
-          ls -lha app
-
-      # - name: run Docker image
-      #   run: |
-      #     export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-      #     export POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-      #     export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-      #     sudo docker compose down
-      #     sudo docker compose pull
-      #     sudo docker compose up -d
+          mv app/* .
+          rm -r app build.tar.gz
+      - name: run Docker image
+        run: |
+          export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          export POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          sudo docker compose down
+          sudo docker compose build
+          sudo docker compose up -d
