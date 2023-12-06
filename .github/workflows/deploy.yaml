@@ -1,4 +1,4 @@
-name: Build and deploy
+name: Build and deploy application
 
 on:
   push:
@@ -58,6 +58,8 @@ jobs:
     needs: build
     runs-on: self-hosted
     steps:
+      - name: clear app directory
+        run: rm -r *
       - name: download build artifact
         uses: actions/download-artifact@v3
         with:
