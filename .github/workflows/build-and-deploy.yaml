@@ -23,7 +23,7 @@ jobs:
           yarn build
       - name: regroup sources
         run: |
-          ll
+          ls -lha .
           mkdir backend/client
           mv frontend/dist/* backend/client
           rm -rf frontend
