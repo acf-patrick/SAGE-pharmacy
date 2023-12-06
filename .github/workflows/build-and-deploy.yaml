@@ -24,7 +24,7 @@ jobs:
       - name: regroup sources
         run: |
           mkdir backend/client
-          mv client/dist/* backend/client
+          mv frontend/dist/* backend/client
           rm -rf frontend
           mv backend app
           rm -r test/ .gitignore README.md
