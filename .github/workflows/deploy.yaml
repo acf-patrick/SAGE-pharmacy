@@ -59,7 +59,9 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: clear app directory
-        run: rm -r *
+        run: |
+          touch foo
+          rm -r *
       - name: download build artifact
         uses: actions/download-artifact@v3
         with:
