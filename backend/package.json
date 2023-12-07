@@ -8,7 +8,7 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "migrate_db": "yarn prisma migrate deploy && yarn prisma db seed",
+    "migrate_db": "yarn prisma migrate dev && yarn prisma db seed",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
