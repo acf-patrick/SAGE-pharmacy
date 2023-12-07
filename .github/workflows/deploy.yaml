@@ -20,7 +20,7 @@ jobs:
         run: |
           cd frontend
           yarn install
-          yarn build
+          VITE_API_ENDPOINT=http://${{ vars.HOST }}/api yarn build
       - name: regroup sources
         run: |
           mkdir backend/client
@@ -41,7 +41,6 @@ jobs:
           echo "DATABASE_URL=postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ vars.HOST }}:5432/${{ secrets.POSTGRES_DB }}?schema=public&pool_timeout=0" >> docker.env
           echo "ACCESS_SECRET=${{ vars.ACCESS_SECRET }}" >> docker.env
           echo "REFRESH_SECRET=${{ vars.REFRESH_SECRET }}" >> docker.env
-          echo "VITE_API_ENDPOINT=http://${{ vars.HOST }}/api" >> docker.env
           echo "MAILER_HOST=${{ vars.MAILER_HOST }}" >> docker.env
           echo "MAILER_USER=${{ vars.MAILER_USER }}" >> docker.env
           echo "MAILER_PASSWORD=${{ vars.MAILER_PASSWORD }}" >> docker.env
