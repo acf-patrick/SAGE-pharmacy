@@ -26,7 +26,7 @@ import { UpdateMedicineQuantitiesDto } from './dto/UpdateMedicineQuantities.dto'
 import { UpdateOrderDto } from './dto/UpdateOrder.dto';
 import { OrderService } from './order.service';
 
-@Controller('api/order')
+@Controller('order')
 @ApiTags('🛍️ Order')
 @UseGuards(new AccessTokenGuard())
 export class OrderController {

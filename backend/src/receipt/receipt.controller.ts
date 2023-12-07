@@ -15,7 +15,7 @@ import { ReceiptService } from './receipt.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
-@Controller('api/receipt')
+@Controller('receipt')
 @ApiTags('🧾 Receipt')
 export class ReceiptController {
   constructor(private readonly receiptService: ReceiptService) {}

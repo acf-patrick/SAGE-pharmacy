@@ -223,63 +223,45 @@ const Purchase = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    getMedicinesMatches()
-      .then((matchingMedicines) => {
-        setMatchedMedicines(matchingMedicines);
-        setCurrentProviders(
-          matchingMedicines.map(
-            (medicine) => medicine.providerMedicines[0].provider.name
-          )
-        );
-        setCurrentMedicines(
-          matchingMedicines.map((med) => {
-            const medicine = med.providerMedicines[0];
-            const { quantity, priceWithTax, priceWithoutTax, id } =
-              medicine.medicine;
+    const fetchDatas = async () => {
+      // Get all matched near-low quantity medicines
+      const res = await api.get("/provider/provide");
 
-            return {
-              id,
-              order: medicine.quantityToOrder,
-              available: quantity,
-              unitPriceWithoutTax: priceWithoutTax * quantity,
-              unitPriceWithTax: priceWithTax * quantity,
-            };
-          })
-        );
+      const matchingMedicines: MatchMedicine[] = res.data;
+      setMatchedMedicines(matchingMedicines);
+
+      setCurrentProviders(
+        matchingMedicines.map(
+          (medicine) => medicine.providerMedicines[0].provider.name
+        )
+      );
+
+      setCurrentMedicines(
+        matchingMedicines.map((med) => {
+          const medicine = med.providerMedicines[0];
+          const { quantity, priceWithTax, priceWithoutTax, id } =
+            medicine.medicine;
+
+          return {
+            id,
+            order: medicine.quantityToOrder,
+            available: quantity,
+            unitPriceWithoutTax: priceWithoutTax * quantity,
+            unitPriceWithTax: priceWithTax * quantity,
+          };
+        })
+      );
+    };
+
+    fetchDatas()
+      .catch((err) => {
+        if (err.response.status !== 404) {
+          pushNotification("Une erreur s'est produite", "error");
+          console.error(err);
+        }
       })
-      .catch((err) => console.error(err))
       .finally(() => setPending(false));
   }, []);
-
-  // Get all matched near-low quantity medicines
-  const getMedicinesMatches = async () => {
-    const res = await api.get("/provider/provide");
-    const data: Record<
-      string,
-      {
-        medicine: MedicineFromProvider;
-        provider: { name: string };
-        quantityToOrder: number;
-      }[]
-    > = res.data;
-
-    const matches: MatchMedicine[] = [];
-
-    await Promise.all(
-      Object.keys(data).map(async (id) => {
-        const res = await api.get(`/stock/${id}`);
-        const { name, min } = res.data;
-
-        matches.push({
-          name,
-          stockMin: min,
-          providerMedicines: data[id],
-        });
-      })
-    );
-
-    return matches.sort((a, b) => (a.name < b.name ? -1 : 1));
-  };
 
   // Get current data set up by the user and create a purchase list (set "order" state)
   const orderMedicines = () => {
@@ -358,8 +340,7 @@ const Purchase = () => {
               } else {
                 setShowConfirmation(true);
               }
-            }}
-          >
+            }}>
             Commander
           </button>
         </div>
@@ -411,8 +392,7 @@ const Purchase = () => {
                         "checkbox",
                         "name",
                         i % 2 == 0 ? "even" : "odd",
-                      ].join(" ")}
-                    >
+                      ].join(" ")}>
                       <input
                         type="checkbox"
                         id={medicine.name}
@@ -439,8 +419,7 @@ const Purchase = () => {
                         <select
                           name={medicine.name}
                           id={medicine.name}
-                          onChange={(e) => selectedMedicineOnChange(i, e)}
-                        >
+                          onChange={(e) => selectedMedicineOnChange(i, e)}>
                           {medicine.providerMedicines.map((match, i) => (
                             <option
                               key={i}
@@ -449,8 +428,7 @@ const Purchase = () => {
                                 medicine: match.medicine,
                                 providerName: match.provider.name,
                                 order: match.quantityToOrder,
-                              })}
-                            >
+                              })}>
                               {match.medicine.name +
                                 " (" +
                                 match.provider.name +
@@ -472,16 +450,16 @@ const Purchase = () => {
                     />
                     {/* provider's name */}
                     <div
-                      className={`provider-name ${i % 2 == 0 ? "even" : "odd"}`}
-                    >
+                      className={`provider-name ${
+                        i % 2 == 0 ? "even" : "odd"
+                      }`}>
                       {currentProviders[i]}
                     </div>
                     {/* price with taxes */}
                     <div
                       className={
                         "price-with-tax unbold " + (i % 2 == 0 ? "even" : "odd")
-                      }
-                    >
+                      }>
                       {currentMedicines[i].order *
                         currentMedicines[i].unitPriceWithTax}
                     </div>
@@ -490,8 +468,7 @@ const Purchase = () => {
                       className={
                         "price-without-tax unbold " +
                         (i % 2 == 0 ? "even" : "odd")
-                      }
-                    >
+                      }>
                       {currentMedicines[i].order *
                         currentMedicines[i].unitPriceWithoutTax}
                     </div>

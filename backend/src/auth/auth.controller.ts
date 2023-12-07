@@ -22,7 +22,7 @@ import { Request } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { AccessTokenGuard } from './guards/access-token.guard';
 
-@Controller('api/auth')
+@Controller('auth')
 @ApiTags('🔐 Authentication')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
