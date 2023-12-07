@@ -14,8 +14,13 @@ async function main() {
   await prisma.provider.deleteMany();
   await prisma.user.deleteMany();
 
+  console.log('Creating mock users');
   await createMockUser();
+
+  console.log('Filling stock');
   await fillStock();
+
+  console.log('Creating providers');
   await createProviders();
 }
 
@@ -128,6 +133,7 @@ async function fillStock() {
 
   if (process.env.NODE_ENV == 'production') {
     for (let record of medicines) {
+      console.log(`id : ${record.name}`);
       await createRecord(record);
     }
   } else {
