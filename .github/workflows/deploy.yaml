@@ -96,5 +96,6 @@ jobs:
       - name: run migrations
         run: |
           cp docker.env .env
-          yarn migrate_db
+          yarn primsa migrate dev
+          yarn db seed
 
