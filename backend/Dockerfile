@@ -16,11 +16,11 @@ RUN apt-get update && apt-get install gnupg wget -y && \
 
 RUN apt-get update -y && apt-get install -y openssl
 
-RUN npx @puppeteer/browsers install chrome
-
 COPY . .
 
 ADD docker.env .env
+
+RUN npx @puppeteer/browsers install chrome
 
 RUN yarn config set strict-ssl false -g
 
