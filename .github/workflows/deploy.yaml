@@ -95,6 +95,6 @@ jobs:
           rm -r app build.tar.gz
       - name: run migrations
         run: |
-          cd docker.env .env
+          cp docker.env .env
           yarn migrate_db
 
