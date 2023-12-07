@@ -36,6 +36,7 @@ jobs:
           yarn build
       - name: create env file
         run: |
+          cd app
           echo "PORT=${{ vars.PORT }}" >> docker.env
           echo "DATABASE_URL=postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ vars.HOST }}:5432/${{ secrets.POSTGRES_DB }}?schema=public&pool_timeout=0" >> docker.env
           echo "ACCESS_SECRET=${{ vars.ACCESS_SECRET }}" >> docker.env
@@ -49,6 +50,7 @@ jobs:
           echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> docker.env
       - name: run database migrations
         run: |
+          cd app
           cp docker.env .env
           yarn migrate_db
       - name: create build artifact
