@@ -20,8 +20,6 @@ COPY . .
 
 ADD docker.env .env
 
-RUN npx @puppeteer/browsers install chrome
-
 RUN yarn config set strict-ssl false -g
 
 EXPOSE 3000
