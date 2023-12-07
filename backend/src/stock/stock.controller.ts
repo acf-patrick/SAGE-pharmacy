@@ -29,7 +29,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @ApiTags('📦 Stock')
 @UseGuards(new AccessTokenGuard())
-@Controller('api/stock')
+@Controller('stock')
 export class StockController {
   constructor(
     private readonly stockService: StockService,

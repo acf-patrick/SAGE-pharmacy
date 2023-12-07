@@ -1,0 +1,2 @@
+# ERP pharmacy Hasimbola
+[![Build](https://github.com/acf-patrick/pharmacy-hasimbola/actions/workflows/deploy.yaml/badge.svg)](https://github.com/acf-patrick/pharmacy-hasimbola/actions/workflows/deploy.yaml)

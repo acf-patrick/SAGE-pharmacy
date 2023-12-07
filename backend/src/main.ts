@@ -27,6 +27,7 @@ async function bootstrap() {
   }
 
   app.useGlobalFilters(new PrismaClientExceptionFilter());
+  app.setGlobalPrefix('api');
 
   const PORT = configs.get<string>('PORT') || 3000;
   await app.listen(PORT);

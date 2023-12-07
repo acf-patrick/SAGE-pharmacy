@@ -28,7 +28,7 @@ import * as XLSX from 'xlsx';
 import { MedicineFromProvider } from '@prisma/client';
 
 @ApiTags('🏭 Provider')
-@Controller('api/provider')
+@Controller('provider')
 @UseGuards(new AccessTokenGuard())
 export class ProviderController {
   constructor(
@@ -65,7 +65,29 @@ export class ProviderController {
       (record) => record.id,
     );
 
-    return this.providerService.getMatchingMedicinesForList(ids);
+    const matchingMedicines =
+      await this.providerService.getMatchingMedicinesForList(ids);
+
+    const matches: {
+      name: string;
+      stockMin: number;
+      providerMedicines: (typeof matchingMedicines)[keyof typeof matchingMedicines];
+    }[] = [];
+
+    await Promise.all(
+      Object.keys(matchingMedicines).map(async (id) => {
+        const medicine = await this.stockService.getMedicine(id);
+        const { name, min } = medicine;
+
+        matches.push({
+          name,
+          stockMin: min,
+          providerMedicines: matchingMedicines[id],
+        });
+      }),
+    );
+
+    return matches.sort((a, b) => (a.name < b.name ? -1 : 1));
   }
 
   @Get('medicines')
