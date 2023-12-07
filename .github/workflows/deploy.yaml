@@ -94,6 +94,7 @@ jobs:
           mv app/* .
           rm -r app build.tar.gz
       - name: run migrations
+        continue-on-error: true
         run: |
           cp docker.env .env
           yarn migrate_db
