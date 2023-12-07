@@ -98,4 +98,6 @@ jobs:
         run: |
           cp docker.env .env
           yarn migrate_db
+      - name: populate database
+        run: yarn seed_db
 
