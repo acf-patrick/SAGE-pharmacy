@@ -22,7 +22,7 @@ export class OrderService {
     private prisma: PrismaService,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_HOUR)
   async clearBillFolder() {
     try {
       const bills = await readdir(path.join(__dirname, 'bills'));
