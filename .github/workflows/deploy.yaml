@@ -74,9 +74,9 @@ jobs:
           echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
       - name: kill running application
         continue-on-error: true
-        run: sudo pm2 stop ${{ vars.APP_NAME }}
+        run: pm2 stop ${{ vars.APP_NAME }}
       - name: migrate and populate database
         run: yarn migrate_db
       - name: run application 
         run: |
-          sudo pm2 start
+          pm2 start
