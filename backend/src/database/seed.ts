@@ -133,7 +133,6 @@ async function fillStock() {
 
   if (process.env.NODE_ENV == 'production') {
     for (let record of medicines) {
-      console.log(`id : ${record.name}`);
       await createRecord(record);
     }
   } else {

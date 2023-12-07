@@ -24,4 +24,4 @@ RUN yarn config set strict-ssl false -g
 
 EXPOSE 3000
 
-CMD [ "sh", "-c", "yarn migrate_db;yarn start" ]
+CMD [ "sh", "-c", "yarn start" ]
