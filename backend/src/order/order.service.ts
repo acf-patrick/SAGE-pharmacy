@@ -94,7 +94,7 @@ export class OrderService {
       });
 
       const browser = await puppeteer.launch({
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
         executablePath: '/usr/bin/google-chrome',
         headless: 'new',
       });
