@@ -47,12 +47,12 @@ export class ProviderService {
     return Promise.allSettled(
       matches.map(async ({ id, medicineIds }) => {
         if (medicineIds.length == 0) {
-          return this.prisma.medicine.updateMany({
-            where: {
-              medicineFromProviderId: id,
-            },
+          return this.prisma.medicine.update({
+            where: { id },
             data: {
-              medicineFromProviderId: null,
+              medicineFromProviders: {
+                set: [],
+              },
             },
           });
         }
