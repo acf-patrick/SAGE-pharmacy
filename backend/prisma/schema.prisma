@@ -33,26 +33,25 @@ model User {
 }
 
 model Medicine {
-  id                     String                @id @default(uuid())
-  name                   String
-  sellingPrice           Int
-  costPrice              Int
-  quantity               Int // Stock à terme
-  real                   Int // Stock réel
-  nomenclature           String?
-  location               String
-  dci                    String?
-  type                   String                @default("Standard")
-  family                 String
-  isTaxed                Boolean               @default(true)
-  min                    Int
-  alert                  Int // Stock d'alerte
-  max                    Int
-  reference              String                @unique
-  expirationDate         DateTime?             @db.Date
-  manufacturationDate    DateTime?             @db.Date
-  MedicineFromProvider   MedicineFromProvider? @relation(fields: [medicineFromProviderId], references: [id])
-  medicineFromProviderId String?
+  id                    String                 @id @default(uuid())
+  name                  String
+  sellingPrice          Int
+  costPrice             Int
+  quantity              Int // Stock à terme
+  real                  Int // Stock réel
+  nomenclature          String?
+  location              String
+  dci                   String?
+  type                  String                 @default("Standard")
+  family                String
+  isTaxed               Boolean                @default(true)
+  min                   Int
+  alert                 Int // Stock d'alerte
+  max                   Int
+  reference             String                 @unique
+  expirationDate        DateTime?              @db.Date
+  manufacturationDate   DateTime?              @db.Date
+  medicineFromProviders MedicineFromProvider[]
 }
 
 model MedicineFromProvider {
