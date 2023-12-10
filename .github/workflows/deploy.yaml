@@ -14,13 +14,6 @@ jobs:
     container: rust:latest
     steps:
       - uses: actions/checkout@v3
-      - name: install SQLX
-        run: |
-          cd backend/rust-service
-          cargo install sqlx-cli
-          cargo clean
-          echo Cache query for offline build
-          SQLX_OFFLINE=true cargo sqlx prepare
       - name: build binary
         run: SQLX_OFFLINE=true cargo build --release
       - name: upload build artifact
