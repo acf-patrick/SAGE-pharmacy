@@ -14,21 +14,15 @@ jobs:
     container: rust:latest
     steps:
       - uses: actions/checkout@v3
-      - name: create env file
-        run: |
-          cd backend/rust-service
-          echo "PORT=${{ vars.PORT }}" >> docker.env
-          echo "DATABASE_URL=postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ vars.HOST }}:5432/${{ secrets.POSTGRES_DB }}?schema=public&pool_timeout=0" >> docker.env
-          cp docker.env .env
-          echo "SQLX_OFFLINE=true" >> .env
       - name: install SQLX
         run: |
           cd backend/rust-service
           cargo install sqlx-cli
           cargo clean
-          cargo sqlx prepare
+          echo Cache query for offline build
+          SQLX_OFFLINE=true cargo sqlx prepare
       - name: build binary
-        run: cargo build --release
+        run: SQLX_OFFLINE=true cargo build --release
       - name: upload build artifact
         uses: actions/upload-artifact@v3
         with:
@@ -66,6 +60,7 @@ jobs:
           cd app
           echo "PORT=${{ vars.PORT }}" >> docker.env
           echo "DATABASE_URL=postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ vars.HOST }}:5432/${{ secrets.POSTGRES_DB }}?schema=public&pool_timeout=0" >> docker.env
+          cp docker.env rust-service/
           echo "ACCESS_SECRET=${{ vars.ACCESS_SECRET }}" >> docker.env
           echo "REFRESH_SECRET=${{ vars.REFRESH_SECRET }}" >> docker.env
           echo "MAILER_HOST=${{ vars.MAILER_HOST }}" >> docker.env
