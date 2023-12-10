@@ -97,6 +97,8 @@ jobs:
         run: mv rust-api rust-service/server
       - name: run Docker image
         run: |
+          ls -lha .
+          ls -lha rust-service
           sudo docker compose down
           sudo docker image prune -f
           sudo docker compose build
