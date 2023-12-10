@@ -17,6 +17,12 @@ jobs:
     container: rust:latest
     steps:
       - uses: actions/checkout@v3
+      - name: create env file
+        run: |
+          cd backend/rust-service
+          echo "PORT=${{ vars.PORT }}" >> docker.env
+          echo "DATABASE_URL=postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ vars.HOST }}:5432/${{ secrets.POSTGRES_DB }}?schema=public&pool_timeout=0" >> docker.env
+          cp docker.env .env
       - name: install SQLX
         run: |
           cd backend/rust-service
@@ -62,7 +68,6 @@ jobs:
           cd app
           echo "PORT=${{ vars.PORT }}" >> docker.env
           echo "DATABASE_URL=postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ vars.HOST }}:5432/${{ secrets.POSTGRES_DB }}?schema=public&pool_timeout=0" >> docker.env
-          cp docker.env rust-service/
           echo "ACCESS_SECRET=${{ vars.ACCESS_SECRET }}" >> docker.env
           echo "REFRESH_SECRET=${{ vars.REFRESH_SECRET }}" >> docker.env
           echo "MAILER_HOST=${{ vars.MAILER_HOST }}" >> docker.env
@@ -99,8 +104,7 @@ jobs:
       - name: download rust build
         uses: actions/download-artifact@v3
         with:
-          name:
-            rust-api
+          name: rust-api
       - name: move rust-api binary
         run: mv rust-api rust-service/server
       - name: run Docker image
@@ -109,7 +113,7 @@ jobs:
           sudo docker image prune -f
           sudo docker compose build
           sudo docker compose up -d
-  
+
   migrate-database:
     needs: deploy
     runs-on: ubuntu-latest
@@ -131,4 +135,3 @@ jobs:
           yarn migrate_db
       - name: populate database
         run: yarn seed_db
-
