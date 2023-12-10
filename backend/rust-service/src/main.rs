@@ -14,7 +14,7 @@ pub struct AppState {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().expect(".env file not found");
-    let port = std::env::var("PORT").unwrap_or("3000".to_owned());
+    let port = std::env::var("PORT").unwrap_or("81".to_owned());
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let db_pool = sqlx::PgPool::connect(&db_url)

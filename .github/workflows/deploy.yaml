@@ -8,10 +8,33 @@ on:
     branches:
       - main
 
+env:
+  SQLX_OFFLINE: true
+
 jobs:
+  build-rust-api:
+    runs-on: ubuntu-22.04
+    container: rust:latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: install SQLX
+        run: |
+          cd backend/rust-service
+          cargo install sqlx-cli
+          cargo clean
+          cargo sqlx prepare
+      - name: build binary
+        run: cargo build --release
+      - name: upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: rust-api
+          path: backend/rust-service/target/release/rust-api
+
   build:
     runs-on: ubuntu-22.04
     container: node:20
+    needs: build-rust-api
     steps:
       - uses: actions/checkout@v3
         with:
@@ -28,7 +51,7 @@ jobs:
           rm -rf frontend
           mv backend app
           cd app
-          rm -r test/ .gitignore README.md
+          rm -rf test/ .gitignore README.md
       - name: build backend
         run: |
           cd app
@@ -73,6 +96,13 @@ jobs:
           tar -xf build.tar.gz
           mv app/* .
           rm -r app build.tar.gz
+      - name: download rust build
+        uses: actions/download-artifact@v3
+        with:
+          name:
+            rust-api
+      - name: move rust-api binary
+        run: mv rust-api rust-service/server
       - name: run Docker image
         run: |
           sudo docker compose down
