@@ -1,4 +1,4 @@
-FROM alpin:3.14
+FROM alpine:3.14
 
 WORKDIR /server
 
