@@ -26,6 +26,7 @@ import { UpdateMatchesDto } from './dto/UpdateMatches.dto';
 import { ProviderService } from './provider.service';
 import * as XLSX from 'xlsx';
 import { MedicineFromProvider } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('🏭 Provider')
 @Controller('provider')
@@ -33,7 +34,7 @@ import { MedicineFromProvider } from '@prisma/client';
 export class ProviderController {
   constructor(
     private readonly providerService: ProviderService,
-    private stockService: StockService,
+    private configService: ConfigService,
   ) {}
 
   @Post('medicine/update-matches')
@@ -51,6 +52,22 @@ export class ProviderController {
   }
 
   @Get('provide')
+  @ApiOperation({
+    summary:
+      'Check medicines with near low quantity and find matches from providers',
+  })
+  @ApiOkResponse({
+    description:
+      'Returns a map that has medicine name as key and medicine list from providers ',
+  })
+  @ApiNotFoundResponse({ description: 'If no matching has been done' })
+  async provideMedicinesForNearLow() {
+    const RUST_API_PORT = this.configService.get<number>('RUST_API_PORT') || 81;
+    const res = await fetch(`http://127.0.0.1:${RUST_API_PORT}/provider/provide`);
+    return res.json();
+  }
+
+  /* @Get('provide')
   @ApiOperation({
     summary:
       'Check medicines with near low quantity and find matches from providers',
@@ -88,7 +105,7 @@ export class ProviderController {
     );
 
     return matches.sort((a, b) => (a.name < b.name ? -1 : 1));
-  }
+  } */
 
   @Get('medicines')
   @ApiOperation({ summary: "Returns list of provider's medicines" })
