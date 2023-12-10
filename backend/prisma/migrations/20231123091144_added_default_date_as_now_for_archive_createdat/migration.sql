@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "ArchivedOrder" ALTER COLUMN "createdAt" SET DEFAULT CURRENT_TIMESTAMP;

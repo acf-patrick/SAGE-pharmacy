@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "Provider" ALTER COLUMN "min" DROP DEFAULT,
-ALTER COLUMN "minQuantity" DROP DEFAULT;
