@@ -3,7 +3,7 @@ services:
   rust-api:
     restart: always
     build:
-      dockerfile: ./rust-service/Dockerfile
+      context: rust-service
     ports:
       - '81:3000'
     depends_on:

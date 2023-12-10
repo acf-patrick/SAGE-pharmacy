@@ -69,7 +69,9 @@ jobs:
         with:
           name: rust-api
       - name: move rust-api binary
-        run: mv rust-api app/rust-service/server
+        run: |
+          mv rust-api app/rust-service/server
+          chmod +x app/rust-service/server
       - name: create build artifact
         run: tar -czvf build.tar.gz app
       - name: upload build artifact
