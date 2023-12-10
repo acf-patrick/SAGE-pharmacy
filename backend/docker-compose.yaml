@@ -14,6 +14,7 @@ services:
       - '80:3000'
     depends_on:
       rust-api:
+        condition: service_started
       postgres:
           condition: service_healthy
   postgres:
