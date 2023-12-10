@@ -115,6 +115,8 @@ jobs:
         run: |
           tar -xf build.tar.gz
           mv app/* .
+          ls -lha .
+          ls -lha rust-service/
           rm -r app build.tar.gz
       - name: run migrations
         continue-on-error: true
