@@ -1,9 +1,10 @@
-FROM scratch
+FROM alpin:3.14
 
 WORKDIR /server
 
 ADD server server
 RUN chmod +x server
+
 ADD docker.env .env
 
 EXPOSE 3000
