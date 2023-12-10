@@ -1,6 +1,6 @@
 FROM scratch
 
-COPY ./server .
+COPY server .
 
 ADD docker.env .env
 
