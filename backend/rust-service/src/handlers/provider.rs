@@ -13,7 +13,7 @@ struct MedicineMatchingRecord {
 }
 
 /// Check medicines with near low quantity and find matching from providers
-#[get("provide")]
+#[get("provider/provide")]
 pub async fn provide_medicines_for_near_low(app_state: web::Data<AppState>) -> impl Responder {
     let db = &app_state.db_pool;
     let stock_service = StockService::new(db);
