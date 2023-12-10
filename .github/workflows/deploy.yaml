@@ -15,7 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: build binary
-        run: SQLX_OFFLINE=true cargo build --release
+        run: |
+          cd backend/rust-service
+          SQLX_OFFLINE=true cargo build --release
       - name: upload build artifact
         uses: actions/upload-artifact@v3
         with:
