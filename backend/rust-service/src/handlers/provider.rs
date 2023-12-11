@@ -5,6 +5,7 @@ use actix_web::{get, web, HttpResponse, Responder};
 use serde::Serialize;
 
 #[derive(Serialize)]
+#[serde(rename_all="camelCase")]
 struct MedicineMatchingRecord {
     /// Name of medicine from stock
     name: String,
@@ -42,6 +43,6 @@ pub async fn provide_medicines_for_near_low(app_state: web::Data<AppState>) -> i
     }
 
     matches.sort_by(|a, b| a.name.cmp(&b.name));
-
+    
     HttpResponse::Ok().json(matches)
 }

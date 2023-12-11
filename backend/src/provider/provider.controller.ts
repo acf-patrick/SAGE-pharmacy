@@ -34,6 +34,7 @@ import { ConfigService } from '@nestjs/config';
 export class ProviderController {
   constructor(
     private readonly providerService: ProviderService,
+    private stockService: StockService,
     private configService: ConfigService,
   ) {}
 
@@ -62,50 +63,46 @@ export class ProviderController {
   })
   @ApiNotFoundResponse({ description: 'If no matching has been done' })
   async provideMedicinesForNearLow() {
-    const RUST_API_PORT = this.configService.get<number>('RUST_API_PORT') || 81;
-    const res = await fetch(`http://127.0.0.1:${RUST_API_PORT}/provider/provide`);
-    return res.json();
+    try {
+      const RUST_API_PORT =
+        this.configService.get<number>('RUST_API_PORT') || 8080;
+      console.log(RUST_API_PORT);
+      const res = await fetch(
+        `http://127.0.0.1:${RUST_API_PORT}/provider/provide`,
+      );
+      return res.json();
+    } catch (e) {
+      console.error('Failed to use Rust API : ', e);
+
+      const ids = (await this.stockService.getNearLowMedicines()).map(
+        (record) => record.id,
+      );
+
+      const matchingMedicines =
+        await this.providerService.getMatchingMedicinesForList(ids);
+
+      const matches: {
+        name: string;
+        stockMin: number;
+        providerMedicines: (typeof matchingMedicines)[keyof typeof matchingMedicines];
+      }[] = [];
+
+      await Promise.all(
+        Object.keys(matchingMedicines).map(async (id) => {
+          const medicine = await this.stockService.getMedicine(id);
+          const { name, min } = medicine;
+
+          matches.push({
+            name,
+            stockMin: min,
+            providerMedicines: matchingMedicines[id],
+          });
+        }),
+      );
+
+      return matches.sort((a, b) => (a.name < b.name ? -1 : 1));
+    }
   }
-
-  /* @Get('provide')
-  @ApiOperation({
-    summary:
-      'Check medicines with near low quantity and find matches from providers',
-  })
-  @ApiOkResponse({
-    description:
-      'Returns a map that has medicine name as key and medicine list from providers ',
-  })
-  @ApiNotFoundResponse({ description: 'If no matching has been done' })
-  async provideMedicinesForNearLow() {
-    const ids = (await this.stockService.getNearLowMedicines()).map(
-      (record) => record.id,
-    );
-
-    const matchingMedicines =
-      await this.providerService.getMatchingMedicinesForList(ids);
-
-    const matches: {
-      name: string;
-      stockMin: number;
-      providerMedicines: (typeof matchingMedicines)[keyof typeof matchingMedicines];
-    }[] = [];
-
-    await Promise.all(
-      Object.keys(matchingMedicines).map(async (id) => {
-        const medicine = await this.stockService.getMedicine(id);
-        const { name, min } = medicine;
-
-        matches.push({
-          name,
-          stockMin: min,
-          providerMedicines: matchingMedicines[id],
-        });
-      }),
-    );
-
-    return matches.sort((a, b) => (a.name < b.name ? -1 : 1));
-  } */
 
   @Get('medicines')
   @ApiOperation({ summary: "Returns list of provider's medicines" })

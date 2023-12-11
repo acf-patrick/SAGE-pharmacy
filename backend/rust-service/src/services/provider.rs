@@ -15,6 +15,7 @@ pub struct MedicineMapRecordProvider {
 }
 
 #[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct MedicineMapRecord {
     pub medicine: MedicineFromProvider,
     pub provider: MedicineMapRecordProvider,

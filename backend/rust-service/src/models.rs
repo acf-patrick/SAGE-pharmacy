@@ -52,6 +52,7 @@ pub struct Provider {
 }
 
 #[derive(Serialize, sqlx::FromRow, Clone)]
+#[serde(rename_all = "camelCase")]
 #[sqlx(rename_all = "camelCase")]
 pub struct MedicineFromProvider {
     pub id: String,
