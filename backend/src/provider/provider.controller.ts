@@ -68,7 +68,11 @@ export class ProviderController {
         this.configService.get<number>('RUST_API_PORT') || 8080;
       console.log(RUST_API_PORT);
       const res = await fetch(
-        `http://127.0.0.1:${RUST_API_PORT}/provider/provide`,
+        `http://${
+          this.configService.get('NODE_ENV') === 'production'
+            ? 'rust-api'
+            : 'localhost'
+        }:${RUST_API_PORT}/provider/provide`,
       );
       return res.json();
     } catch (e) {
