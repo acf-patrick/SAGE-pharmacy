@@ -3,12 +3,17 @@ mod models;
 mod services;
 
 use actix_cors::Cors;
-use actix_web::{web, App, HttpServer};
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use dotenvy::dotenv;
 use handlers::provider;
 
 pub struct AppState {
     pub db_pool: sqlx::PgPool,
+}
+
+#[get("/")]
+async fn health_check() -> impl Responder {
+    HttpResponse::Ok().body("Server healthy ❤️")
 }
 
 #[actix_web::main]
@@ -29,6 +34,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(AppState {
                 db_pool: db_pool.clone(),
             }))
+            .service(health_check)
             .service(provider::provide_medicines_for_near_low)
     })
     .bind(("127.0.0.1", port.parse().unwrap()))?
