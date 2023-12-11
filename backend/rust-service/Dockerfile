@@ -7,6 +7,6 @@ RUN chmod +x server
 
 ADD docker.env .env
 
-EXPOSE 3000
+EXPOSE 8080
 
 ENTRYPOINT [ "./server" ]
