@@ -19,7 +19,7 @@ async fn health_check() -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().expect(".env file not found");
-    let port = std::env::var("PORT").unwrap_or("3000".to_owned());
+    let port = String::from("8080");
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let db_pool = sqlx::PgPool::connect(&db_url)
