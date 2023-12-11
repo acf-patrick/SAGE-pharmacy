@@ -53,11 +53,11 @@ jobs:
       - name: create env file
         run: |
           cd app
-          echo "PORT=${{ vars.PORT }}" >> docker.env
           echo "DATABASE_URL=postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ vars.HOST }}:5432/${{ secrets.POSTGRES_DB }}?schema=public&pool_timeout=0" >> docker.env
           cp docker.env rust-service/
           echo "ACCESS_SECRET=${{ vars.ACCESS_SECRET }}" >> docker.env
           echo "REFRESH_SECRET=${{ vars.REFRESH_SECRET }}" >> docker.env
+          echo "RUST_API_PORT=${{ vars.RUST_API_PORT }}" >> docker.env
           echo "MAILER_HOST=${{ vars.MAILER_HOST }}" >> docker.env
           echo "MAILER_USER=${{ vars.MAILER_USER }}" >> docker.env
           echo "MAILER_PASSWORD=${{ vars.MAILER_PASSWORD }}" >> docker.env
