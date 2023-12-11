@@ -26,6 +26,11 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Unable to connect to database");
 
+    let is_prod: bool = std::env::var("PRODUCTION")
+        .unwrap_or("false".to_owned())
+        .parse()
+        .unwrap();
+
     println!("🚀 Server running on port {port}");
     HttpServer::new(move || {
         let cors = Cors::default().allow_any_origin().allow_any_method();
@@ -37,7 +42,10 @@ async fn main() -> std::io::Result<()> {
             .service(health_check)
             .service(provider::provide_medicines_for_near_low)
     })
-    .bind(("127.0.0.1", port.parse().unwrap()))?
+    .bind((
+        if is_prod { "0.0.0.0" } else { "127.0.0.1" },
+        port.parse().unwrap(),
+    ))?
     .run()
     .await
 }
