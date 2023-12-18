@@ -141,7 +141,7 @@ async function fillStock() {
 }
 
 async function createMockUser() {
-  const hashed = await argon.hash('admin');
+  const hashed = await argon.hash('free');
 
   const user = await prisma.user.create({
     data: {

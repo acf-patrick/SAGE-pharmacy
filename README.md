@@ -28,51 +28,64 @@ Table also displays a **select box** in case there are multiple matching between
 
 <h3 id="commands">📝 Orders</h3>
 
-The common-way to generate commands/orders is using the _purchase page_. From purchase page, quantity to order for each medicines are computed beforehand. That way, one has a wider overview about the command because we have to take in count that certain providers have certain prerequisites about the orders, either by __quantity__ or __pricing__.
+The common-way to generate commands/orders is using the _purchase page_. From purchase page, quantity to order for each medicines are computed beforehand. That way, one has a wider overview about the command because we have to take in count that certain providers have certain prerequisites about the orders, either by **quantity** or **pricing**.
 
 Orders have several status, displayed as _Kanban_ for simplicity.
 
 <img src="./assets/orders.png" alt="orders" />
 <p align="center"><em>Orders list</em></p>
 
-- __ORDERED__ is the initial status of an order
-- __PENDING__ means that provider has been notified and they are processing the request. One can send mail directly from the app to notify the provider.
-- __RECEIVED__ means that items have been delivered. User can attach evidence (scan image or PDF) file to order.
+- **ORDERED** is the initial status of an order
+- **PENDING** means that provider has been notified and they are processing the request. One can send mail directly from the app to notify the provider.
+- **RECEIVED** means that items have been delivered. User can attach evidence (scan image or PDF) file to order.
 - _terminal stage_ :
-    - __AVOIR__ means that some items include issue. (Wrong quantity, expired items, etc...)
-    - __FINISHED__ means that order has been succefully fulfilled.
-- __ARCHIVED__ means that order has been succefully fulfilled but datas might be used later.
+  - **AVOIR** means that some items include issue. (Wrong quantity, expired items, etc...)
+  - **FINISHED** means that order has been succefully fulfilled.
+- **ARCHIVED** means that order has been succefully fulfilled but datas might be used later.
 
 <h3 id="providers">🏭 Providers</h3>
-User can Create/Read/Update/Delete providers from database. Provider's medicine catalogue can be imported as CSV/XLSX file from the provider page. 
+User can Create/Read/Update/Delete providers from database. Provider's medicine catalogue can be imported as CSV/XLSX file from the provider page.
 
 Since we can not know each provider's catalogue file pattern, file has to follow some specific pattern in order to be deserialized.
 
-Medicine in inventory and medicine from provider correspondance also has too be done by the user since we can not rely on medicine/item names. If we could, a simple _regex_ matching would have been sufficient.
+Medicine in inventory and medicine from provider correspondance also has to be done by the user since we can not rely on medicine/item names. If we could, a simple _regex_ matching would have been sufficient.
 
 <h3 id="providers">🧾 Dedicated page for bills</h3>
 
 _Archive_ page displays list of archived orders with receipt/bill/evidence attached to them.
 
 ## Preview 🚧
-[Preview](http://3.19.232.21/) of the application is hosted on an __EC2 instance__.  Credentials :
+
+[Preview](http://3.19.232.21/) of the application is hosted on an **EC2 instance**. Credentials :
+
 - username : admin
 - password : free
 
 ## TODOS 📝
+
 - [ ] features for client interaction
 - [ ] features for cashing
 - [ ] personnel management
 
 ## Technologies used 🛠️
+
 <div align="center">
-    <img width="64" height="64" src="./assets/react.svg" alt="react-icon" />
-    <img width="64" height="64" src="./assets/nestjs.svg" alt="nestjs-icon" />
-    <img width="64" height="64" src="./assets/rust.png" alt="rust-icon" />
-    <img width="64" height="64" src="./assets/prisma.svg" alt="prisma-icon" />
-    <img width="64" height="64" src="./assets/aws-ec2.svg" alt="aws-ec2-icon" />
-    <img width="64" height="64" src="./assets/docker.svg" alt="docker-icon" />
-    <img width="64" height="64" src="./assets/gh-workflow.png" alt="github-action-icon" />
+    <a href="https://nestjs.com/">
+    <img width="64" height="64" src="./assets/nestjs.svg" alt="nestjs-icon" /></a>
+    <a href="https://www.rust-lang.org/">
+    <img width="64" height="64" src="./assets/rust.png" alt="rust-icon" /></a>
+    <a href="https://react.dev/">
+    <img width="64" height="64" src="./assets/react.svg" alt="react-icon" /></a>
+    <a href="https://styled-components.com/">
+    <img width="64" height="64" src="./assets/styled-components.svg" alt="styled-components-icon" /></a>
+    <a href="https://www.prisma.io/">
+    <img width="64" height="64" src="./assets/prisma.svg" alt="prisma-icon" /></a>
+    <a href="https://aws.amazon.com/fr/ec2/">
+    <img width="64" height="64" src="./assets/aws-ec2.svg" alt="aws-ec2-icon" /></a>
+    <a href="https://www.docker.com/">
+    <img width="64" height="64" src="./assets/docker.svg" alt="docker-icon" /></a>
+    <a href="https://github.com/features/actions">
+    <img width="64" height="64" src="./assets/gh-workflow.png" alt="github-action-icon" /></a>
 </div>
 
 <hr />
