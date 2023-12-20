@@ -9,7 +9,7 @@ import { GlobalStyles } from "./styles/globalStyles.ts";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
-      <GlobalStyles />
+      <GlobalStyles theme={theme} />
       <RouterProvider router={router} />
     </ThemeProvider>
   </React.StrictMode>
