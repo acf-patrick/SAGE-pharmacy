@@ -1,6 +1,6 @@
 import { lighten } from "polished";
 import { Link, useLocation } from "react-router-dom";
-import { styled } from "styled-components";
+import styled from "styled-components";
 import paths from "../paths";
 import { useEffect, useState } from "react";
 import { api } from "../api";

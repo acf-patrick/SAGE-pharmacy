@@ -1,4 +1,4 @@
-import { styled } from "styled-components";
+import styled from "styled-components";
 import { darken, lighten } from "polished";
 import { createPortal } from "react-dom";
 

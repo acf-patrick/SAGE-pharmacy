@@ -1,6 +1,6 @@
 import { createPortal } from "react-dom";
 import { IoClose } from "react-icons/io5";
-import { keyframes, styled } from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { GrLinkPrevious, GrLinkNext } from "react-icons/gr";
 import { FaDownload } from "react-icons/fa6";
 import { useEffect, useState } from "react";

@@ -1,4 +1,4 @@
-import { styled } from "styled-components";
+import styled from "styled-components";
 import { AiOutlineSearch } from "react-icons/ai";
 
 const StyledSearchbar = styled.div`
@@ -52,8 +52,7 @@ export default function Searchbar({
           if (onFieldChange) {
             onFieldChange(e.currentTarget.value);
           }
-        }}
-      >
+        }}>
         {fields.map((field, i) => (
           <option key={i} value={field.value}>
             {field.name}

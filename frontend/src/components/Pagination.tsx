@@ -1,5 +1,5 @@
 import { BsFillSkipEndFill, BsFillSkipStartFill } from "react-icons/bs";
-import { styled } from "styled-components";
+import styled from "styled-components";
 
 const StyledButton = styled.button<{ $current?: boolean }>`
   border: none;

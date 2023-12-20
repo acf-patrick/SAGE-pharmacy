@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { NotificationProvider } from "./contexts/provider";
 import { Sidebar, ToastNotification } from "./components";
-import { styled } from "styled-components";
+import styled from "styled-components";
 
 if (import.meta.env.PROD) {
   document.addEventListener("contextmenu", (e) => e.preventDefault());

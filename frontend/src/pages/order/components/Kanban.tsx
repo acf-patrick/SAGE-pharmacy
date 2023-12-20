@@ -3,7 +3,7 @@ import { GoMoveToEnd } from "react-icons/go";
 import { MdEdit, MdPostAdd } from "react-icons/md";
 import { RxCross2 } from "react-icons/rx";
 import { useNavigate } from "react-router-dom";
-import { styled } from "styled-components";
+import styled from "styled-components";
 import { KanbanItemStatus, KanbanItemStatusObject, Order } from "../types";
 import { appear } from "../../../styles/animations";
 import { isValid } from "./OrderList";
@@ -308,8 +308,7 @@ function KanbanItemComponent({
               <button
                 title="Passer au suivant"
                 className="validate"
-                onClick={moveItem}
-              >
+                onClick={moveItem}>
                 <BsCheckLg />
               </button>
             ) : null}
@@ -317,8 +316,7 @@ function KanbanItemComponent({
               <button
                 title="Revenir au précédent"
                 className="delete"
-                onClick={deleteItem}
-              >
+                onClick={deleteItem}>
                 <RxCross2 />
               </button>
             ) : null}
@@ -330,8 +328,7 @@ function KanbanItemComponent({
                     : "Modifier"
                 }
                 className="edit"
-                onClick={() => onOrderEdit(order)}
-              >
+                onClick={() => onOrderEdit(order)}>
                 <MdEdit />
               </button>
             ) : null}
@@ -342,16 +339,14 @@ function KanbanItemComponent({
                 <button
                   title="Voir les factures associées"
                   onClick={() => setShowReceiptsCaroussel(true)}
-                  className="view"
-                >
+                  className="view">
                   <HiOutlineViewfinderCircle />
                 </button>
               ) : null}
               <button
                 title="Importer facture"
                 onClick={importButtonOnClick}
-                className="upload"
-              >
+                className="upload">
                 <MdOutlineUploadFile />
               </button>
               <form
@@ -374,8 +369,7 @@ function KanbanItemComponent({
                         "error"
                       );
                     });
-                }}
-              >
+                }}>
                 <input
                   onChange={() => {
                     const submitBtn = document.querySelector(

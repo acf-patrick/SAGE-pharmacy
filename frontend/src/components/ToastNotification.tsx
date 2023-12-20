@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { AiOutlineCloseCircle } from "react-icons/ai";
-import { styled } from "styled-components";
+import styled from "styled-components";
 import { NotificationContext } from "../contexts";
 import { theme } from "../styles/theme";
 
