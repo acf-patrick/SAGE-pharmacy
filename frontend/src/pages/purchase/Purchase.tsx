@@ -2,7 +2,7 @@ import { lighten } from "polished";
 import React, { useEffect, useState } from "react";
 import { TbBasketCancel } from "react-icons/tb";
 import { MoonLoader } from "react-spinners";
-import { styled } from "styled-components";
+import styled from "styled-components";
 import { api } from "../../api";
 import { ConfirmationDialog, Header } from "../../components";
 import { useNotification } from "../../hooks";

@@ -6,7 +6,7 @@ import { FiEdit } from "react-icons/fi";
 import { MdOutlineTabUnselected, MdSelectAll } from "react-icons/md";
 import { TbBasketCancel } from "react-icons/tb";
 import { MoonLoader } from "react-spinners";
-import { styled } from "styled-components";
+import styled from "styled-components";
 import { api } from "../../api";
 import {
   AddForm,

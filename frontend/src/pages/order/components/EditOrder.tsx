@@ -1,5 +1,5 @@
 import { lighten } from "polished";
-import { styled } from "styled-components";
+import styled from "styled-components";
 import { Order } from "../types";
 import { useLoaderData, useNavigate } from "react-router-dom";
 import { api } from "../../../api";

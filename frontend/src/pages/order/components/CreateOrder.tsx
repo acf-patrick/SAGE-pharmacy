@@ -2,7 +2,7 @@ import { lighten } from "polished";
 import React, { useEffect, useState } from "react";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
-import { styled } from "styled-components";
+import styled from "styled-components";
 import { api } from "../../../api";
 import {
   AddMedicineToPurchaseOrder,
@@ -35,6 +35,7 @@ const StyledCreateOrder = styled.form`
     }
   }
 `;
+
 const StyledContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -280,8 +281,7 @@ function CreateOrder() {
           <select
             name="provider-name"
             id="provider-name"
-            onChange={updateCurrentProvider}
-          >
+            onChange={updateCurrentProvider}>
             {providers.map((provider, i) => (
               <option key={i} value={i}>
                 {provider.name}
@@ -301,8 +301,7 @@ function CreateOrder() {
               onClick={() => {
                 if (rows.length > 0) setShowValidation(true);
                 else pushNotification("Bon de commande vide", "error");
-              }}
-            >
+              }}>
               Valider
             </button>
           </div>

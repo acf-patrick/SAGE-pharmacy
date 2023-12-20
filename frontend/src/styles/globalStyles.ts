@@ -1,7 +1,10 @@
 import { lighten } from "polished";
 import { createGlobalStyle } from "styled-components";
+import { theme } from "./theme";
 
-export const GlobalStyles = createGlobalStyle`
+type Theme = typeof theme;
+
+export const GlobalStyles = createGlobalStyle<{ theme: Theme }>`
 body {
   margin: unset;
   padding: unset;
@@ -13,7 +16,6 @@ body {
   &::-webkit-scrollbar {
     width: 8px;
     height: 8px;
-
   }
 
   &::-webkit-scrollbar-track {

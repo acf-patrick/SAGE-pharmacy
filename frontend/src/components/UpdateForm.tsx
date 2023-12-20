@@ -2,7 +2,7 @@ import { api } from "../api";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Medicine, MedicineDto } from "../models";
-import { keyframes, styled } from "styled-components";
+import styled, { keyframes } from "styled-components";
 
 export const errorAppear = keyframes`
 from {

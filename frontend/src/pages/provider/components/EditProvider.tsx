@@ -1,7 +1,7 @@
 import { lighten } from "polished";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { styled } from "styled-components";
+import styled from "styled-components";
 import { api } from "../../../api";
 import { useNotification } from "../../../hooks";
 import { ProviderDto } from "../../../models";
