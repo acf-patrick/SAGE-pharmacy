@@ -26,7 +26,7 @@ jobs:
 
   build:
     runs-on: ubuntu-22.04
-    container: node:20
+    container: node:18.17.1
     needs: build-rust-api
     steps:
       - uses: actions/checkout@v3
@@ -108,7 +108,7 @@ jobs:
   migrate-database:
     needs: deploy
     runs-on: ubuntu-latest
-    container: node:20
+    container: node:18.17.1
     steps:
       - name: download build artifact
         uses: actions/download-artifact@v3
