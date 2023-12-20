@@ -84,8 +84,6 @@ _Archive_ page displays list of archived orders with receipt/bill/evidence attac
     <img width="64" height="64" src="./assets/aws-ec2.svg" alt="aws-ec2-icon" /></a>
     <a href="https://www.docker.com/">
     <img width="64" height="64" src="./assets/docker.svg" alt="docker-icon" /></a>
-    <a href="https://github.com/features/actions">
-    <img width="64" height="64" src="./assets/gh-workflow.png" alt="github-action-icon" /></a>
 </div>
 
 <hr />
