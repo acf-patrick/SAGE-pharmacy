@@ -1,4 +1,4 @@
-name: build
+name: publish
 
 on:
   push:
@@ -9,53 +9,17 @@ on:
       - main
 
 jobs:
-  build-rust-api:
-    runs-on: ubuntu-22.04
-    container: rust:latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: build binary
-        run: |
-          cd backend/rust-service
-          SQLX_OFFLINE=true cargo build --release
-      - name: upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: rust-api
-          path: backend/rust-service/target/release/rust-api
-
   build:
-    runs-on: ubuntu-22.04
-    container: node:20
-    needs: build-rust-api
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: build frontend
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: setup env variables
         run: |
-          cd frontend
-          yarn install
-          VITE_API_ENDPOINT=http://${{ vars.HOST }}/api yarn build
-      - name: regroup sources
-        run: |
-          mkdir backend/client
-          mv frontend/dist/* backend/client
-          rm -rf frontend
-          mv backend app
-          cd app
-          rm -rf test/ .gitignore README.md
-      - name: build backend
-        run: |
-          cd app
-          yarn install
-          yarn build
-      - name: create env file
-        run: |
-          cd app
           echo "DATABASE_URL=postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ vars.HOST }}:5432/${{ secrets.POSTGRES_DB }}?schema=public&pool_timeout=0" >> docker.env
           echo "PRODUCTION=true" >> docker.env
-          cp docker.env rust-service/
+          cp docker.env backend/rust-service/
           echo "ACCESS_SECRET=${{ vars.ACCESS_SECRET }}" >> docker.env
           echo "REFRESH_SECRET=${{ vars.REFRESH_SECRET }}" >> docker.env
           echo "RUST_API_PORT=${{ vars.RUST_API_PORT }}" >> docker.env
@@ -65,21 +29,35 @@ jobs:
           echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> docker.env
           echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> docker.env
           echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> docker.env
-      - name: download rust build
-        uses: actions/download-artifact@v3
-        with:
-          name: rust-api
-      - name: move rust-api binary
-        run: mv rust-api app/rust-service/server
-      - name: create build artifact
-        run: tar -czvf build.tar.gz app
-      - name: upload build artifact
+
+      - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: app
-          path: build.tar.gz
+          name: docker-compose
+          path: |
+            docker.env
+            docker-compose.yml
 
-  deploy:
+      - name: set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/sage-pharmacy:latest
+
+  publish:
     needs: build
     runs-on: self-hosted
     steps:
@@ -87,42 +65,15 @@ jobs:
         run: |
           touch foo
           rm -r *
-      - name: download build artifact
+
+      - name: download artifact
         uses: actions/download-artifact@v3
         with:
-          name: app
-      - name: extract build from artifact
-        run: |
-          tar -xf build.tar.gz
-          mv app/* .
-          ls -lha .
-          ls -lha rust-service/
-          rm -r app build.tar.gz
-      - name: run Docker image
+          name: docker-compose
+
+      - name: pull and run Docker image
         run: |
           sudo docker compose down
           sudo docker image prune -f
-          sudo docker compose build
+          sudo docker compose pull
           sudo docker compose up -d
-
-  migrate-database:
-    needs: deploy
-    runs-on: ubuntu-latest
-    container: node:20
-    steps:
-      - name: download build artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: app
-      - name: extract build from artifact
-        run: |
-          tar -xf build.tar.gz
-          mv app/* .
-          rm -r app build.tar.gz
-      - name: run migrations
-        continue-on-error: true
-        run: |
-          cp docker.env .env
-          yarn migrate_db
-      - name: populate database
-        run: yarn seed_db

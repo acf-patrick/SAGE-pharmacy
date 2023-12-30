@@ -1,12 +1,12 @@
-FROM ubuntu:22.04
+FROM rust:alpine3.18
 
-WORKDIR /server
+ENV SQLX_OFFLINE=true
 
-ADD server server
-RUN chmod +x server
-
+COPY . .
 ADD docker.env .env
+
+RUN cargo build --release
 
 EXPOSE 8080
 
-ENTRYPOINT [ "./server" ]
+ENTRYPOINT [ "target/release/rust-api" ]
