@@ -55,7 +55,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/sage-pharmacy:latest
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/sage-pharmacy:latest
+            ${{ secrets.DOCKER_USERNAME }}/rust-service-sage-pharmacy:latest
 
   publish:
     needs: build
