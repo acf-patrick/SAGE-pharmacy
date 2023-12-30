@@ -1,10 +1,11 @@
 version: '3'
 services:
   rust-api:
-    image: acfpatrick/rust-service-sage-pharmacy
+    image: acfpatrick/rust-service-sage-pharmacy:latest
     restart: always
     build:
-      context: backend/rust-service
+      context: ./backend/rust-service
+      dockerfile: Dockerfile
     ports:
       - '8080:8080'
     depends_on:
