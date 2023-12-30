@@ -1,15 +1,17 @@
 version: '3'
 services:
   rust-api:
+    image: acfpatrick/rust-service-sage-pharmacy
     restart: always
     build:
-      context: rust-service
+      context: backend/rust-service
     ports:
       - '8080:8080'
     depends_on:
       postgres:
         condition: service_healthy
   server:
+    image: acfpatrick/sage-pharmacy:latest
     restart: always
     build:
       context: .

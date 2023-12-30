@@ -1,7 +1,5 @@
 # SAGE Pharmacy
 
-[![build](https://github.com/acf-patrick/SAGE-pharmacy/actions/workflows/ci.yaml/badge.svg)](https://github.com/acf-patrick/SAGE-pharmacy/actions/workflows/ci.yaml)
-
 SAGE web application for pharmacy management.
 
 ## Features ✨
