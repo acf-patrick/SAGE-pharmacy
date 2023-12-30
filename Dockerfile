@@ -4,6 +4,8 @@ WORKDIR /app/tmp
 
 COPY . .
 
+RUN cp docker.env backend/
+
 # Build frontend
 ADD docker.env frontend/.env
 RUN cd frontend && \
