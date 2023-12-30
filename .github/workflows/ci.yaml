@@ -17,7 +17,7 @@ jobs:
 
       - name: setup env variables
         run: |
-          echo "DATABASE_URL=postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ vars.HOST }}:5432/${{ secrets.POSTGRES_DB }}?schema=public&pool_timeout=0" >> docker.env
+          echo "DATABASE_URL=postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@postgres:5432/${{ secrets.POSTGRES_DB }}?schema=public&pool_timeout=0" >> docker.env
           echo "PRODUCTION=true" >> docker.env
           cp docker.env backend/rust-service/
           echo "ACCESS_SECRET=${{ vars.ACCESS_SECRET }}" >> docker.env
