@@ -17,8 +17,8 @@ RUN cd backend && \
   yarn && \
   yarn build
 
-RUN mkdir -p backend/dist/client
-RUN cp -r frontend/dist/* backend/dist/client
+RUN mkdir -p backend/client
+RUN cp -r frontend/dist/* backend/client
 
 WORKDIR /app
 

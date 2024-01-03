@@ -1,4 +1,6 @@
-FROM rust:alpine3.18
+FROM rust:bullseye
+
+WORKDIR /server
 
 ENV SQLX_OFFLINE=true
 
