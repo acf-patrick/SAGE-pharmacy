@@ -56,7 +56,7 @@ _Archive_ page displays list of archived orders with receipt/bill/evidence attac
 
 ## Preview 🚧
 
-[Preview](http://3.19.232.21/) of the application is hosted on an **EC2 instance**. Credentials :
+[Preview](http://34.168.203.141) of the application is hosted on **Google Cloud**. Credentials :
 
 - username : admin
 - password : free
